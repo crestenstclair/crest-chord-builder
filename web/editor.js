@@ -1,14 +1,11 @@
+import { selectChordTone, withSoundingIntervals } from "./chord-formula.js";
 import {
   FAMILIES,
   mod12,
-  chordFamily,
   describeFingering,
   moveVoice,
   soundingNotes,
-  toggleChordInterval,
-  extendChord,
   previewPitches,
-  seventhForChord,
   voicedChord,
 } from "./music.js";
 import { getFingering, setFingering } from "./project.js";
@@ -112,7 +109,7 @@ function updateManualChord() {
     session.chord.root,
   );
   if (actual.midis.length) {
-    session.chord.intervals = actual.intervals;
+    session.chord = withSoundingIntervals(session.chord, actual.intervals);
     session.chord.bass = actual.bass;
   }
   session.voicings = [];
@@ -224,10 +221,22 @@ dialog.addEventListener("click", (event) => {
           : previewPitches(session.chord),
       );
     if (action === "interval") {
-      session.chord = toggleChordInterval(
-        session.chord,
-        Number(target.dataset.interval),
-      );
+      session.chord = selectChordTone(session.chord, target.dataset.tone);
+      return regenerate();
+    }
+    if (["root", "family", "bass"].includes(action)) {
+      if (action === "root") {
+        const difference = Number(target.dataset.value) - session.chord.root;
+        if (session.chord.bass >= 0)
+          session.chord.bass = mod12(session.chord.bass + difference);
+        session.chord.root = Number(target.dataset.value);
+      }
+      if (action === "family") {
+        session.chord.intervals = [...FAMILIES[target.dataset.value].intervals];
+        delete session.chord.formula;
+        session.chord.bass = session.chord.root;
+      }
+      if (action === "bass") session.chord.bass = Number(target.dataset.value);
       return regenerate();
     }
     editGrip(action, target);
@@ -251,31 +260,6 @@ dialog.addEventListener("change", (event) => {
     return;
   }
   if (field === "label") return;
-  if (field === "extension" && value === "inversion") {
-    event.target.value = "";
-    dialog.querySelector('[data-editor="bass"]').focus();
-    return;
-  }
-  if (field === "root") {
-    const difference = Number(value) - session.chord.root;
-    if (session.chord.bass >= 0)
-      session.chord.bass = mod12(session.chord.bass + difference);
-    session.chord.root = Number(value);
-  }
-  if (field === "family") {
-    session.family = value;
-    session.chord.intervals = [...FAMILIES[value].intervals];
-    session.chord.bass = session.chord.root;
-    session.seventh = seventhForChord(session.chord, session.keyTones);
-  }
-  if (field === "extension") {
-    if (!value) return;
-    session.chord = extendChord(session.chord, value, session);
-    if (value === "dominant7") session.seventh = 10;
-    if (value === "major7") session.seventh = 11;
-    session.family = chordFamily(session.chord);
-  }
-  if (field === "bass") session.chord.bass = Number(value);
   if (field === "position") session.position = value;
   regenerate();
 });
@@ -295,7 +279,6 @@ export function openChordEditor(
     chord,
     frets ? describeFingering(tuning, frets, chord.root) : null,
   );
-  const family = chordFamily(chord);
   session = {
     chord: structuredClone(chord),
     tuning: [...tuning],
@@ -305,8 +288,6 @@ export function openChordEditor(
     partName,
     isNew,
     toggleTheme,
-    family,
-    seventh: seventhForChord(chord, keyTones),
     mode: "move",
     active: null,
     start: 0,

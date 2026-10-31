@@ -477,8 +477,7 @@ main {
   font-size: 12px;
   margin-top: 10px;
 }
-.scale-intervals,
-.chord-intervals {
+.scale-intervals {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -1004,10 +1003,10 @@ button.fret:hover {
   font-size: calc(27px * var(--display-zoom));
 }
 dialog {
-  width: min(1400px, 96vw);
+  width: min(1800px, 96vw);
   max-height: 96vh;
   margin: auto;
-  padding: 22px 28px 0;
+  padding: 20px 24px 0;
   border: 1px solid var(--line);
   border-radius: 10px;
   color: var(--ink);
@@ -1021,62 +1020,186 @@ dialog::backdrop {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-.editor-header h2 {
-  font-size: 30px;
-  margin-top: 2px;
-}
-.editor-header p {
-  font-size: 12px;
+  gap: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
 }
 .editor-header > div:last-child {
   display: flex;
   gap: 12px;
 }
-.editor-controls {
+.workshop-title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 3px;
+}
+.workshop-title h2 {
+  font-size: 32px;
+}
+.workshop-title > span {
+  color: var(--muted);
+  font-size: 13px;
+}
+.workshop-formula {
+  color: var(--accent);
+  font-size: 17px;
+  font-weight: 600;
+}
+.workshop-layout {
   display: grid;
-  grid-template-columns: 0.6fr 1fr 1.3fr 1.6fr 1.2fr;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 24px;
+}
+.workshop-main {
+  min-width: 0;
+  padding-top: 12px;
+}
+.workshop-row {
+  display: flex;
   gap: 14px;
-}
-.interval-section {
-  display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  padding: 12px 0;
+  padding: 9px 0;
 }
-.interval-section > div:first-child {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-.interval-section span {
-  font-size: 12px;
+.workshop-row > h3 {
+  width: 85px;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--muted);
 }
-.chord-intervals {
-  margin-top: 0;
+.workshop-row h3 > span {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+}
+.root-choices,
+.quality-choices,
+.bass-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.choice-button {
+  min-width: 45px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  min-height: 35px;
+  padding: 6px 12px;
+}
+.choice-button[aria-pressed="true"] {
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: inset 0 -3px 0 var(--accent-ink);
+  font-weight: 650;
+}
+.quality-choices .choice-button {
+  font-size: 12px;
+}
+.interval-section {
+  padding: 14px 0 8px;
+}
+.interval-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+.interval-heading h3 {
+  font-size: 15px;
+}
+.interval-heading p {
+  font-size: 12px;
+}
+.interval-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--bg);
+  padding: 7px;
+}
+.interval-matrix {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: separate;
+  border-spacing: 5px;
+  table-layout: fixed;
+}
+.interval-matrix th {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: center;
+}
+.interval-matrix th:first-child {
+  width: 85px;
+  text-align: left;
+  padding-left: 5px;
+}
+.interval-matrix thead th {
+  padding-bottom: 5px;
+}
+.interval-matrix td {
+  padding: 0;
+}
+.interval-choice {
+  width: 100%;
+  height: 34px;
+  min-height: 34px;
+  padding: 4px;
+  font-size: 19px;
+  font-weight: 650;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+}
+.interval-choice[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+  box-shadow: inset 0 -3px var(--accent-ink);
+}
+.interval-unavailable {
+  text-align: center;
+  color: var(--line);
+}
+.inversion-row {
+  margin: 3px 0 13px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+}
+.bass-choices .choice-button {
+  font-size: 12px;
 }
 .editor-neck {
   background: var(--bg);
   border: 1px solid var(--line);
   border-radius: 7px;
-  padding: 12px 15px;
+  padding: 12px;
 }
 .neck-toolbar {
   display: flex;
   align-items: center;
-  gap: 14px;
   justify-content: space-between;
+  gap: 8px;
   flex-wrap: wrap;
 }
+.neck-toolbar .inline-label {
+  font-size: 11px;
+}
+.neck-toolbar select {
+  min-height: 35px;
+  font-size: 12px;
+  padding: 5px 8px;
+}
 .workshop-legend {
-  margin: 15px 0 8px;
+  margin: 12px 0 8px;
 }
 .editor-neck .fretboard {
-  --row-height: 34px;
+  --row-height: 33px;
 }
 .editor-neck .fret span {
   width: 25px;
@@ -1084,66 +1207,69 @@ dialog::backdrop {
   font-size: 12px;
 }
 .editor-hint {
-  margin-top: 5px;
   font-size: 12px;
+  margin-top: 7px;
   min-height: 18px;
 }
-.editor-bottom {
-  display: grid;
-  grid-template-columns: 1fr 1.6fr;
-  gap: 30px;
-  padding: 12px 0 6px;
+.grip-panel {
+  border-left: 1px solid var(--line);
+  padding: 15px 0 10px 20px;
 }
-.editor-preview {
-  display: grid;
-  grid-template-columns: 180px 1fr;
-  align-content: center;
-  gap: 8px 16px;
-}
-.editor-preview .chord-box,
-.editor-preview .diagram-placeholder {
-  grid-row: 1/5;
-  width: 180px;
-  height: 190px;
-}
-.editor-preview > strong {
-  font-size: 24px;
-  align-self: end;
-}
-.editor-preview > span {
-  color: var(--muted);
-  font-size: 12px;
-}
-.editor-preview > div:not(.diagram-placeholder) {
+.grip-heading {
   display: flex;
-  gap: 7px;
   align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.grip-heading h3 {
+  font-size: 15px;
+}
+.workshop-layout .editor-preview {
+  display: block;
+  text-align: center;
+  padding: 10px 0 6px;
+}
+.workshop-layout .editor-preview .chord-box,
+.workshop-layout .editor-preview .diagram-placeholder {
+  width: 100%;
+  height: 185px;
+  min-height: 185px;
+}
+.workshop-layout .editor-preview p {
+  font-size: 11px;
+  min-height: 18px;
 }
 .grip-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
+  gap: 3px;
+  padding: 5px 0 12px;
+}
+.grip-controls > .quiet {
+  font-size: 11px;
+  padding: 5px;
 }
 .voice-list {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0 18px;
-  align-content: start;
+  display: block;
 }
 .voice-list > .eyebrow {
-  grid-column: 1/-1;
-  margin-bottom: 5px;
+  margin: 6px 0;
+  font-size: 10px;
 }
 .voice-row {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 11px;
   padding: 6px 0;
   border-bottom: 1px solid var(--line);
 }
 .voice-row > strong {
   flex: 1;
-  font-size: 18px;
-  min-width: 60px;
+  font-size: 17px;
+  min-width: 55px;
 }
 .voice-row small {
   display: block;
@@ -1151,25 +1277,31 @@ dialog::backdrop {
   font-weight: 400;
 }
 .voice-string {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--muted);
-  min-width: 24px;
+  min-width: 21px;
 }
 .voice-row > div {
   display: flex;
   gap: 2px;
 }
+.voice-row .icon-button {
+  width: 25px;
+}
 .octave-button {
-  min-height: 32px;
-  padding: 4px 5px;
-  font-size: 12px;
+  min-height: 31px;
+  padding: 4px;
+  font-size: 11px;
   border-color: var(--line);
 }
+.chord-label-input {
+  margin-top: 15px;
+}
 .editor-status {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--muted);
-  min-height: 22px;
-  padding-bottom: 6px;
+  min-height: 32px;
+  padding: 9px 0;
 }
 .editor-footer {
   display: flex;
@@ -1180,7 +1312,7 @@ dialog::backdrop {
   bottom: 0;
   background: var(--surface);
   border-top: 1px solid var(--line);
-  padding: 13px 0;
+  padding: 12px 0;
   z-index: 2;
 }
 .editor-footer > span {
@@ -1190,6 +1322,137 @@ dialog::backdrop {
 .editor-footer > div {
   display: flex;
   gap: 10px;
+}
+.preset-picker {
+  padding: 18px 22px;
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+.preset-picker > label {
+  flex: 1;
+  max-width: 750px;
+  font-size: 13px;
+}
+.preset-picker select {
+  font-size: 16px;
+  min-height: 46px;
+}
+.preset-picker > span {
+  color: var(--muted);
+  font-size: 12px;
+  padding-bottom: 12px;
+}
+.tuning-editor-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.tuning-editor-heading h2 {
+  font-size: 18px;
+}
+.tuning-editor-heading > span {
+  color: var(--muted);
+  font-size: 12px;
+}
+.guitar-details {
+  margin-top: 16px;
+  color: var(--muted);
+}
+.guitar-details summary {
+  cursor: pointer;
+  font-size: 12px;
+}
+.guitar-details .setup-controls {
+  grid-template-columns: 1fr 1fr;
+  padding: 15px 0 0;
+}
+@media (max-width: 1300px) {
+  .workshop-layout {
+    grid-template-columns: minmax(0, 1fr) 250px;
+    gap: 16px;
+  }
+  .grip-panel {
+    padding-left: 13px;
+  }
+  .workshop-row {
+    align-items: flex-start;
+  }
+  .root-choices,
+  .quality-choices {
+    gap: 5px;
+  }
+  .root-choices .choice-button {
+    min-width: 38px;
+    padding: 5px 8px;
+  }
+  .voice-row {
+    gap: 5px;
+  }
+  .interval-matrix {
+    min-width: 560px;
+  }
+}
+@media (max-width: 1000px) {
+  .workshop-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .grip-panel {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding: 15px 0;
+  }
+  .workshop-layout .editor-preview .chord-box {
+    max-width: 240px;
+    margin: auto;
+  }
+  .preset-picker {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .preset-picker > span {
+    padding: 0;
+  }
+  .workshop-title {
+    gap: 8px 14px;
+  }
+  .workshop-formula {
+    font-size: 14px;
+  }
+}
+@media (max-width: 600px) {
+  .workshop-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .workshop-row > h3 {
+    width: auto;
+  }
+  .workshop-row h3 > span {
+    display: inline;
+    margin-left: 10px;
+  }
+  .interval-heading {
+    flex-direction: column;
+    gap: 3px;
+  }
+  .interval-matrix {
+    min-width: 540px;
+  }
+  .tuning-editor-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .preset-picker {
+    padding: 14px;
+  }
+  .preset-picker select {
+    font-size: 13px;
+  }
 }
 #toast {
   position: fixed;
@@ -1252,19 +1515,6 @@ dialog::backdrop {
   }
   .tuning-aside {
     max-width: 650px;
-  }
-  .editor-bottom {
-    gap: 18px;
-    grid-template-columns: 1fr 1.3fr;
-  }
-  .editor-preview {
-    grid-template-columns: 150px 1fr;
-  }
-  .editor-preview .chord-box {
-    width: 150px;
-  }
-  .voice-list {
-    grid-template-columns: 1fr;
   }
 }
 @media (max-width: 800px) {
@@ -1456,24 +1706,11 @@ dialog::backdrop {
   .editor-header h2 {
     font-size: 25px;
   }
-  .editor-controls {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-  .chord-label-input {
-    grid-column: 1/-1;
-  }
-  .interval-section {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
   .interval-toggle {
     min-width: 39px;
     height: 42px;
     padding: 5px 8px;
   }
-  .chord-intervals,
   .scale-intervals {
     gap: 6px;
   }
@@ -1485,16 +1722,6 @@ dialog::backdrop {
   }
   .editor-neck {
     padding: 10px 7px;
-  }
-  .editor-bottom {
-    display: block;
-  }
-  .editor-preview {
-    grid-template-columns: 145px 1fr;
-  }
-  .editor-preview .chord-box {
-    width: 145px;
-    height: 185px;
   }
   .voice-list {
     margin-top: 12px;

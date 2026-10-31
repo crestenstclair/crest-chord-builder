@@ -1,3 +1,4 @@
+import { parseFormula } from "./chord-formula.js";
 import { PRESETS, SCALES, QUALITIES, mod12, toneSet } from "./music.js";
 
 export const LEGACY_STORAGE_KEY = "crest-chord-builder.project.v1";
@@ -25,7 +26,7 @@ export const makePart = (guitarId, number = 1) => ({
 export function createProject() {
   const guitar = {
     id: id(),
-    name: PRESETS.standard.name,
+    name: "Guitar 1",
     strings: [...PRESETS.standard.strings],
   };
   const part = makePart(guitar.id);
@@ -106,6 +107,9 @@ function parseChord(value) {
     root: integer(value.root, 0, 11, "Chord root"),
     intervals: intervals.sort((a, b) => a - b),
     bass: integer(value.bass, -1, 11, "Bass"),
+    ...(value.formula !== undefined
+      ? { formula: parseFormula(value.formula, intervals) }
+      : {}),
     label: value.label,
     fingerings: Object.fromEntries(fingerings.map(parseFingering)),
   };

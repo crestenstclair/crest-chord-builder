@@ -1,3 +1,8 @@
+import {
+  chordFormula,
+  FORMULA_TONES,
+  withSoundingIntervals,
+} from "./chord-formula.js";
 export const NOTES = [
   "C",
   "D♭",
@@ -251,18 +256,89 @@ function omittedQuality(intervals) {
   });
 }
 
+function matchesFormula(chord, quality) {
+  if (!chord.formula) return true;
+  const expected = chordFormula(quality).filter((label) =>
+    chord.intervals.includes(FORMULA_TONES[label].pitch),
+  );
+  return [...expected].sort().join() === [...chord.formula].sort().join();
+}
+
+function customFormulaQuality(chord) {
+  const formula = chordFormula(chord);
+  const has = (label) => formula.includes(label);
+  const third = ["3", "♭3", "2", "4"].find(has);
+  const fifth = ["5", "♭5", "♯5"].find(has);
+  const seventh = ["7", "♭7", "♭♭7"].find(has);
+  const columns = formula.map((label) => FORMULA_TONES[label].column);
+  if (!third || new Set(columns).size !== columns.length)
+    return {
+      name: "Custom chord",
+      suffix: ` [${formula.join("·")}]`,
+      omissions: [],
+    };
+  const minor = third === "♭3";
+  let suffix = minor
+    ? "m"
+    : third === "2"
+      ? "sus2"
+      : third === "4"
+        ? "sus4"
+        : "";
+  let name = minor
+    ? "Minor"
+    : third === "2"
+      ? "Suspended 2nd"
+      : third === "4"
+        ? "Suspended 4th"
+        : "Major";
+  const extension = has("9") ? ["13", "11", "9"].find(has) : null;
+  const modifications = [];
+  if (seventh) {
+    const number = extension ?? "7";
+    if (seventh === "♭♭7") {
+      suffix = minor && fifth === "♭5" ? "dim7" : suffix + "6";
+      name = minor && fifth === "♭5" ? "Diminished 7th" : name;
+      for (const label of ["9", "11", "13"])
+        if (has(label)) modifications.push("add" + label);
+    } else if (seventh === "7")
+      suffix = minor
+        ? `m(maj${number})`
+        : third === "2" || third === "4"
+          ? `maj${number}${suffix}`
+          : `maj${number}`;
+    else
+      suffix =
+        third === "2" || third === "4" ? number + suffix : suffix + number;
+    if (seventh === "♭7" && third === "3") name = "Dominant";
+    if (seventh !== "♭♭7") name += ` ${number}th`;
+    if (seventh !== "♭♭7" && !extension)
+      for (const label of ["11", "13"])
+        if (has(label)) modifications.push("add" + label);
+  } else {
+    for (const label of ["9", "11", "13"])
+      if (has(label)) modifications.push("add" + label);
+  }
+  if (fifth && fifth !== "5" && !(seventh === "♭♭7" && fifth === "♭5" && minor))
+    modifications.push(fifth);
+  for (const label of ["♭9", "♯9", "♯11", "♭13"])
+    if (has(label)) modifications.push(label);
+  const omissions = [];
+  if (!has("1")) omissions.push("1");
+  if (!fifth) omissions.push("5");
+  for (const n of omissions) modifications.push("no" + n);
+  if (modifications.length) suffix += `(${modifications.join(",")})`;
+  return { name, suffix, omissions };
+}
+
 export function chordQuality(chord) {
-  const exact = Object.values(QUALITIES).find((q) =>
-    same(q.intervals, chord.intervals),
+  const exact = Object.values(QUALITIES).find(
+    (q) => same(q.intervals, chord.intervals) && matchesFormula(chord, q),
   );
   if (exact) return { ...exact, omissions: [] };
   const omitted = omittedQuality(chord.intervals);
-  if (!omitted)
-    return {
-      name: "Custom chord",
-      suffix: ` [${chord.intervals.map((n) => INTERVALS[n]).join("·")}]`,
-      omissions: [],
-    };
+  if (!omitted || !matchesFormula(chord, omitted))
+    return customFormulaQuality(chord);
   const fifth = omitted.intervals.includes(6)
     ? 6
     : omitted.intervals.includes(8)
@@ -289,6 +365,11 @@ export function chordName(chord, bass = chord.bass ?? -1, spelling = NOTES) {
 
 export function chordInterval(chord, pc) {
   const interval = mod12(pc - chord.root);
+  const spelled = chord.formula?.find(
+    (label) => FORMULA_TONES[label].pitch === interval,
+  );
+  if (spelled) return spelled;
+  if (interval === 3 && chord.intervals.includes(4)) return "♯9";
   const seventh = chord.intervals.includes(10) || chord.intervals.includes(11);
   if (interval === 8 && chord.intervals.includes(4)) return "♯5";
   if (interval === 2 && seventh) return "9";
@@ -381,7 +462,10 @@ export function voicedChord(chord, actual) {
   const optionalFifth =
     chord.intervals.length >= 5 && missing.length === 1 && missing[0] === 7;
   if (fits && (missing.length === 0 || optionalFifth)) return chord;
-  return { ...chord, intervals: actual.intervals, bass: actual.bass };
+  return {
+    ...withSoundingIntervals(chord, actual.intervals),
+    bass: actual.bass,
+  };
 }
 
 export const FAMILIES = {
@@ -426,8 +510,10 @@ export const FAMILIES = {
 
 export function chordFamily(chord) {
   const has = (n) => chord.intervals.includes(n);
-  if (has(3)) return has(6) ? "dim" : "min";
-  if (has(4)) return has(8) ? "aug" : has(10) ? "dominant" : "maj";
+  const formula = chordFormula(chord);
+  if (formula.includes("3"))
+    return formula.includes("♯5") ? "aug" : has(10) ? "dominant" : "maj";
+  if (formula.includes("♭3")) return formula.includes("♭5") ? "dim" : "min";
   if (has(5)) return "sus4";
   if (has(2)) return "sus2";
   return "maj";
@@ -485,7 +571,9 @@ function withIntervals(chord, intervals) {
       : intervals.includes(0)
         ? chord.root
         : -1;
-  return { ...chord, intervals, bass };
+  return chord.formula
+    ? { ...withSoundingIntervals(chord, intervals), bass }
+    : { ...chord, intervals, bass };
 }
 
 export function extendChord(
@@ -523,9 +611,12 @@ export function extendChord(
 }
 
 export function previewPitches(chord) {
-  const seventh = chord.intervals.includes(10) || chord.intervals.includes(11);
-  const pitches = chord.intervals.map(
-    (n) => 48 + chord.root + (seventh && [2, 5, 9].includes(n) ? n + 12 : n),
+  const pitches = chordFormula(chord).map(
+    (label) =>
+      48 +
+      chord.root +
+      FORMULA_TONES[label].pitch +
+      (FORMULA_TONES[label].column >= 4 ? 12 : 0),
   );
   if (chord.bass >= 0) pitches.push(36 + chord.bass);
   return unique(pitches);

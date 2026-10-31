@@ -2,7 +2,7 @@
 
 String 1 is the treble-side string. Configuration rows and horizontal fretboards show it at the top. Chord boxes use the usual convention: bass-side string on the left.
 
-The table lists **bass to treble**, matching JSON storage. Octaves use scientific pitch notation: C4 is MIDI 60, A4 is 440 Hz. Choosing a string count preserves existing upper strings and adds lower strings a fourth apart. Presets replace the pitches; individual strings remain editable.
+The table lists **bass to treble**, matching JSON storage. Octaves use scientific pitch notation: C4 is MIDI 60, A4 is 440 Hz. The preset selector groups all tunings under 6, 7, and 8 strings. Choosing a preset sets both the string count and pitches, then shows that tuning in the editor. Individual strings remain editable. Guitar names are optional organizational labels, independent of presets.
 
 ## Six strings
 

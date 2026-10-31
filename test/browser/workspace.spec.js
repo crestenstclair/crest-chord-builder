@@ -9,7 +9,12 @@ const addChord = async (page, name = "Am", extension = "7") => {
     .getByRole("button", { name: `Open ${name} chord workshop`, exact: true })
     .click();
   if (extension)
-    await page.locator('[data-editor="extension"]').selectOption(extension);
+    await page
+      .getByRole("button", {
+        name: `Chord interval ${["F", "C"].includes(name) ? "7" : "♭7"}`,
+        exact: true,
+      })
+      .click();
   await page.getByRole("button", { name: "Add to part", exact: true }).click();
   await expect(page.locator("#editor")).not.toBeVisible();
 };
@@ -74,7 +79,6 @@ test("eight-string tuning, multiple parts and tuning-specific grip recovery", as
     "40,45,50,55,59,64"
   ];
   await page.locator('[data-view="guitars"]').click();
-  await page.getByLabel("String count", { exact: true }).selectOption("8");
   await page.getByLabel("Tuning preset").selectOption("eight");
   await expect(page.locator(".string-editor")).toHaveCount(8);
   await expect(page.locator(".string-editor").first()).toHaveAttribute(
@@ -82,7 +86,7 @@ test("eight-string tuning, multiple parts and tuning-specific grip recovery", as
     "1",
   );
   await expect(page.getByLabel("Tuning preset").locator("option")).toHaveCount(
-    8,
+    21,
   );
   await page.getByLabel("String 8 note", { exact: true }).selectOption("4");
   await page.getByLabel("String 8 octave", { exact: true }).selectOption("1");
@@ -104,7 +108,6 @@ test("eight-string tuning, multiple parts and tuning-specific grip recovery", as
   ).toBeVisible();
   await page.locator(".part-nav").first().click();
   await page.locator('[data-view="guitars"]').click();
-  await page.getByLabel("String count", { exact: true }).selectOption("6");
   await page.getByLabel("Tuning preset").selectOption("standard");
   await page.locator('.nav-item[data-view="parts"]').click();
   expect(
@@ -144,7 +147,6 @@ test("1080p focus display fits eight strings and six chords; print includes all 
   page,
 }, testInfo) => {
   await page.locator('[data-view="guitars"]').click();
-  await page.getByLabel("String count", { exact: true }).selectOption("8");
   await page.getByLabel("Tuning preset").selectOption("eight");
   await page.locator('.nav-item[data-view="parts"]').click();
   for (const name of ["Am", "F", "C", "G", "Dm", "Em", "Am"])
@@ -299,11 +301,16 @@ test("interval workshop previews changes, preserves extensions, and sets inversi
   await expect
     .poll(() => page.evaluate(() => window.previewCount))
     .toBeGreaterThan(0);
-  await page.locator('[data-editor="extension"]').selectOption("13");
+  await page
+    .getByRole("button", { name: "Chord interval 9", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Chord interval 13", exact: true })
+    .click();
   await page
     .getByRole("button", { name: "Chord interval 5", exact: true })
     .click();
-  await page.locator('[data-editor="bass"]').selectOption("0");
+  await page.getByRole("button", { name: "♭3 in bass", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Add to part", exact: true }),
   ).toBeEnabled();
@@ -387,12 +394,10 @@ test("both workshop themes keep readable text contrast; eight-string controls st
   page,
 }, testInfo) => {
   await page.locator('.nav-item[data-view="guitars"]').click();
-  await page.getByLabel("String count", { exact: true }).selectOption("7");
   await page.getByLabel("Tuning preset").selectOption("sevenOpenC");
   expect((await saved(page)).guitars[0].strings).toEqual([
     31, 36, 43, 48, 55, 60, 64,
   ]);
-  await page.getByLabel("String count", { exact: true }).selectOption("8");
   await page.getByLabel("Tuning preset").selectOption("eightDropE");
   await page.locator('.nav-item[data-view="parts"]').click();
   await page
@@ -432,6 +437,23 @@ test("both workshop themes keep readable text contrast; eight-string controls st
       ].map(([a, b]) => contrast(a, b));
     });
     expect(Math.min(...contrasts)).toBeGreaterThanOrEqual(4.5);
+    const visibleLayout = await page.evaluate(() => {
+      const footer = document
+        .querySelector(".editor-footer")
+        .getBoundingClientRect();
+      const neck = document
+        .querySelector("#editor .fretboard")
+        .getBoundingClientRect();
+      const grid = document
+        .querySelector(".interval-matrix")
+        .getBoundingClientRect();
+      return (
+        grid.top >= 0 &&
+        neck.bottom <= footer.top &&
+        footer.bottom <= innerHeight
+      );
+    });
+    expect(visibleLayout).toBe(true);
     await page.screenshot({
       path: testInfo.outputPath(`eight-string-${theme}.png`),
     });
@@ -461,4 +483,92 @@ test("invalid v2 browser data blocks autosave and does not silently replace it w
   expect(await page.evaluate((key) => localStorage.getItem(key), key)).toBe(
     "{broken",
   );
+});
+
+test("grouped presets set string count directly and leave the tuning editor ready", async ({
+  page,
+}, testInfo) => {
+  await page.evaluate((key) => {
+    const doc = JSON.parse(localStorage.getItem(key));
+    doc.guitars[0].name = "Standard six";
+    localStorage.setItem(key, JSON.stringify(doc));
+  }, key);
+  await page.reload();
+  await page.locator('.nav-item[data-view="guitars"]').click();
+  const selector = page.getByLabel("Tuning preset", { exact: true });
+  expect(
+    await selector
+      .locator("optgroup")
+      .evaluateAll((nodes) => nodes.map((n) => n.label)),
+  ).toEqual(["6 strings", "7 strings", "8 strings"]);
+  await expect(page.getByLabel("String count", { exact: true })).toHaveCount(0);
+  for (const [preset, count] of [
+    ["eightDropE", 8],
+    ["sevenOpenC", 7],
+    ["dropd", 6],
+  ]) {
+    await selector.selectOption(preset);
+    await expect(page.locator(".string-editor")).toHaveCount(count);
+    expect((await saved(page)).guitars[0].strings).toHaveLength(count);
+  }
+  expect((await saved(page)).guitars[0].name).toBe("Guitar 1");
+  await page.locator(".guitar-details summary").click();
+  await page.getByLabel("Guitar name", { exact: true }).fill("Baritone");
+  await page.getByLabel("Guitar name", { exact: true }).press("Tab");
+  await selector.selectOption("eight");
+  expect((await saved(page)).guitars[0].name).toBe("Baritone");
+  await page.screenshot({ path: testInfo.outputPath("grouped-presets.png") });
+});
+
+test("interval grid supports reversible alterations and separate bass choices without implied tones", async ({
+  page,
+}, testInfo) => {
+  await page
+    .getByRole("button", { name: "Open Am chord workshop", exact: true })
+    .click();
+  await expect(page.getByLabel("Chord menu")).toHaveCount(0);
+  await expect(page.locator(".interval-matrix")).toBeVisible();
+  const tone = (label) =>
+    page.getByRole("button", { name: `Chord interval ${label}`, exact: true });
+  await tone("3").click();
+  await expect(tone("♭3")).toHaveAttribute("aria-pressed", "false");
+  await expect(page.locator("#editor-title")).toHaveText("A");
+  await tone("♭3").click();
+  await expect(page.locator("#editor-title")).toHaveText("Am");
+  await tone("9").click();
+  await expect(tone("♭7")).toHaveAttribute("aria-pressed", "false");
+  await expect(tone("7")).toHaveAttribute("aria-pressed", "false");
+  await tone("♭9").click();
+  await expect(tone("9")).toHaveAttribute("aria-pressed", "false");
+  await tone("♭9").click();
+  await expect(page.locator(".workshop-formula")).toHaveText("1 · ♭3 · 5");
+  await tone("♭7").click();
+  await tone("7").click();
+  await expect(tone("♭7")).toHaveAttribute("aria-pressed", "false");
+  await tone("♭7").click();
+  await tone("♯11").click();
+  await expect(tone("5")).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "♭3 in bass", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Add to part", exact: true }),
+  ).toBeEnabled();
+  await expect(page.locator("#editor-title")).toHaveText("Am7(♯11)/C");
+  await page.screenshot({ path: testInfo.outputPath("interval-grid.png") });
+  await page.getByRole("button", { name: "Add to part", exact: true }).click();
+  expect((await saved(page)).parts[0].chords[0].formula).toEqual([
+    "1",
+    "♭3",
+    "5",
+    "♭7",
+    "♯11",
+  ]);
+  await page.reload();
+  await page
+    .getByRole("button", { name: "Edit Am7(♯11)/C", exact: true })
+    .click();
+  await expect(tone("♯11")).toHaveAttribute("aria-pressed", "true");
+  await expect(tone("♭5")).toHaveAttribute("aria-pressed", "false");
+  await expect(
+    page.getByRole("button", { name: "♭3 in bass", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
 });

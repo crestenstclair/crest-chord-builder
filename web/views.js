@@ -1,3 +1,4 @@
+import { chordFormula } from "./chord-formula.js";
 import {
   NOTES,
   INTERVALS,
@@ -90,25 +91,30 @@ export function guitarsView(project, state) {
     Object.entries(PRESETS).find(
       ([, p]) => p.strings.join() === guitar.strings.join(),
     )?.[0] ?? "";
-  const counts = [6, 7, 8].includes(count)
-    ? [6, 7, 8].map((n) => [n, n])
-    : [[count, `${count} (imported)`], ...[6, 7, 8].map((n) => [n, n])];
-  return `<div class="page-heading"><div><h1>Guitar configuration</h1><p>Select a string count and tuning preset, then adjust individual strings.</p></div>${button("new-guitar", "Add guitar", "plus", "primary", project.guitars.length >= 16 ? "disabled" : "")}</div>
-    <div class="guitar-layout"><section class="panel tuning-panel"><div class="setup-controls">
-    <label>Guitar<select data-field="active-guitar">${options(
-      project.guitars.map((g) => [g.id, g.name]),
-      guitar.id,
-    )}</select></label><label>Guitar name<input data-field="guitar-name" value="${esc(guitar.name)}" maxlength="120"></label>
-    <label>Strings<select data-field="string-count" aria-label="String count">${options(counts, count)}</select></label><label>Tuning preset<select data-field="preset"><option value="">Custom tuning</option>${options(
-      presetsForCount(count).map(([key, p]) => [key, p.name]),
-      preset,
-    )}</select></label>
+  const groups = [6, 7, 8]
+    .map(
+      (count) =>
+        `<optgroup label="${count} strings">${options(
+          presetsForCount(count).map(([key, p]) => [
+            key,
+            `${p.name} · ${p.strings.map(pitchName).join(" ")}`,
+          ]),
+          preset,
+        )}</optgroup>`,
+    )
+    .join("");
+  return `<div class="page-heading"><div><h1>Guitar tuning</h1><p>Choose a preset, then edit its strings below.</p></div>${button("new-guitar", "Add guitar", "plus", "outlined", project.guitars.length >= 16 ? "disabled" : "")}</div>
+    <section class="panel preset-picker"><label>Tuning preset<select data-field="preset" aria-label="Tuning preset"><option value="" ${preset ? "" : "selected"} disabled>Custom tuning · ${count} strings</option>${groups}</select></label><span>The preset sets the string count.</span></section>
+    <div class="guitar-layout"><section class="panel tuning-panel"><div class="tuning-editor-heading"><h2>Tuning editor</h2><span>${count} strings · treble to bass</span>
     </div><div class="string-list">${guitar.strings
       .map((n, i) => guitarString(n, i, guitar, part))
       .reverse()
       .join(
         "",
-      )}</div><div class="panel-bottom">String 1 is the treble-side string. Tuning changes preserve saved fingerings.</div></section>
+      )}</div><div class="panel-bottom">String 1 is the treble-side string. Tuning changes preserve saved fingerings.</div><details class="guitar-details"><summary>Saved guitars & name</summary><div class="setup-controls"><label>Guitar<select data-field="active-guitar" aria-label="Guitar">${options(
+      project.guitars.map((g) => [g.id, g.name]),
+      guitar.id,
+    )}</select></label><label>Guitar name<input data-field="guitar-name" value="${esc(guitar.name)}" maxlength="120"></label></div></details></section>
     <aside class="tuning-aside"><h2>Current tuning</h2><p>Treble to bass</p><div class="tuning-summary">${guitar.strings
       .map(
         (n, i) =>
@@ -163,7 +169,7 @@ function chordCard(chord, index, part, guitar, state, display = false) {
   if (frets && !actual)
     diagram =
       '<div class="diagram-placeholder">No automatic fingering found. Open the workshop to place notes manually.</div>';
-  return `<article class="chord-card" data-chord="${chord.id}"><header><span class="chord-order">${String(index + 1).padStart(2, "0")}</span><div><h3><button data-action="edit-chord" data-id="${chord.id}" aria-label="Open ${esc(name)} workshop">${esc(label)}</button></h3><small>${esc(name)} · ${esc(chordQuality(definition).name)}</small><small class="card-formula">${definition.intervals.map((n) => chordInterval(definition, mod12(definition.root + n))).join(" · ")}</small></div>${button("play-chord", "", "play", "icon-button no-print", `data-id="${chord.id}" aria-label="Play ${esc(name)}" ${actual ? "" : "disabled"}`)}</header>${diagram}<div class="fret-values">${frets ? frets.map((f) => (f < 0 ? "×" : f)).join(" ") : "Calculating fingering…"}</div>
+  return `<article class="chord-card" data-chord="${chord.id}"><header><span class="chord-order">${String(index + 1).padStart(2, "0")}</span><div><h3><button data-action="edit-chord" data-id="${chord.id}" aria-label="Open ${esc(name)} workshop">${esc(label)}</button></h3><small>${esc(name)} · ${esc(chordQuality(definition).name)}</small><small class="card-formula">${chordFormula(definition).join(" · ")}</small></div>${button("play-chord", "", "play", "icon-button no-print", `data-id="${chord.id}" aria-label="Play ${esc(name)}" ${actual ? "" : "disabled"}`)}</header>${diagram}<div class="fret-values">${frets ? frets.map((f) => (f < 0 ? "×" : f)).join(" ") : "Calculating fingering…"}</div>
     <div class="chord-card-actions no-print">${button("cycle-voicing", "", "left", "icon-button", `data-id="${chord.id}" data-direction="-1" aria-label="Previous fingering for ${esc(name)}"`)}${button("edit-chord", "Edit", "edit", "quiet", `data-id="${chord.id}" aria-label="Edit ${esc(name)}"`)}${button("cycle-voicing", "", "right", "icon-button", `data-id="${chord.id}" data-direction="1" aria-label="Next fingering for ${esc(name)}"`)}</div>
     ${display ? "" : `<div class="reorder-actions">${button("move-chord", "←", "", "icon-button", `data-id="${chord.id}" data-direction="-1" aria-label="Move ${esc(name)} earlier" ${index === 0 ? "disabled" : ""}`)}${button("remove-chord", "", "trash", "icon-button", `data-id="${chord.id}" aria-label="Remove ${esc(name)}"`)}${button("move-chord", "→", "", "icon-button", `data-id="${chord.id}" data-direction="1" aria-label="Move ${esc(name)} later" ${index === part.chords.length - 1 ? "disabled" : ""}`)}</div>`}</article>`;
 }

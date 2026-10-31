@@ -21,7 +21,6 @@ import { shell, renderView } from "./views.js";
 import { downloadJSON, playNotes } from "./ui.js";
 import { findVoicings } from "./voicings.js";
 import { openChordEditor } from "./editor.js";
-import { resizeTuning } from "./tunings.js";
 import { readPreferences, savePreferences } from "./preferences.js";
 
 const app = document.querySelector("#app");
@@ -461,14 +460,10 @@ function changeField(target) {
       part.scale = value;
     }
     if (field === "custom-scale-name") part.customScale.name = value.trim();
-    if (field === "string-count")
-      guitar.strings = resizeTuning(guitar.strings, Number(value));
-    if (
-      field === "preset" &&
-      Object.hasOwn(PRESETS, value) &&
-      PRESETS[value].strings.length === guitar.strings.length
-    ) {
+    if (field === "preset" && Object.hasOwn(PRESETS, value)) {
       guitar.strings = [...PRESETS[value].strings];
+      if (["E standard", "Standard six"].includes(guitar.name))
+        guitar.name = `Guitar ${doc.guitars.indexOf(guitar) + 1}`;
     }
     const index = Number(target.dataset.index);
     if (field === "string-note")
