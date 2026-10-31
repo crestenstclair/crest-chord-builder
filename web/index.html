@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#171a19" />
+    <meta
+      name="description"
+      content="Your tuning. Your harmony. Build guitar parts, shape chord fingerings, and print clear chord sheets. Everything stays in your browser."
+    />
+    <meta name="color-scheme" content="dark" />
+    <title>Crest — Chord Builder</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <div id="app"><p class="startup">Opening your workspace…</p></div>
+    <dialog id="editor" aria-labelledby="editor-title"></dialog>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <input
+      id="import-file"
+      type="file"
+      accept=".json,application/json"
+      hidden
+    />
+    <noscript
+      >This chord builder needs JavaScript enabled. All processing happens in
+      your browser.</noscript
+    >
+  </body>
+</html>

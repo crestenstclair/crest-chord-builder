@@ -1,0 +1,55 @@
+{
+  "format": "crest-chord-builder",
+  "version": 1,
+  "title": "First idea",
+  "guitars": [
+    {
+      "id": "standard",
+      "name": "Standard six",
+      "strings": [40, 45, 50, 55, 59, 64]
+    }
+  ],
+  "parts": [
+    {
+      "id": "verse",
+      "name": "Verse",
+      "guitarId": "standard",
+      "root": 9,
+      "scale": "minor",
+      "chords": [
+        {
+          "id": "am7",
+          "root": 9,
+          "intervals": [0, 3, 7, 10],
+          "bass": -1,
+          "label": "",
+          "fingerings": { "40,45,50,55,59,64": [-1, 0, 2, 0, 1, 0] }
+        },
+        {
+          "id": "fmaj7",
+          "root": 5,
+          "intervals": [0, 4, 7, 11],
+          "bass": -1,
+          "label": "",
+          "fingerings": {}
+        },
+        {
+          "id": "cmaj7",
+          "root": 0,
+          "intervals": [0, 4, 7, 11],
+          "bass": -1,
+          "label": "",
+          "fingerings": {}
+        },
+        {
+          "id": "g7",
+          "root": 7,
+          "intervals": [0, 4, 7, 10],
+          "bass": -1,
+          "label": "",
+          "fingerings": {}
+        }
+      ]
+    }
+  ]
+}
