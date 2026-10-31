@@ -9,8 +9,9 @@ The workshop opens from a scale triad or a saved chord. Root, quality, interval 
 - Extensions are explicit: selecting 9 adds only 9. No sevenths or other extensions are inserted implicitly.
 - Equivalent pitches use one spelling. Choosing ♭5 removes ♯11 if present; choosing ♯11 can retain a separate perfect fifth. JSON preserves the selected spelling.
 - Inversion has its own row. Choose any bass, the root, or another selected interval. Removing the chosen bass interval falls back to the root when present, otherwise any bass.
-- Formula changes preview the harmony and request a new grip. Manual fretboard edits update the formula from sounding notes. Save commits the result; Cancel and Escape discard edits.
-- Fretboard labels show intervals. Filled tones belong to the chord; neutral notes belong to the part scale; dashed borders mark outside-scale notes. Rings identify sounding notes and relocation choices.
+- Formula changes preview the harmony and request a new grip. In **Select voicing**, the first chord-tone click replaces the displayed grip with that note. Subsequent clicks add notes, replace a fret on the same string, or deselect a note. Other pitches remain visible as reference and can be placed using **Draw / remove**.
+- Voicing selection preserves the chord formula, even when some tones are omitted. The status lists tones not yet voiced. **Draw / remove** changes the formula to follow the sounding notes. Save commits the exact selected grip to the main view; Cancel and Escape discard edits.
+- Fretboard labels show intervals. Filled tones belong to the chord; neutral notes belong to the part scale; dashed borders mark outside-scale notes. Rings identify selected positions.
 - The browser engine ranks practical fingerings within a four-fret span, with open strings allowed. It may omit a perfect fifth from chords with five or more tones. When no grip is available, the fretboard remains available for manual placement.
 
 ## References

@@ -3,7 +3,6 @@ import {
   FAMILIES,
   mod12,
   describeFingering,
-  moveVoice,
   soundingNotes,
   previewPitches,
   voicedChord,
@@ -45,7 +44,7 @@ async function audition(midis) {
 function showGrip(index) {
   session.voicingIndex = index;
   session.frets = [...session.voicings[index].frets];
-  session.active = null;
+  session.selectingVoicing = false;
   const fretted = session.frets.filter((n) => n > 0);
   session.start =
     fretted.length && Math.max(...fretted) > 12
@@ -58,7 +57,7 @@ async function suggestGrip() {
   const version = ++requestVersion;
   current.busy = true;
   current.message = "";
-  current.active = null;
+  current.selectingVoicing = false;
   current.frets = null;
   current.voicings = [];
   renderEditor();
@@ -77,16 +76,14 @@ async function suggestGrip() {
     if (voicings.length) showGrip(0);
     else {
       current.frets = current.tuning.map(() => -1);
-      current.mode = "draw";
       current.message =
-        "No complete grip found in this hand position. Choose another position or place notes with Draw / remove.";
+        "No complete grip found in this hand position. Choose another position or select a voicing manually.";
     }
   } catch (error) {
     if (session !== current || version !== requestVersion) return;
     current.message =
-      error.message + " Use Draw / remove to place notes manually.";
+      error.message + " Select a voicing manually on the fretboard.";
     current.frets = current.tuning.map(() => -1);
-    current.mode = "draw";
   } finally {
     if (session === current && version === requestVersion) {
       current.busy = false;
@@ -100,47 +97,40 @@ function regenerate() {
   suggestGrip();
 }
 
-// Explicit manual edits define the sounding chord. Automatic searches retain
-// the requested harmony even when the engine leaves out an optional fifth.
-function updateManualChord() {
+// Selecting a voicing changes positions, not harmony. Draw / remove changes
+// the chord definition to follow the sounding notes instead.
+function updateManualGrip() {
   const actual = describeFingering(
     session.tuning,
     session.frets,
     session.chord.root,
   );
   if (actual.midis.length) {
-    session.chord = withSoundingIntervals(session.chord, actual.intervals);
+    if (session.mode === "draw")
+      session.chord = withSoundingIntervals(session.chord, actual.intervals);
     session.chord.bass = actual.bass;
+  } else {
+    session.chord.bass = -1;
   }
+  session.selectingVoicing = session.mode === "select";
   session.voicings = [];
   audition(actual.midis);
 }
 
 function changeFret(string, fret) {
   if (session.busy) return;
-  const { tuning, frets, mode, active } = session;
+  const { tuning, chord, mode } = session;
   session.message = "";
-  if (mode === "draw") {
-    frets[string] = frets[string] === fret ? -1 : fret;
-    session.active = null;
-    updateManualChord();
-  } else if (frets[string] === fret) {
-    session.active = { string, fret, midi: tuning[string] + fret };
-  } else if (active && mod12(active.midi) === mod12(tuning[string] + fret)) {
-    session.frets = moveVoice(frets, active.string, string, fret);
-    session.active = { string, fret, midi: tuning[string] + fret };
-    session.chord.bass = describeFingering(
-      tuning,
-      session.frets,
-      session.chord.root,
-    ).bass;
-    session.voicings = [];
-    audition(soundingNotes(tuning, session.frets));
-  } else {
-    session.message = active
-      ? "Choose a matching ring, or switch to Draw / remove."
-      : "Select a sounding note first, or switch to Draw / remove.";
+  if (mode === "select") {
+    const interval = mod12(tuning[string] + fret - chord.root);
+    if (!chord.intervals.includes(interval)) return;
+    // The first fret click replaces the displayed suggestion/saved grip.
+    // Later clicks accumulate one chosen fret per string.
+    if (!session.selectingVoicing)
+      session.frets = tuning.map(() => -1);
   }
+  session.frets[string] = session.frets[string] === fret ? -1 : fret;
+  updateManualGrip();
   renderEditor();
 }
 
@@ -149,7 +139,7 @@ function saveChord() {
   const { chord, tuning, frets, onSave } = session;
   const actual = describeFingering(tuning, frets, chord.root);
   if (!actual.midis.length) return;
-  // Keep Any inversion when chosen; manual octave/move operations set actual bass.
+  // Keep Any inversion when chosen; manual voicing edits set actual bass.
   chord.label = chord.label.trim();
   setFingering(chord, tuning, frets);
   onSave(chord);
@@ -158,16 +148,18 @@ function saveChord() {
 
 function editGrip(action, target) {
   if (session.busy) return;
-  session.active = null;
-  if (action === "mode") session.mode = target.dataset.value;
+  if (action === "mode" && session.mode !== target.dataset.value) {
+    session.mode = target.dataset.value;
+    session.selectingVoicing = false;
+  }
   if (action === "clear") {
     session.frets = session.tuning.map(() => -1);
     session.voicings = [];
-    session.mode = "draw";
+    session.selectingVoicing = session.mode === "select";
   }
   if (action === "mute") {
     session.frets[Number(target.dataset.string)] = -1;
-    updateManualChord();
+    updateManualGrip();
   }
   if (action === "octave") {
     const string = Number(target.dataset.string);
@@ -180,6 +172,7 @@ function editGrip(action, target) {
         session.chord.root,
       ).bass;
       session.voicings = [];
+      session.selectingVoicing = session.mode === "select";
       audition(soundingNotes(session.tuning, session.frets));
     }
   }
@@ -288,8 +281,8 @@ export function openChordEditor(
     partName,
     isNew,
     toggleTheme,
-    mode: "move",
-    active: null,
+    mode: "select",
+    selectingVoicing: false,
     start: 0,
     position: "any",
     busy: false,

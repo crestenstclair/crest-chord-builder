@@ -453,15 +453,13 @@ export function describeFingering(tuning, frets, preferredRoot) {
   return { ...chord, midis, name: chordName(chord) };
 }
 
-// A tuning snapshot can predate an edit in another tuning. Describe that
-// snapshot honestly, while retaining the generator's optional perfect fifth.
+// Voicings may omit chord tones without changing the harmonic definition.
+// Notes outside that definition indicate a different harmony in an old tuning
+// snapshot; reconcile those notes when displaying or reopening that snapshot.
 export function voicedChord(chord, actual) {
   if (!actual?.midis.length) return chord;
-  const missing = chord.intervals.filter((n) => !actual.intervals.includes(n));
   const fits = actual.intervals.every((n) => chord.intervals.includes(n));
-  const optionalFifth =
-    chord.intervals.length >= 5 && missing.length === 1 && missing[0] === 7;
-  if (fits && (missing.length === 0 || optionalFifth)) return chord;
+  if (fits) return chord;
   return {
     ...withSoundingIntervals(chord, actual.intervals),
     bass: actual.bass,

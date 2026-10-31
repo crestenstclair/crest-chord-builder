@@ -188,13 +188,15 @@ test("default sevenths follow the part scale and explicit seventh choices persis
   );
 });
 
-test("restored tuning snapshots describe actual harmony but preserve an optional fifth", () => {
+test("voicings preserve omitted chord tones while old conflicting snapshots describe actual harmony", () => {
   const major = { root: 9, intervals: [0, 4, 7], bass: 9 };
   const minorGrip = describeFingering(standard, [-1, 0, 2, 2, 1, 0], 9);
   assert.equal(chordName(voicedChord(major, minorGrip)), "Am");
   const ninth = { root: 9, intervals: [0, 2, 3, 7, 10], bass: 9 };
   const noFifth = describeFingering(standard, [-1, 0, -1, 0, 1, 7], 9);
   assert.equal(chordName(voicedChord(ninth, noFifth)), "Am9");
+  const partial = describeFingering(standard, [-1, 0, -1, -1, 1, -1], 9);
+  assert.equal(voicedChord(ninth, partial), ninth);
   assert.equal(scaleNotes(0, "lydian")[3].interval, "♯4");
   assert.equal(scaleNotes(0, "hungarianMinor")[3].interval, "♯4");
 });

@@ -87,7 +87,7 @@ function chordControls(session) {
 }
 
 function neckControls(session) {
-  return `<div class="neck-toolbar"><div class="segmented"><button data-action="mode" data-value="move" data-focus="move-mode" aria-pressed="${session.mode === "move"}">Move notes</button><button data-action="mode" data-value="draw" data-focus="draw-mode" aria-pressed="${session.mode === "draw"}">Draw / remove</button></div><label class="inline-label">Hand position<select data-editor="position" data-focus="position">${options(
+  return `<div class="neck-toolbar"><div class="segmented"><button data-action="mode" data-value="select" data-focus="select-mode" aria-pressed="${session.mode === "select"}">Select voicing</button><button data-action="mode" data-value="draw" data-focus="draw-mode" aria-pressed="${session.mode === "draw"}">Draw / remove</button></div><label class="inline-label">Hand position<select data-editor="position" data-focus="position">${options(
     [
       ["any", "Any"],
       [0, "0–4"],
@@ -105,13 +105,27 @@ function neckControls(session) {
 }
 
 function neckPanel(session) {
-  const { chord, tuning, frets, active, busy } = session;
-  const hint = active
-    ? `${chordInterval(chord, mod12(active.midi))} selected. Solid ring: same pitch. Dotted ring: another octave. Mute occupied destinations before moving.`
-    : session.mode === "draw"
-      ? "Click a fret to place a note; click again to remove it. The formula follows the sounding notes."
-      : "Click a sounding note, then a matching ring to move it. Draw / remove places any note.";
-  return `<section class="editor-neck">${neckControls(session)}<div class="legend workshop-legend"><span><i class="root-key"></i>Root</span><span><i></i>Chord tone</span><span><i class="scale-key"></i>In scale</span><span><i class="outside-key"></i>Outside scale</span><span>Outer ring = selected</span></div>${fretboard(tuning, toneSet(chord), chord.root, { start: session.start, frets, active, editing: !busy, labels: "intervals", keyTones: session.keyTones, chord })}<p class="editor-hint">${esc(hint)}</p></section>`;
+  const { chord, tuning, frets, busy } = session;
+  const hint = session.mode === "draw"
+    ? "Click a fret to place a note; click again to remove it. The formula follows the sounding notes."
+    : session.selectingVoicing
+      ? "Select chord tones to build the voicing. One fret per string; click a selected note to remove it."
+      : "Click any chord tone to start a new voicing, then select the remaining notes. The first click replaces this grip.";
+  return `<section class="editor-neck">${neckControls(session)}<div class="legend workshop-legend"><span><i class="root-key"></i>Root</span><span><i></i>Chord tone</span><span><i class="scale-key"></i>In scale</span><span><i class="outside-key"></i>Outside scale</span><span>Outer ring = selected</span></div>${fretboard(tuning, toneSet(chord), chord.root, { start: session.start, frets, editing: !busy, chordTonesOnly: session.mode === "select", labels: "intervals", keyTones: session.keyTones, chord })}<p class="editor-hint">${esc(hint)}</p></section>`;
+}
+
+function editorStatus(session, actual) {
+  if (session.message) return session.message;
+  if (session.busy) return "Finding fingerings…";
+  if (session.selectingVoicing) {
+    const remaining = chordFormula(session.chord).filter(
+      (label) => !actual?.intervals.includes(FORMULA_TONES[label].pitch),
+    );
+    return remaining.length
+      ? `Not yet voiced: ${remaining.join(" · ")}. The chord formula stays unchanged.`
+      : "All chord tones voiced. Save to use this fingering in the part.";
+  }
+  return "Four-fret hand span. Open strings remain available; extended grips may omit the fifth.";
 }
 
 function gripPanel(session, name, actual) {
@@ -134,5 +148,5 @@ export function editorView(session) {
     chord,
     actual?.midis.length ? actual.bass : chord.bass,
   );
-  return `<header class="editor-header"><div><div class="eyebrow">CHORD WORKSHOP · ${esc(session.partName)} · ${tuning.length} STRINGS</div><div class="workshop-title"><h2 id="editor-title">${esc(name)}</h2><span>${esc(chordQuality(chord).name)}</span><strong class="workshop-formula">${chordFormula(chord).join(" · ")}</strong></div></div><div>${button("theme", document.documentElement.dataset.theme === "light" ? "Dark theme" : "Light theme", "", "outlined", 'data-focus="theme"')}${button("close", "", "close", "icon-button", 'aria-label="Close chord editor"')}</div></header><div class="workshop-layout"><div class="workshop-main">${chordControls(session)}${neckPanel(session)}<div class="editor-status" role="status">${esc(session.message || (busy ? "Finding fingerings…" : "Four-fret hand span. Open strings remain available; extended grips may omit the fifth."))}</div></div>${gripPanel(session, name, actual)}</div><footer class="editor-footer"><span>Changes apply when saved.</span><div>${button("close", "Cancel", "", "quiet")}${button("save", session.isNew ? "Add to part" : "Save chord", "plus", "primary", busy || !actual?.midis.length ? "disabled" : "")}</div></footer>`;
+  return `<header class="editor-header"><div><div class="eyebrow">CHORD WORKSHOP · ${esc(session.partName)} · ${tuning.length} STRINGS</div><div class="workshop-title"><h2 id="editor-title">${esc(name)}</h2><span>${esc(chordQuality(chord).name)}</span><strong class="workshop-formula">${chordFormula(chord).join(" · ")}</strong></div></div><div>${button("theme", document.documentElement.dataset.theme === "light" ? "Dark theme" : "Light theme", "", "outlined", 'data-focus="theme"')}${button("close", "", "close", "icon-button", 'aria-label="Close chord editor"')}</div></header><div class="workshop-layout"><div class="workshop-main">${chordControls(session)}${neckPanel(session)}<div class="editor-status" role="status">${esc(editorStatus(session, actual))}</div></div>${gripPanel(session, name, actual)}</div><footer class="editor-footer"><span>Changes apply when saved.</span><div>${button("close", "Cancel", "", "quiet")}${button("save", session.isNew ? "Add to part" : "Save chord", "plus", "primary", busy || !actual?.midis.length ? "disabled" : "")}</div></footer>`;
 }

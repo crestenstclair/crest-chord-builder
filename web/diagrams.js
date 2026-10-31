@@ -67,8 +67,8 @@ function fretCell({
   labels,
   spelling,
   frets,
-  active,
   editing,
+  chordTonesOnly,
   keyTones,
   chord,
   count,
@@ -78,8 +78,6 @@ function fretCell({
   const pc = mod12(midi);
   const relevant = tones.includes(pc);
   const selected = frets?.[string] === fret;
-  const match = active && mod12(active.midi) === pc;
-  const exact = match && midi === active.midi;
   const label =
     labels === "intervals"
       ? (intervalLabels?.[pc] ?? chordInterval(chord, pc))
@@ -91,13 +89,11 @@ function fretCell({
     relevant ? "in-scale" : "",
     pc === root ? "is-root" : "",
     selected ? "chosen" : "",
-    match ? "matching" : "",
-    exact ? "exact" : "",
   ].join(" ");
-  const title = `String ${count - string}, fret ${fret}: ${pitchName(midi)}, ${intervalLabels?.[pc] ?? chordInterval(chord, pc)}${keyTones ? (keyTones.includes(pc) ? ", in scale" : ", outside scale") : ""}${selected ? ", selected" : ""}${exact ? ", same pitch" : match ? ", same note in another octave" : ""}`;
+  const title = `String ${count - string}, fret ${fret}: ${pitchName(midi)}, ${intervalLabels?.[pc] ?? chordInterval(chord, pc)}${keyTones ? (keyTones.includes(pc) ? ", in scale" : ", outside scale") : ""}${selected ? ", selected" : ""}${chordTonesOnly && !relevant ? ", not a chord tone" : ""}`;
   const content = `<span>${relevant || editing || selected ? esc(label) : ""}</span>`;
   return editing
-    ? `<button type="button" class="${cls}" data-fret="${fret}" data-string="${string}" aria-label="${esc(title)}" aria-pressed="${selected}" title="${esc(title)}">${content}</button>`
+    ? `<button type="button" class="${cls}" data-fret="${fret}" data-string="${string}" data-focus="fret-${string}-${fret}" aria-label="${esc(title)}" aria-pressed="${selected}" title="${esc(title)}" ${chordTonesOnly && !relevant ? "disabled" : ""}>${content}</button>`
     : `<div class="${cls}" title="${esc(title)}">${content}</div>`;
 }
 
@@ -117,8 +113,8 @@ export function fretboard(
     labels = "intervals",
     spelling = NOTES,
     frets = null,
-    active = null,
     editing = false,
+    chordTonesOnly = false,
     keyTones = null,
     intervalLabels = null,
     chord = { root, intervals: [] },
@@ -135,8 +131,8 @@ export function fretboard(
     labels,
     spelling,
     frets,
-    active,
     editing,
+    chordTonesOnly,
   };
   const rows = tuning
     .map((open, string) => fretRow(open, string, config))
