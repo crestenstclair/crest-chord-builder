@@ -26,14 +26,19 @@ function getWorker() {
   return worker;
 }
 
-export function findVoicings(tuning, chord) {
+export function findVoicings(
+  tuning,
+  chord,
+  { minFret = 0, maxFret = 24 } = {},
+) {
   if (chord.intervals.length > 7) return Promise.resolve([]);
   const request = {
     openMidi: tuning,
     tones: chord.intervals.map((n) => (chord.root + n) % 12),
     root: chord.root,
     bass: chord.bass ?? -1,
-    maxFret: 24,
+    minFret,
+    maxFret,
   };
   const key = JSON.stringify(request);
   if (!cache.has(key)) {

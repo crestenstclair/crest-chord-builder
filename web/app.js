@@ -1,6 +1,13 @@
-import { PRESETS, scaleChords, soundingNotes } from "./music.js";
+import {
+  PRESETS,
+  scaleChords,
+  soundingNotes,
+  partScale,
+  scaleNotes,
+} from "./music.js";
 import {
   STORAGE_KEY,
+  LEGACY_STORAGE_KEY,
   MAX_FILE_BYTES,
   id,
   createProject,
@@ -14,6 +21,8 @@ import { shell, renderView } from "./views.js";
 import { downloadJSON, playNotes } from "./ui.js";
 import { findVoicings } from "./voicings.js";
 import { openChordEditor } from "./editor.js";
+import { resizeTuning } from "./tunings.js";
+import { readPreferences, savePreferences } from "./preferences.js";
 
 const app = document.querySelector("#app");
 const history = [];
@@ -22,7 +31,9 @@ const failed = new Set();
 let project = createProject();
 let startupError = "";
 try {
-  const saved = localStorage.getItem(STORAGE_KEY);
+  const saved =
+    localStorage.getItem(STORAGE_KEY) ??
+    localStorage.getItem(LEGACY_STORAGE_KEY);
   if (saved) project = parseProject(saved);
 } catch (error) {
   startupError = `Saved project could not be loaded: ${error.message} Original browser data has been left untouched.`;
@@ -34,13 +45,14 @@ const state = {
   sheetPage: 0,
   start: 0,
   zoom: 100,
-  labels: "notes",
+  ...readPreferences(),
   focus: false,
   storageError: Boolean(startupError),
   canUndo: false,
   lastChordId: null,
   errors: Object.create(null),
 };
+savePreferences(state);
 let storageBlocked = Boolean(startupError);
 let toastTimer;
 
@@ -94,7 +106,10 @@ function render(preserveInput = false) {
       : null;
   const buttonSelector = active?.dataset.action
     ? Object.entries(active.dataset)
-        .map(([key, v]) => `[data-${key}="${CSS.escape(v)}"]`)
+        .map(
+          ([key, v]) =>
+            `[data-${key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}="${CSS.escape(v)}"]`,
+        )
         .join("")
     : null;
   state.canUndo = history.length > 0;
@@ -193,15 +208,6 @@ async function generateFingering(partId, chord, tuning, key) {
   }
 }
 
-function addChord(chord) {
-  if (currentPart().chords.length >= 64)
-    throw new Error(
-      "A part can hold up to 64 chords. Add another part to continue.",
-    );
-  state.lastChordId = chord.id;
-  commit((doc) => currentPart(doc).chords.push(chord));
-}
-
 async function cycleVoicing(chordId, direction) {
   const partId = currentPart().id;
   const chord = chordById(chordId);
@@ -238,15 +244,28 @@ function editChord(chord, isNew = false) {
   const tuning = [...guitarForPart().strings];
   if (isNew && currentPart().chords.length >= 64)
     throw new Error("A part can hold up to 64 chords.");
-  openChordEditor(chord, tuning, (edited) => {
-    commit((doc) => {
-      const part = doc.parts.find((p) => p.id === partId);
-      if (isNew) part.chords.push(edited);
-      else
-        part.chords[part.chords.findIndex((c) => c.id === edited.id)] = edited;
-    });
-    notify("Chord saved.");
-  });
+  openChordEditor(
+    chord,
+    tuning,
+    (edited) => {
+      commit((doc) => {
+        const part = doc.parts.find((p) => p.id === partId);
+        if (isNew) part.chords.push(edited);
+        else
+          part.chords[part.chords.findIndex((c) => c.id === edited.id)] =
+            edited;
+      });
+      notify("Chord saved.");
+    },
+    {
+      keyTones: scaleNotes(currentPart().root, partScale(currentPart())).map(
+        (n) => n.pc,
+      ),
+      partName: currentPart().name,
+      isNew,
+      toggleTheme,
+    },
+  );
 }
 
 function selectPart(partId) {
@@ -272,7 +291,23 @@ async function toggleFullscreen() {
   }
 }
 
+function toggleTheme() {
+  state.theme = state.theme === "dark" ? "light" : "dark";
+  savePreferences(state);
+  render(true);
+}
+
 const actions = {
+  theme: toggleTheme,
+  "scale-interval": (target) =>
+    commit((doc) => {
+      const scale = currentPart(doc).customScale;
+      const interval = Number(target.dataset.interval);
+      if (interval === 0) return;
+      scale.intervals = scale.intervals.includes(interval)
+        ? scale.intervals.filter((n) => n !== interval)
+        : [...scale.intervals, interval];
+    }),
   view: (target) => {
     state.view = target.dataset.view;
     state.focus = false;
@@ -308,37 +343,28 @@ const actions = {
     state.guitarId = guitar.id;
     commit((doc) => doc.guitars.push(guitar));
   },
-  "add-string": () =>
-    commit((doc) => {
-      const guitar = currentGuitar(doc);
-      if (guitar.strings.length < 8)
-        guitar.strings.unshift(Math.max(0, guitar.strings[0] - 5));
-    }),
-  "remove-string": (target) =>
-    commit((doc) => {
-      const guitar = currentGuitar(doc);
-      if (guitar.strings.length > 1)
-        guitar.strings.splice(Number(target.dataset.index), 1);
-    }),
-  "add-harmony": (target) => {
+  "open-triad": (target) => {
     const part = currentPart();
-    const source = scaleChords(
-      part.root,
-      part.scale,
-      Number(target.dataset.count),
-      target.dataset.inverted === "true",
-    )[Number(target.dataset.degree)];
-    addChord({
-      id: id(),
-      root: source.root,
-      intervals: source.intervals,
-      bass: source.bass,
-      label: "",
-      fingerings: {},
-    });
+    const source = scaleChords(part.root, partScale(part), 3)[
+      Number(target.dataset.degree)
+    ];
+    editChord(
+      {
+        id: id(),
+        root: source.root,
+        intervals: source.intervals,
+        bass: source.root,
+        label: "",
+        fingerings: {},
+      },
+      true,
+    );
   },
   "custom-chord": () => editChord(makeChord(currentPart().root), true),
-  "edit-chord": (target) => editChord(chordById(target.dataset.id)),
+  "edit-chord": (target) => {
+    if (target.dataset.partId) state.partId = target.dataset.partId;
+    editChord(chordById(target.dataset.id));
+  },
   "cycle-voicing": (target) =>
     cycleVoicing(target.dataset.id, Number(target.dataset.direction)),
   "remove-chord": (target) =>
@@ -361,6 +387,7 @@ const actions = {
   },
   labels: (target) => {
     state.labels = target.dataset.value;
+    savePreferences(state);
     render();
   },
   "sheet-page": (target) => {
@@ -425,10 +452,23 @@ function changeField(target) {
       state.guitarId = value;
     }
     if (field === "part-root") part.root = Number(value);
-    if (field === "part-scale") part.scale = value;
-    if (field === "preset" && PRESETS[value]) {
+    if (field === "part-scale") {
+      if (value === "custom" && part.scale !== "custom")
+        part.customScale = {
+          name: "Custom scale",
+          intervals: [...partScale(part).intervals],
+        };
+      part.scale = value;
+    }
+    if (field === "custom-scale-name") part.customScale.name = value.trim();
+    if (field === "string-count")
+      guitar.strings = resizeTuning(guitar.strings, Number(value));
+    if (
+      field === "preset" &&
+      Object.hasOwn(PRESETS, value) &&
+      PRESETS[value].strings.length === guitar.strings.length
+    ) {
       guitar.strings = [...PRESETS[value].strings];
-      guitar.name = PRESETS[value].name;
     }
     const index = Number(target.dataset.index);
     if (field === "string-note")
@@ -465,7 +505,10 @@ document.addEventListener("fullscreenchange", () => {
   }
 });
 window.addEventListener("storage", (event) => {
-  if (event.key !== STORAGE_KEY || event.newValue === JSON.stringify(project))
+  if (
+    ![STORAGE_KEY, LEGACY_STORAGE_KEY].includes(event.key) ||
+    event.newValue === JSON.stringify(project)
+  )
     return;
   storageBlocked = true;
   state.storageError = true;

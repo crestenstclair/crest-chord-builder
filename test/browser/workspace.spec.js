@@ -1,17 +1,19 @@
 import { test, expect } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 
-const key = "crest-chord-builder.project.v1";
+const key = "crest-chord-builder.project.v2";
 const saved = (page) =>
   page.evaluate((k) => JSON.parse(localStorage.getItem(k)), key);
-const addAm7 = async (page) => {
+const addChord = async (page, name = "Am", extension = "7") => {
   await page
-    .getByRole("button", { name: "Add Am7 (Sevenths)", exact: true })
+    .getByRole("button", { name: `Open ${name} chord workshop`, exact: true })
     .click();
-  await expect(
-    page.getByRole("button", { name: "Play Am7", exact: true }),
-  ).toBeEnabled();
+  if (extension)
+    await page.locator('[data-editor="extension"]').selectOption(extension);
+  await page.getByRole("button", { name: "Add to part", exact: true }).click();
+  await expect(page.locator("#editor")).not.toBeVisible();
 };
+const addAm7 = (page) => addChord(page);
 test.beforeEach(async ({ page }) => {
   await page.goto("./");
 });
@@ -24,7 +26,7 @@ test("real WASM generation, octave editing, adapted name, save and reload", asyn
   await addAm7(page);
   await page.getByRole("button", { name: "Edit Am7", exact: true }).click();
   await page
-    .getByRole("button", { name: "String 2 up one octave", exact: true })
+    .getByRole("button", { name: "String 5 up one octave", exact: true })
     .click();
   await expect(page.locator("#editor-title")).toHaveText("Am7/E");
   await page.getByRole("button", { name: "Save chord", exact: true }).click();
@@ -33,7 +35,7 @@ test("real WASM generation, octave editing, adapted name, save and reload", asyn
   ).toBe(12);
   await page.reload();
   await expect(
-    page.getByRole("heading", { name: "Am7/E", exact: true }),
+    page.getByRole("button", { name: "Open Am7/E workshop", exact: true }),
   ).toBeVisible();
   await expect(page.locator(".diagram-placeholder")).toHaveCount(0);
   expect(errors).toEqual([]);
@@ -53,7 +55,7 @@ test("same-note relocation protects occupied strings and preserves exact pitch",
     "already has a note",
   );
   await page
-    .getByRole("button", { name: "Mute string 3", exact: true })
+    .getByRole("button", { name: "Mute string 4", exact: true })
     .click();
   await page.locator('#editor [data-string="3"][data-fret="0"]').click();
   await page.locator('#editor [data-string="2"][data-fret="5"]').click();
@@ -72,14 +74,19 @@ test("eight-string tuning, multiple parts and tuning-specific grip recovery", as
     "40,45,50,55,59,64"
   ];
   await page.locator('[data-view="guitars"]').click();
+  await page.getByLabel("String count", { exact: true }).selectOption("8");
   await page.getByLabel("Tuning preset").selectOption("eight");
   await expect(page.locator(".string-editor")).toHaveCount(8);
-  await expect(
-    page.getByRole("button", { name: "Add string", exact: true }),
-  ).toBeDisabled();
-  await page.getByLabel("String 1 note", { exact: true }).selectOption("4");
-  await page.getByLabel("String 1 octave", { exact: true }).selectOption("1");
-  await expect(page.locator(".string-editor").first()).toContainText("E1");
+  await expect(page.locator(".string-editor").first()).toHaveAttribute(
+    "data-string-number",
+    "1",
+  );
+  await expect(page.getByLabel("Tuning preset").locator("option")).toHaveCount(
+    8,
+  );
+  await page.getByLabel("String 8 note", { exact: true }).selectOption("4");
+  await page.getByLabel("String 8 octave", { exact: true }).selectOption("1");
+  await expect(page.locator(".string-editor").last()).toContainText("E1");
   await page.locator('.nav-item[data-view="parts"]').click();
   await expect(page.locator(".diagram-placeholder")).toHaveCount(0);
   expect(
@@ -90,13 +97,14 @@ test("eight-string tuning, multiple parts and tuning-specific grip recovery", as
     .first()
     .click();
   await page
-    .getByRole("combobox", { name: "Root", exact: true })
+    .getByRole("combobox", { name: "Scale root", exact: true })
     .selectOption("0");
   await expect(
-    page.getByRole("button", { name: "Add E♭ (Triads)", exact: true }),
+    page.getByRole("button", { name: "Open E♭ chord workshop", exact: true }),
   ).toBeVisible();
   await page.locator(".part-nav").first().click();
   await page.locator('[data-view="guitars"]').click();
+  await page.getByLabel("String count", { exact: true }).selectOption("6");
   await page.getByLabel("Tuning preset").selectOption("standard");
   await page.locator('.nav-item[data-view="parts"]').click();
   expect(
@@ -118,16 +126,14 @@ test("JSON download/import round trip and invalid input leave the session intact
   await page.getByRole("button", { name: "Remove Am7", exact: true }).click();
   await page.locator("#import-file").setInputFiles(path);
   await expect(
-    page.getByRole("heading", { name: "Am7", exact: true }),
+    page.getByRole("button", { name: "Open Am7 workshop", exact: true }),
   ).toBeVisible();
   expect(await saved(page)).toEqual(original);
-  await page
-    .locator("#import-file")
-    .setInputFiles({
-      name: "bad.json",
-      mimeType: "application/json",
-      buffer: Buffer.from('{"version":99}'),
-    });
+  await page.locator("#import-file").setInputFiles({
+    name: "bad.json",
+    mimeType: "application/json",
+    buffer: Buffer.from('{"version":99}'),
+  });
   await expect(page.locator("#toast")).toContainText(
     "Your current session is unchanged",
   );
@@ -138,13 +144,11 @@ test("1080p focus display fits eight strings and six chords; print includes all 
   page,
 }, testInfo) => {
   await page.locator('[data-view="guitars"]').click();
+  await page.getByLabel("String count", { exact: true }).selectOption("8");
   await page.getByLabel("Tuning preset").selectOption("eight");
   await page.locator('.nav-item[data-view="parts"]').click();
-  for (const name of ["Am7", "Fmaj7", "Cmaj7", "G7", "Dm7", "Em7", "Am7"]) {
-    await page
-      .getByRole("button", { name: `Add ${name} (Sevenths)`, exact: true })
-      .click();
-  }
+  for (const name of ["Am", "F", "C", "G", "Dm", "Em", "Am"])
+    await addChord(page, name);
   await expect(page.locator(".diagram-placeholder")).toHaveCount(0, {
     timeout: 20000,
   });
@@ -176,9 +180,9 @@ test("mobile setup keeps part creation and navigation reachable without page ove
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await expect(page.locator(".mobile-parts")).toBeVisible();
+  await expect(page.locator(".part-switcher")).toBeVisible();
   await page
-    .locator(".mobile-parts")
+    .locator(".part-switcher")
     .getByRole("button", { name: "Add Part", exact: true })
     .click();
   expect((await saved(page)).parts).toHaveLength(2);
@@ -208,17 +212,253 @@ test("concurrent tab changes pause autosave instead of overwriting another sessi
   expect((await saved(page)).title).toBe("Other tab session");
 });
 
-test("a failed engine download still allows manual chord editing", async ({ page }) => {
-  await page.route('**/chords.wasm', route => route.abort());
-  await page.getByRole('button', {name: 'Add Am7 (Sevenths)', exact: true}).click();
-  await expect(page.locator('.diagram-placeholder')).toContainText('Search unavailable');
-  await page.getByRole('button', {name: 'Edit Am7', exact: true}).click();
-  await expect(page.getByRole('button', {name: 'Find a grip', exact: true})).toBeEnabled();
-  await page.getByRole('button', {name: 'Clear grip', exact: true}).click();
-  for (const [string, fret] of [[1, 0], [2, 2], [3, 0], [4, 1]]) {
-    await page.locator(`#editor [data-string="${string}"][data-fret="${fret}"]`).click();
+test("a failed engine download still allows manual chord editing", async ({
+  page,
+}) => {
+  await page.route("**/chords.wasm", (route) => route.abort());
+  await page
+    .getByRole("button", { name: "Open Am chord workshop", exact: true })
+    .click();
+  await expect(page.locator(".editor-status")).toContainText("manually");
+  await expect(
+    page.getByRole("button", { name: "Find a grip", exact: true }),
+  ).toBeEnabled();
+  await page.getByRole("button", { name: "Clear grip", exact: true }).click();
+  for (const [string, fret] of [
+    [1, 0],
+    [2, 2],
+    [3, 0],
+    [4, 1],
+  ]) {
+    await page
+      .locator(`#editor [data-string="${string}"][data-fret="${fret}"]`)
+      .click();
   }
-  await expect(page.locator('#editor-title')).toHaveText('Am7');
-  await page.getByRole('button', {name: 'Save chord', exact: true}).click();
-  expect((await saved(page)).parts[0].chords[0].fingerings['40,45,50,55,59,64']).toEqual([-1, 0, 2, 0, 1, -1]);
+  await expect(page.locator("#editor-title")).toHaveText("Am7");
+  await page.getByRole("button", { name: "Add to part", exact: true }).click();
+  expect(
+    (await saved(page)).parts[0].chords[0].fingerings["40,45,50,55,59,64"],
+  ).toEqual([-1, 0, 2, 0, 1, -1]);
+});
+
+test("custom scale, named parts and nested progressions survive export and reload", async ({
+  page,
+}) => {
+  await page.getByLabel("Part name", { exact: true }).fill("Verse");
+  await page.getByLabel("Part name", { exact: true }).press("Tab");
+  await addAm7(page);
+  await page
+    .locator(".part-switcher")
+    .getByRole("button", { name: "Add Part", exact: true })
+    .click();
+  await page.getByLabel("Part name", { exact: true }).fill("Chorus");
+  await page.getByLabel("Part name", { exact: true }).press("Tab");
+  await page.getByLabel("Scale", { exact: true }).selectOption("custom");
+  await page.getByLabel("Custom scale name").fill("Minor pentatonic");
+  await page.getByLabel("Custom scale name").press("Tab");
+  await page
+    .getByRole("button", { name: "Scale interval 2", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Scale interval ♭6", exact: true })
+    .click();
+  await addChord(page, "Am", null);
+  const doc = await saved(page);
+  expect(doc.parts.map((p) => p.name)).toEqual(["Verse", "Chorus"]);
+  expect(doc.parts[1].customScale).toEqual({
+    name: "Minor pentatonic",
+    intervals: [0, 3, 5, 7, 10],
+  });
+  await expect(page.locator(".part-children button")).toHaveCount(1);
+  await page.locator('.nav-item[data-view="display"]').click();
+  await expect(page.locator(".sheet-heading h1")).toHaveText("Chorus");
+  await page.getByLabel("Part", { exact: true }).selectOption(doc.parts[0].id);
+  await expect(page.locator(".sheet-heading h1")).toHaveText("Verse");
+  await page.reload();
+  expect(await saved(page)).toEqual(doc);
+});
+
+test("interval workshop previews changes, preserves extensions, and sets inversion", async ({
+  page,
+}, testInfo) => {
+  await page.evaluate(() => {
+    window.previewCount = 0;
+    const create = AudioContext.prototype.createOscillator;
+    AudioContext.prototype.createOscillator = function (...args) {
+      window.previewCount++;
+      return create.apply(this, args);
+    };
+  });
+  await page
+    .getByRole("button", { name: "Open Am chord workshop", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Chord interval ♭7", exact: true })
+    .click();
+  await expect(page.locator("#editor-title")).toHaveText("Am7");
+  await expect
+    .poll(() => page.evaluate(() => window.previewCount))
+    .toBeGreaterThan(0);
+  await page.locator('[data-editor="extension"]').selectOption("13");
+  await page
+    .getByRole("button", { name: "Chord interval 5", exact: true })
+    .click();
+  await page.locator('[data-editor="bass"]').selectOption("0");
+  await expect(
+    page.getByRole("button", { name: "Add to part", exact: true }),
+  ).toBeEnabled();
+  await expect(page.locator("#editor-title")).toHaveText("Am13(no5)/C");
+  await expect(page.locator("#editor .outside-key")).not.toHaveCount(0);
+  await expect(page.locator("#editor .in-key")).not.toHaveCount(0);
+  await page.screenshot({ path: testInfo.outputPath("workshop-dark.png") });
+  await page
+    .locator("#editor")
+    .getByRole("button", { name: "Light theme", exact: true })
+    .click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await page.screenshot({ path: testInfo.outputPath("workshop-light.png") });
+  await page.getByRole("button", { name: "Add to part", exact: true }).click();
+  const chord = (await saved(page)).parts[0].chords[0];
+  expect(chord.intervals).toEqual([0, 2, 3, 9, 10]);
+  expect(chord.bass).toBe(0);
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await page
+    .getByRole("button", { name: "Edit Am13(no5)/C", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Chord interval 13", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+});
+
+test("hand-position searches obey range and cancellation does not add chords", async ({
+  page,
+}) => {
+  await page
+    .getByRole("button", { name: "Open Am chord workshop", exact: true })
+    .click();
+  await page.locator('[data-editor="position"]').selectOption("5");
+  await expect(
+    page.getByRole("button", { name: "Add to part", exact: true }),
+  ).toBeEnabled();
+  const frets = await page
+    .locator("#editor .fret.chosen")
+    .evaluateAll((nodes) => nodes.map((n) => Number(n.dataset.fret)));
+  expect(frets.length).toBeGreaterThan(2);
+  expect(frets.every((n) => n === 0 || (n >= 5 && n <= 8))).toBeTruthy();
+  await page.getByRole("button", { name: "Cancel", exact: true }).click();
+  expect((await saved(page)).parts[0].chords).toHaveLength(0);
+});
+
+test("legacy browser saves migrate once without overwriting the original slot", async ({
+  page,
+}) => {
+  const legacy = JSON.parse(
+    await readFile(
+      new URL("../../examples/first-idea.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  await page.evaluate(
+    ({ legacy, key }) => {
+      localStorage.removeItem(key);
+      localStorage.setItem(
+        "crest-chord-builder.project.v1",
+        JSON.stringify(legacy),
+      );
+    },
+    { legacy, key },
+  );
+  await page.reload();
+  const migrated = await saved(page);
+  expect(migrated).toEqual({ ...legacy, version: 2 });
+  await page.getByLabel("Project title", { exact: true }).fill("Migrated edit");
+  await page.getByLabel("Project title", { exact: true }).press("Tab");
+  expect(
+    await page.evaluate(() =>
+      JSON.parse(localStorage.getItem("crest-chord-builder.project.v1")),
+    ),
+  ).toEqual(legacy);
+  await page.reload();
+  expect((await saved(page)).title).toBe("Migrated edit");
+});
+
+test("both workshop themes keep readable text contrast; eight-string controls stay reachable", async ({
+  page,
+}, testInfo) => {
+  await page.locator('.nav-item[data-view="guitars"]').click();
+  await page.getByLabel("String count", { exact: true }).selectOption("7");
+  await page.getByLabel("Tuning preset").selectOption("sevenOpenC");
+  expect((await saved(page)).guitars[0].strings).toEqual([
+    31, 36, 43, 48, 55, 60, 64,
+  ]);
+  await page.getByLabel("String count", { exact: true }).selectOption("8");
+  await page.getByLabel("Tuning preset").selectOption("eightDropE");
+  await page.locator('.nav-item[data-view="parts"]').click();
+  await page
+    .getByRole("button", { name: "Open Am chord workshop", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Add to part", exact: true }),
+  ).toBeEnabled();
+  for (const theme of ["dark", "light"]) {
+    if (theme === "light")
+      await page.locator('#editor [data-action="theme"]').click();
+    const contrasts = await page.evaluate(() => {
+      const luminance = (hex) => {
+        const c = hex
+          .trim()
+          .slice(1)
+          .match(/../g)
+          .map((n) => parseInt(n, 16) / 255)
+          .map((n) =>
+            n <= 0.04045 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4,
+          );
+        return c[0] * 0.2126 + c[1] * 0.7152 + c[2] * 0.0722;
+      };
+      const style = getComputedStyle(document.documentElement);
+      const contrast = (a, b) => {
+        const x = luminance(style.getPropertyValue(a)),
+          y = luminance(style.getPropertyValue(b));
+        return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+      };
+      return [
+        ["--ink", "--surface"],
+        ["--muted", "--surface"],
+        ["--ink", "--raised"],
+        ["--accent-ink", "--accent"],
+        ["--tone-ink", "--tone"],
+        ["--outside", "--surface"],
+      ].map(([a, b]) => contrast(a, b));
+    });
+    expect(Math.min(...contrasts)).toBeGreaterThanOrEqual(4.5);
+    await page.screenshot({
+      path: testInfo.outputPath(`eight-string-${theme}.png`),
+    });
+  }
+  await expect(page.locator("#editor .voice-row")).toHaveCount(8);
+  await page
+    .getByRole("button", { name: "Chord interval 1", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Add to part", exact: true }).click();
+  expect((await saved(page)).parts[0].chords[0].intervals).toEqual([3, 7]);
+});
+
+test("invalid v2 browser data blocks autosave and does not silently replace it with v1", async ({
+  page,
+}) => {
+  await page.evaluate((key) => {
+    localStorage.setItem(
+      "crest-chord-builder.project.v1",
+      localStorage.getItem(key),
+    );
+    localStorage.setItem(key, "{broken");
+  }, key);
+  await page.reload();
+  await expect(page.locator(".save-state")).toHaveText("Not saved locally");
+  await page.getByLabel("Project title", { exact: true }).fill("Unsaved work");
+  await page.getByLabel("Project title", { exact: true }).press("Tab");
+  expect(await page.evaluate((key) => localStorage.getItem(key), key)).toBe(
+    "{broken",
+  );
 });

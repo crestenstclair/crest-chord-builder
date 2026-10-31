@@ -10,7 +10,8 @@ type Request struct {
 	OpenMidi []int `json:"openMidi"`
 	Tones    []int `json:"tones"`
 	Root     int   `json:"root"`
-	Bass     int   `json:"bass"` // -1 allows any inversion
+	Bass     int   `json:"bass"`    // -1 allows any inversion
+	MinFret  int   `json:"minFret"` // open strings remain available
 	MaxFret  int   `json:"maxFret"`
 }
 
@@ -33,7 +34,7 @@ func Generate(r Request) ([]Voicing, error) {
 		}
 	}
 	spec := chordSpec{required: required, all: r.Tones, rootPC: r.Root, bassPC: r.Bass}
-	candidates := generateVoicings(r.OpenMidi, spec, genConfig{MaxFret: r.MaxFret, SpanFrets: 4, Results: 12})
+	candidates := generateVoicings(r.OpenMidi, spec, genConfig{MinFret: r.MinFret, MaxFret: r.MaxFret, SpanFrets: 4, Results: 12})
 	result := make([]Voicing, 0, len(candidates))
 	for _, c := range candidates {
 		result = append(result, Voicing{c.frets, c.fingers, c.score})
@@ -47,6 +48,9 @@ func (r Request) validate() error {
 	}
 	if r.MaxFret < 4 || r.MaxFret > 24 {
 		return fmt.Errorf("maximum fret must be 4–24")
+	}
+	if r.MinFret < 0 || r.MinFret > r.MaxFret-3 {
+		return fmt.Errorf("hand position must allow at least four frets")
 	}
 	for _, n := range r.OpenMidi {
 		if n < 0 || n > 103 {
@@ -65,9 +69,6 @@ func (r Request) validate() error {
 			return fmt.Errorf("invalid or repeated chord tone")
 		}
 		seen[pc] = true
-	}
-	if !seen[r.Root] {
-		return fmt.Errorf("root must be a chord tone")
 	}
 	if r.Bass >= 0 && !seen[r.Bass] {
 		return fmt.Errorf("bass must be a chord tone")

@@ -1,14 +1,15 @@
 import { PRESETS, SCALES, QUALITIES, mod12, toneSet } from "./music.js";
 
-export const STORAGE_KEY = "crest-chord-builder.project.v1";
+export const LEGACY_STORAGE_KEY = "crest-chord-builder.project.v1";
+export const STORAGE_KEY = "crest-chord-builder.project.v2";
 export const MAX_FILE_BYTES = 2 * 1024 * 1024;
 export const id = () => crypto.randomUUID();
 export const tuningKey = (strings) => strings.join(",");
-export const makeChord = (root = 9, quality = "min7") => ({
+export const makeChord = (root = 9, quality = "min") => ({
   id: id(),
   root,
   intervals: [...QUALITIES[quality].intervals],
-  bass: -1,
+  bass: root,
   label: "",
   fingerings: {},
 });
@@ -27,10 +28,10 @@ export function createProject() {
     name: PRESETS.standard.name,
     strings: [...PRESETS.standard.strings],
   };
-  const part = { ...makePart(guitar.id), name: "First idea" };
+  const part = makePart(guitar.id);
   return {
     format: "crest-chord-builder",
-    version: 1,
+    version: 2,
     title: "Untitled session",
     guitars: [guitar],
     parts: [part],
@@ -93,8 +94,8 @@ function parseChord(value) {
   const intervals = list(value.intervals, 1, 12, "Chord intervals").map((n) =>
     integer(n, 0, 11, "Interval"),
   );
-  if (!intervals.includes(0) || new Set(intervals).size !== intervals.length)
-    fail("Chord intervals need a root and no duplicates.");
+  if (new Set(intervals).size !== intervals.length)
+    fail("Chord intervals must not repeat.");
   const fingerings = Object.entries(record(value.fingerings, "Fingerings"));
   if (fingerings.length > 32)
     fail("Too many saved tunings for one chord (maximum 32).");
@@ -116,7 +117,8 @@ function parseChord(value) {
 function parsePart(value, guitarIds) {
   record(value, "Part");
   if (!guitarIds.has(value.guitarId)) fail("Part refers to a missing guitar.");
-  if (!Object.hasOwn(SCALES, value.scale)) fail("Unknown scale.");
+  if (value.scale !== "custom" && !Object.hasOwn(SCALES, value.scale))
+    fail("Unknown scale.");
   const chords = list(value.chords, 0, 64, "Part chords").map(parseChord);
   uniqueIds(chords, "Chord");
   return {
@@ -125,7 +127,23 @@ function parsePart(value, guitarIds) {
     guitarId: value.guitarId,
     root: integer(value.root, 0, 11, "Scale root"),
     scale: value.scale,
+    ...(value.scale === "custom"
+      ? { customScale: parseCustomScale(value.customScale) }
+      : {}),
     chords,
+  };
+}
+
+function parseCustomScale(value) {
+  record(value, "Custom scale");
+  const intervals = list(value.intervals, 1, 12, "Scale intervals").map((n) =>
+    integer(n, 0, 11, "Scale interval"),
+  );
+  if (!intervals.includes(0) || new Set(intervals).size !== intervals.length)
+    fail("Custom scales need interval 1 and no duplicates.");
+  return {
+    name: text(value.name, "Scale name"),
+    intervals: intervals.sort((a, b) => a - b),
   };
 }
 
@@ -143,8 +161,8 @@ export function parseProject(input) {
     fail("Project files must be smaller than 2 MB.");
   const value = typeof input === "string" ? JSON.parse(input) : input;
   record(value, "Project");
-  if (value.format !== "crest-chord-builder" || value.version !== 1)
-    fail("Expected a Crest Chord Builder version 1 JSON project.");
+  if (value.format !== "crest-chord-builder" || ![1, 2].includes(value.version))
+    fail("Expected a Crest Chord Builder version 1 or 2 JSON project.");
   const guitars = list(value.guitars, 1, 16, "Guitars").map(parseGuitar);
   uniqueIds(guitars, "Guitar");
   const guitarIds = new Set(guitars.map((g) => g.id));
@@ -154,7 +172,7 @@ export function parseProject(input) {
   uniqueIds(parts, "Part");
   const project = {
     format: value.format,
-    version: 1,
+    version: 2,
     title: text(value.title, "Project title"),
     guitars,
     parts,

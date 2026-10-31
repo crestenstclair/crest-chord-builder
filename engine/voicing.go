@@ -14,6 +14,7 @@ type chordSpec struct {
 }
 
 type genConfig struct {
+	MinFret   int // first permitted fretted position; open strings are allowed
 	MaxFret   int // highest fret the search will use
 	SpanFrets int // width of the fretting-hand window, in frets
 	Results   int // how many voicings to return
@@ -36,7 +37,7 @@ func generateVoicings(openMidi []int, spec chordSpec, cfg genConfig) []candidate
 	if lastPos < 1 {
 		lastPos = 1
 	}
-	for pos := 1; pos <= lastPos; pos++ {
+	for pos := max(1, cfg.MinFret); pos <= lastPos; pos++ {
 		options := candidateFrets(openMidi, spec, pos, cfg)
 		enumerate(options, func(frets []int) {
 			cand, ok := evaluateShape(frets, openMidi, spec)

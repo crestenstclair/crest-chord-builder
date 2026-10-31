@@ -36,29 +36,86 @@ export const SCALES = {
   locrian: { name: "Locrian", intervals: [0, 1, 3, 5, 6, 8, 10] },
   harmonic: { name: "Harmonic minor", intervals: [0, 2, 3, 5, 7, 8, 11] },
   melodic: { name: "Melodic minor", intervals: [0, 2, 3, 5, 7, 9, 11] },
+  majorPentatonic: { name: "Major pentatonic", intervals: [0, 2, 4, 7, 9] },
+  minorPentatonic: { name: "Minor pentatonic", intervals: [0, 3, 5, 7, 10] },
+  minorBlues: { name: "Minor blues", intervals: [0, 3, 5, 6, 7, 10] },
+  majorBlues: { name: "Major blues", intervals: [0, 2, 3, 4, 7, 9] },
+  harmonicMajor: { name: "Harmonic major", intervals: [0, 2, 4, 5, 7, 8, 11] },
+  phrygianDominant: {
+    name: "Phrygian dominant",
+    intervals: [0, 1, 4, 5, 7, 8, 10],
+  },
+  lydianDominant: {
+    name: "Lydian dominant",
+    intervals: [0, 2, 4, 6, 7, 9, 10],
+  },
+  altered: { name: "Altered dominant", intervals: [0, 1, 3, 4, 6, 8, 10] },
+  doubleHarmonic: {
+    name: "Double harmonic major",
+    intervals: [0, 1, 4, 5, 7, 8, 11],
+  },
+  hungarianMinor: {
+    name: "Hungarian minor",
+    intervals: [0, 2, 3, 6, 7, 8, 11],
+  },
+  wholeTone: { name: "Whole tone", intervals: [0, 2, 4, 6, 8, 10] },
+  diminishedWH: {
+    name: "Diminished (whole–half)",
+    intervals: [0, 2, 3, 5, 6, 8, 9, 11],
+  },
+  diminishedHW: {
+    name: "Diminished (half–whole)",
+    intervals: [0, 1, 3, 4, 6, 7, 9, 10],
+  },
+  chromatic: {
+    name: "Chromatic",
+    intervals: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  },
 };
 export const QUALITIES = {
   maj: { name: "Major", suffix: "", intervals: [0, 4, 7] },
   min: { name: "Minor", suffix: "m", intervals: [0, 3, 7] },
-  min7: { name: "Minor 7", suffix: "m7", intervals: [0, 3, 7, 10] },
-  maj7: { name: "Major 7", suffix: "maj7", intervals: [0, 4, 7, 11] },
-  dom7: { name: "Dominant 7", suffix: "7", intervals: [0, 4, 7, 10] },
+  min7: { name: "Minor 7th", suffix: "m7", intervals: [0, 3, 7, 10] },
+  maj7: { name: "Major 7th", suffix: "maj7", intervals: [0, 4, 7, 11] },
+  dom7: { name: "Dominant 7th", suffix: "7", intervals: [0, 4, 7, 10] },
   dim: { name: "Diminished", suffix: "dim", intervals: [0, 3, 6] },
   halfdim: {
-    name: "Half-diminished 7",
+    name: "Half-diminished 7th",
     suffix: "m7♭5",
     intervals: [0, 3, 6, 10],
   },
-  dim7: { name: "Diminished 7", suffix: "dim7", intervals: [0, 3, 6, 9] },
+  dim7: { name: "Diminished 7th", suffix: "dim7", intervals: [0, 3, 6, 9] },
   aug: { name: "Augmented", suffix: "aug", intervals: [0, 4, 8] },
   sus2: { name: "Suspended 2", suffix: "sus2", intervals: [0, 2, 7] },
   sus4: { name: "Suspended 4", suffix: "sus4", intervals: [0, 5, 7] },
   six: { name: "Major 6", suffix: "6", intervals: [0, 4, 7, 9] },
   min6: { name: "Minor 6", suffix: "m6", intervals: [0, 3, 7, 9] },
   add9: { name: "Add 9", suffix: "add9", intervals: [0, 2, 4, 7] },
-  min9: { name: "Minor 9", suffix: "m9", intervals: [0, 2, 3, 7, 10] },
-  maj9: { name: "Major 9", suffix: "maj9", intervals: [0, 2, 4, 7, 11] },
-  dom9: { name: "Dominant 9", suffix: "9", intervals: [0, 2, 4, 7, 10] },
+  min9: { name: "Minor 9th", suffix: "m9", intervals: [0, 2, 3, 7, 10] },
+  maj9: { name: "Major 9th", suffix: "maj9", intervals: [0, 2, 4, 7, 11] },
+  dom9: { name: "Dominant 9th", suffix: "9", intervals: [0, 2, 4, 7, 10] },
+  min11: { name: "Minor 11th", suffix: "m11", intervals: [0, 2, 3, 5, 7, 10] },
+  maj11: {
+    name: "Major 11th",
+    suffix: "maj11",
+    intervals: [0, 2, 4, 5, 7, 11],
+  },
+  dom11: {
+    name: "Dominant 11th",
+    suffix: "11",
+    intervals: [0, 2, 4, 5, 7, 10],
+  },
+  min13: { name: "Minor 13th", suffix: "m13", intervals: [0, 2, 3, 7, 9, 10] },
+  maj13: {
+    name: "Major 13th",
+    suffix: "maj13",
+    intervals: [0, 2, 4, 7, 9, 11],
+  },
+  dom13: {
+    name: "Dominant 13th",
+    suffix: "13",
+    intervals: [0, 2, 4, 7, 9, 10],
+  },
   minmaj7: {
     name: "Minor major 7",
     suffix: "m(maj7)",
@@ -101,20 +158,7 @@ export const QUALITIES = {
   },
   power: { name: "Power chord", suffix: "5", intervals: [0, 7] },
 };
-export const PRESETS = {
-  standard: { name: "Standard six", strings: [40, 45, 50, 55, 59, 64] },
-  dropd: { name: "Drop D", strings: [38, 45, 50, 55, 59, 64] },
-  dadgad: { name: "DADGAD", strings: [38, 45, 50, 55, 57, 62] },
-  seven: {
-    name: "Seven-string standard",
-    strings: [35, 40, 45, 50, 55, 59, 64],
-  },
-  eight: {
-    name: "Eight-string standard",
-    strings: [30, 35, 40, 45, 50, 55, 59, 64],
-  },
-  bass: { name: "Four-string bass", strings: [28, 33, 38, 43] },
-};
+export { PRESETS } from "./tunings.js";
 export const mod12 = (n) => ((n % 12) + 12) % 12;
 export const pitchName = (midi) =>
   `${NOTES[mod12(midi)]}${Math.floor(midi / 12) - 1}`;
@@ -151,51 +195,148 @@ export function tuningInterval(from, to) {
   return `${to < from ? "↓ " : ""}${label} · ${distance} st`;
 }
 
-// Use consecutive letter names for diatonic scales, preserving C minor's E♭
-// and D major's F♯ rather than choosing one enharmonic spelling globally.
+export function partScale(part) {
+  return part.scale === "custom"
+    ? { ...part.customScale, custom: true }
+    : SCALES[part.scale];
+}
+
 export function scaleNotes(root, scale) {
+  const definition = typeof scale === "string" ? SCALES[scale] : scale;
+  const intervals = definition.intervals;
+  // Non-diatonic scales use pitch-class spellings; do not invent a seven-letter
+  // spelling for pentatonic, chromatic, or user-defined collections.
+  const diatonic =
+    intervals.length === 7 &&
+    !definition.custom &&
+    definition !== SCALES.altered;
+  return intervals.map((interval, index) => ({
+    pc: mod12(root + interval),
+    name: diatonic
+      ? diatonicName(root, interval, index)
+      : NOTES[mod12(root + interval)],
+    interval: diatonic
+      ? diatonicInterval(interval, index)
+      : INTERVALS[interval],
+  }));
+}
+
+function diatonicInterval(interval, degree) {
+  const difference = interval - [0, 2, 4, 5, 7, 9, 11][degree];
+  const accidental =
+    difference < 0 ? "♭".repeat(-difference) : "♯".repeat(difference);
+  return accidental + (degree + 1);
+}
+
+function diatonicName(root, interval, degree) {
   const letters = ["C", "D", "E", "F", "G", "A", "B"];
   const natural = [0, 2, 4, 5, 7, 9, 11];
-  const first = letters.indexOf(NOTES[root][0]);
-  return SCALES[scale].intervals.map((interval, i) => {
-    const index = (first + i) % 7;
-    let delta = mod12(root + interval - natural[index]);
-    if (delta > 6) delta -= 12;
-    return {
-      pc: mod12(root + interval),
-      name:
-        letters[index] + (delta < 0 ? "♭".repeat(-delta) : "♯".repeat(delta)),
-      interval: INTERVALS[interval],
-    };
+  const index = (letters.indexOf(NOTES[root][0]) + degree) % 7;
+  let delta = mod12(root + interval - natural[index]);
+  if (delta > 6) delta -= 12;
+  return letters[index] + (delta < 0 ? "♭".repeat(-delta) : "♯".repeat(delta));
+}
+
+function omittedQuality(intervals) {
+  return Object.values(QUALITIES).find((q) => {
+    const fifth = q.intervals.includes(6) ? 6 : q.intervals.includes(8) ? 8 : 7;
+    return same(
+      q.intervals.filter(
+        (n) =>
+          (n !== 0 || intervals.includes(0)) &&
+          (n !== fifth || intervals.includes(fifth)),
+      ),
+      intervals,
+    );
   });
 }
 
-function qualityFor(intervals) {
-  return Object.values(QUALITIES).find((q) => same(q.intervals, intervals));
+export function chordQuality(chord) {
+  const exact = Object.values(QUALITIES).find((q) =>
+    same(q.intervals, chord.intervals),
+  );
+  if (exact) return { ...exact, omissions: [] };
+  const omitted = omittedQuality(chord.intervals);
+  if (!omitted)
+    return {
+      name: "Custom chord",
+      suffix: ` [${chord.intervals.map((n) => INTERVALS[n]).join("·")}]`,
+      omissions: [],
+    };
+  const fifth = omitted.intervals.includes(6)
+    ? 6
+    : omitted.intervals.includes(8)
+      ? 8
+      : 7;
+  const omissions = [];
+  if (!chord.intervals.includes(0)) omissions.push("1");
+  if (omitted.intervals.includes(fifth) && !chord.intervals.includes(fifth))
+    omissions.push("5");
+  return {
+    ...omitted,
+    suffix: omitted.suffix + `(no${omissions.join(",")})`,
+    omissions,
+  };
 }
 
 export function chordName(chord, bass = chord.bass ?? -1, spelling = NOTES) {
-  const quality = qualityFor(chord.intervals);
-  const omittedFifth =
-    !quality &&
-    Object.values(QUALITIES).find(
-      (q) =>
-        q.intervals.includes(7) &&
-        same(
-          q.intervals.filter((n) => n !== 7),
-          chord.intervals,
-        ),
-    );
-  const suffix =
-    quality?.suffix ??
-    (omittedFifth
-      ? `${omittedFifth.suffix}(no5)`
-      : ` [${chord.intervals.map((n) => INTERVALS[n]).join("·")}]`);
   return (
     spelling[chord.root] +
-    suffix +
+    chordQuality(chord).suffix +
     (bass >= 0 && bass !== chord.root ? `/${spelling[bass]}` : "")
   );
+}
+
+export function chordInterval(chord, pc) {
+  const interval = mod12(pc - chord.root);
+  const seventh = chord.intervals.includes(10) || chord.intervals.includes(11);
+  if (interval === 8 && chord.intervals.includes(4)) return "♯5";
+  if (interval === 2 && seventh) return "9";
+  if (
+    interval === 5 &&
+    seventh &&
+    (chord.intervals.includes(3) || chord.intervals.includes(4))
+  )
+    return "11";
+  if (interval === 9 && seventh) return "13";
+  if (
+    interval === 9 &&
+    chord.intervals.includes(3) &&
+    chord.intervals.includes(6)
+  )
+    return "♭♭7";
+  return INTERVALS[interval];
+}
+
+function chordAtDegree(notes, degree, count, inverted, spellings) {
+  const root = notes[degree].pc;
+  const tones = Array.from(
+    { length: count },
+    (_, i) => notes[(degree + i * 2) % notes.length].pc,
+  );
+  const intervals = unique(tones.map((pc) => mod12(pc - root)));
+  const chord = { root, intervals, bass: inverted ? tones[1] : -1 };
+  let roman =
+    ["I", "II", "III", "IV", "V", "VI", "VII"][degree] ?? String(degree + 1);
+  if (intervals.includes(3)) roman = roman.toLowerCase();
+  if (intervals.includes(6)) roman += count === 3 ? "°" : "ø";
+  if (count > 3) roman += count === 4 ? "7" : "9";
+  return { ...chord, name: chordName(chord, chord.bass, spellings), roman };
+}
+
+function triadInCollection(root, allowed) {
+  const quality = ["maj", "min", "dim", "aug", "sus2", "sus4"]
+    .map((key) => QUALITIES[key])
+    .find((q) => q.intervals.every((n) => allowed.includes(mod12(root + n))));
+  return quality
+    ? {
+        root,
+        intervals: [...quality.intervals],
+        bass: -1,
+        name: chordName({ root, intervals: quality.intervals }),
+        roman: "",
+      }
+    : null;
 }
 
 export function scaleChords(root, scale, count, inverted = false) {
@@ -204,22 +345,17 @@ export function scaleChords(root, scale, count, inverted = false) {
   notes.forEach((n) => {
     spellings[n.pc] = n.name;
   });
-  return notes.map((note, degree) => {
-    const tones = Array.from(
-      { length: count },
-      (_, i) => notes[(degree + i * 2) % 7].pc,
-    );
-    const intervals = unique(tones.map((pc) => mod12(pc - note.pc)));
-    const chord = { root: note.pc, intervals, bass: inverted ? tones[1] : -1 };
-    let roman = ["I", "II", "III", "IV", "V", "VI", "VII"][degree];
-    if (intervals.includes(3)) roman = roman.toLowerCase();
-    if (intervals.includes(6)) roman += count === 3 ? "°" : "ø";
-    if (count > 3) roman += count === 4 ? "7" : "9";
-    return { ...chord, name: chordName(chord, chord.bass, spellings), roman };
-  });
+  if ((notes.length !== 7 || scale.custom) && count === 3) {
+    const allowed = notes.map((n) => n.pc);
+    return notes.map((n) => triadInCollection(n.pc, allowed)).filter(Boolean);
+  }
+  return notes.map((_, degree) =>
+    chordAtDegree(notes, degree, count, inverted, spellings),
+  );
 }
 
-// A voicing's bass is the lowest sounding MIDI pitch, even in re-entrant tuning.
+// Keep the user-selected harmonic root, including when its note is omitted.
+// The actual pitches still determine quality, omissions, and slash bass.
 export function describeFingering(tuning, frets, preferredRoot) {
   const midis = soundingNotes(tuning, frets);
   if (!midis.length)
@@ -230,23 +366,169 @@ export function describeFingering(tuning, frets, preferredRoot) {
       bass: -1,
       midis,
     };
-  const pcs = unique(midis.map(mod12));
+  const intervals = unique(midis.map((n) => mod12(n - preferredRoot)));
   const bass = mod12(Math.min(...midis));
-  const candidates = unique([preferredRoot, ...pcs]);
-  candidates.sort(
-    (a, b) => Number(b === preferredRoot) - Number(a === preferredRoot),
+  const chord = { root: preferredRoot, intervals, bass };
+  return { ...chord, midis, name: chordName(chord) };
+}
+
+// A tuning snapshot can predate an edit in another tuning. Describe that
+// snapshot honestly, while retaining the generator's optional perfect fifth.
+export function voicedChord(chord, actual) {
+  if (!actual?.midis.length) return chord;
+  const missing = chord.intervals.filter((n) => !actual.intervals.includes(n));
+  const fits = actual.intervals.every((n) => chord.intervals.includes(n));
+  const optionalFifth =
+    chord.intervals.length >= 5 && missing.length === 1 && missing[0] === 7;
+  if (fits && (missing.length === 0 || optionalFifth)) return chord;
+  return { ...chord, intervals: actual.intervals, bass: actual.bass };
+}
+
+export const FAMILIES = {
+  maj: { name: "Major", intervals: [0, 4, 7], third: 4, fifth: 7, seventh: 11 },
+  min: { name: "Minor", intervals: [0, 3, 7], third: 3, fifth: 7, seventh: 10 },
+  dominant: {
+    name: "Dominant",
+    intervals: [0, 4, 7, 10],
+    third: 4,
+    fifth: 7,
+    seventh: 10,
+  },
+  dim: {
+    name: "Diminished",
+    intervals: [0, 3, 6],
+    third: 3,
+    fifth: 6,
+    seventh: 9,
+  },
+  aug: {
+    name: "Augmented",
+    intervals: [0, 4, 8],
+    third: 4,
+    fifth: 8,
+    seventh: 11,
+  },
+  sus2: {
+    name: "Suspended 2nd",
+    intervals: [0, 2, 7],
+    third: 2,
+    fifth: 7,
+    seventh: 10,
+  },
+  sus4: {
+    name: "Suspended 4th",
+    intervals: [0, 5, 7],
+    third: 5,
+    fifth: 7,
+    seventh: 10,
+  },
+};
+
+export function chordFamily(chord) {
+  const has = (n) => chord.intervals.includes(n);
+  if (has(3)) return has(6) ? "dim" : "min";
+  if (has(4)) return has(8) ? "aug" : has(10) ? "dominant" : "maj";
+  if (has(5)) return "sus4";
+  if (has(2)) return "sus2";
+  return "maj";
+}
+
+// A triad's first seventh follows the part scale when one is available.
+// Existing extensions and explicit menu choices always take precedence.
+export function seventhForChord(chord, keyTones = []) {
+  const family = chordFamily(chord);
+  const candidates = [
+    ...new Set([
+      FAMILIES[family].seventh,
+      10,
+      11,
+      ...(family === "dim" ? [9] : []),
+    ]),
+  ];
+  return (
+    candidates.find((n) => chord.intervals.includes(n)) ??
+    candidates.find((n) => keyTones.includes(mod12(chord.root + n))) ??
+    FAMILIES[family].seventh
   );
-  const matches = candidates.map((root) => ({
-    root,
-    intervals: unique(pcs.map((pc) => mod12(pc - root))),
-  }));
-  const selected =
-    matches.find((c) => qualityFor(c.intervals)) ??
-    matches.find(
-      (c) => c.root === preferredRoot && pcs.includes(preferredRoot),
-    ) ??
-    matches.find((c) => c.root === bass);
-  return { ...selected, bass, midis, name: chordName(selected, bass) };
+}
+
+export function intervalControls(family, seventh = FAMILIES[family].seventh) {
+  const f = { ...FAMILIES[family], seventh };
+  const entries = [
+    [0, "1"],
+    [f.third, INTERVALS[f.third]],
+    [f.fifth, f.fifth === 8 ? "♯5" : INTERVALS[f.fifth]],
+    [f.seventh, f.seventh === 9 ? "♭♭7" : INTERVALS[f.seventh]],
+    [2, "9"],
+    [5, "11"],
+    [9, "13"],
+  ];
+  return entries.filter(
+    ([value], i) => entries.findIndex(([n]) => n === value) === i,
+  );
+}
+
+export function toggleChordInterval(chord, interval) {
+  const intervals = chord.intervals.includes(interval)
+    ? chord.intervals.filter((n) => n !== interval)
+    : unique([...chord.intervals, interval]);
+  if (!intervals.length)
+    throw new Error("Keep at least one chord interval selected.");
+  return withIntervals(chord, intervals);
+}
+
+function withIntervals(chord, intervals) {
+  const bassInterval = mod12(chord.bass - chord.root);
+  const bass =
+    chord.bass < 0 || intervals.includes(bassInterval)
+      ? chord.bass
+      : intervals.includes(0)
+        ? chord.root
+        : -1;
+  return { ...chord, intervals, bass };
+}
+
+export function extendChord(
+  chord,
+  extension,
+  { family = chordFamily(chord), seventh = FAMILIES[family].seventh } = {},
+) {
+  if (extension === "dominant7")
+    return withIntervals(
+      chord,
+      unique([
+        ...chord.intervals.filter(
+          (n) => n !== 11 && (family !== "dim" || n !== 9),
+        ),
+        10,
+      ]),
+    );
+  if (extension === "major7")
+    return withIntervals(
+      chord,
+      unique([
+        ...chord.intervals.filter(
+          (n) => n !== 10 && (family !== "dim" || n !== 9),
+        ),
+        11,
+      ]),
+    );
+  const additions =
+    extension === "9"
+      ? [seventh, 2]
+      : extension === "13"
+        ? [seventh, 2, 9]
+        : [seventh];
+  return withIntervals(chord, unique([...chord.intervals, ...additions]));
+}
+
+export function previewPitches(chord) {
+  const seventh = chord.intervals.includes(10) || chord.intervals.includes(11);
+  const pitches = chord.intervals.map(
+    (n) => 48 + chord.root + (seventh && [2, 5, 9].includes(n) ? n + 12 : n),
+  );
+  if (chord.bass >= 0) pitches.push(36 + chord.bass);
+  return unique(pitches);
 }
 
 export function fretMatches(tuning, selectedMidi, from = 0, to = 24) {

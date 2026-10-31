@@ -90,3 +90,35 @@ test("parser reconstructs data without retaining foreign fields or references", 
   doc.guitars[0].strings[0] = 1;
   assert.equal(parsed.guitars[0].strings[0], 40);
 });
+
+test("v1 migration preserves all musical data and leaves its input unchanged", () => {
+  const legacy = createProject();
+  legacy.version = 1;
+  const chord = makeChord(9, "min7");
+  setFingering(chord, legacy.guitars[0].strings, [-1, 0, 2, 0, 1, 0]);
+  legacy.parts[0].chords.push(chord);
+  const before = structuredClone(legacy);
+  const migrated = parseProject(legacy);
+  assert.deepEqual(legacy, before);
+  assert.deepEqual(migrated, { ...before, version: 2 });
+  assert.deepEqual(parseProject(JSON.stringify(migrated)), migrated);
+});
+
+test("custom scales and rootless chords round trip with boundary validation", () => {
+  const doc = createProject();
+  Object.assign(doc.parts[0], {
+    scale: "custom",
+    customScale: { name: "Five tones", intervals: [0, 2, 4, 7, 9] },
+  });
+  doc.parts[0].chords.push({
+    ...makeChord(0, "dom7"),
+    intervals: [4, 7, 10],
+    bass: 4,
+  });
+  assert.deepEqual(parseProject(JSON.stringify(doc)), doc);
+  for (const intervals of [[], [2, 4, 7], [0, 0, 4], [0, 12], [0, 1.5]]) {
+    const invalid = structuredClone(doc);
+    invalid.parts[0].customScale.intervals = intervals;
+    assert.throws(() => parseProject(invalid));
+  }
+});

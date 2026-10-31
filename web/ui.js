@@ -51,15 +51,27 @@ export function downloadJSON(project) {
 }
 
 let audio;
+let audition = 0;
+const playing = new Set();
 export async function playNotes(midis) {
   if (!midis.length) return;
+  const version = ++audition;
   audio ??= new AudioContext();
   await audio.resume();
+  if (version !== audition) return;
+  for (const voice of playing) {
+    try {
+      voice.stop();
+    } catch {}
+  }
+  playing.clear();
   midis.forEach((midi, i) => {
     const oscillator = audio.createOscillator();
     const gain = audio.createGain();
     const start = audio.currentTime + i * 0.045;
     oscillator.type = "triangle";
+    playing.add(oscillator);
+    oscillator.onended = () => playing.delete(oscillator);
     oscillator.frequency.value = 440 * 2 ** ((midi - 69) / 12);
     gain.gain.setValueAtTime(0, start);
     gain.gain.linearRampToValueAtTime(

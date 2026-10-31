@@ -21,7 +21,7 @@ func TestGenerateBoundary(t *testing.T) {
 	invalid := []Request{
 		{OpenMidi: []int{104}, Tones: []int{0}, Root: 0, Bass: -1, MaxFret: 24},
 		{OpenMidi: []int{40}, Tones: []int{0, 0}, Root: 0, Bass: -1, MaxFret: 24},
-		{OpenMidi: []int{40}, Tones: []int{0}, Root: 1, Bass: -1, MaxFret: 24},
+		{OpenMidi: []int{40}, Tones: []int{0}, Root: 12, Bass: -1, MaxFret: 24},
 		{OpenMidi: []int{40}, Tones: []int{0}, Root: 0, Bass: 2, MaxFret: 24},
 		{OpenMidi: []int{40}, Tones: []int{0}, Root: 0, Bass: -1, MaxFret: 100},
 	}
@@ -42,5 +42,23 @@ func TestReentrantBassIsLowestSoundingPitch(t *testing.T) {
 	spec.bassPC = 4
 	if _, ok := evaluateShape([]int{0, 0, 2, 0, 1, -1}, open, spec); ok {
 		t.Fatal("physical first string must not be mistaken for bass")
+	}
+}
+
+func TestRootlessAndHandPosition(t *testing.T) {
+	shapes, err := Generate(Request{OpenMidi: []int{40, 45, 50, 55, 59, 64}, Tones: []int{0, 4, 7}, Root: 9, Bass: 0, MinFret: 5, MaxFret: 8})
+	if err != nil || len(shapes) == 0 {
+		t.Fatalf("expected rootless Am7/C in position 5–8: %v", err)
+	}
+	for _, shape := range shapes {
+		for _, fret := range shape.Frets {
+			if fret > 0 && (fret < 5 || fret > 8) {
+				t.Fatalf("fret outside hand position: %v", shape.Frets)
+			}
+		}
+	}
+	_, err = Generate(Request{OpenMidi: []int{40, 45, 50, 55, 59, 64}, Tones: []int{0, 4, 7}, Root: 0, Bass: -1, MinFret: 7, MaxFret: 8})
+	if err == nil {
+		t.Fatal("accepted invalid hand-position range")
 	}
 }
