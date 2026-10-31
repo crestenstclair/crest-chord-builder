@@ -29,7 +29,7 @@ function getWorker() {
 export function findVoicings(
   tuning,
   chord,
-  { minFret = 0, maxFret = 24 } = {},
+  { minFret = 0, maxFret = 24, anchor = null } = {},
 ) {
   if (chord.intervals.length > 7) return Promise.resolve([]);
   const request = {
@@ -39,6 +39,7 @@ export function findVoicings(
     bass: chord.bass ?? -1,
     minFret,
     maxFret,
+    ...(anchor ? { anchor } : {}),
   };
   const key = JSON.stringify(request);
   if (!cache.has(key)) {

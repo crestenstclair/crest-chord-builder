@@ -14,10 +14,11 @@ type chordSpec struct {
 }
 
 type genConfig struct {
-	MinFret   int // first permitted fretted position; open strings are allowed
-	MaxFret   int // highest fret the search will use
-	SpanFrets int // width of the fretting-hand window, in frets
-	Results   int // how many voicings to return
+	MinFret   int       // first permitted fretted position; open strings are allowed
+	MaxFret   int       // highest fret the search will use
+	SpanFrets int       // width of the fretting-hand window, in frets
+	Results   int       // how many voicings to return
+	Anchor    *Position // nil searches the whole allowed neck; otherwise require this position
 }
 
 type candidate struct {
@@ -38,6 +39,9 @@ func generateVoicings(openMidi []int, spec chordSpec, cfg genConfig) []candidate
 		lastPos = 1
 	}
 	for pos := max(1, cfg.MinFret); pos <= lastPos; pos++ {
+		if !anchorInWindow(cfg.Anchor, pos, cfg.SpanFrets) {
+			continue
+		}
 		options := candidateFrets(openMidi, spec, pos, cfg)
 		enumerate(options, func(frets []int) {
 			cand, ok := evaluateShape(frets, openMidi, spec)
@@ -62,7 +66,22 @@ func generateVoicings(openMidi []int, spec chordSpec, cfg genConfig) []candidate
 		return shapeKey(sorted[i].frets) < shapeKey(sorted[j].frets)
 	})
 
+	if cfg.Anchor != nil {
+		return sorted
+	}
 	return diversify(sorted, cfg.Results)
+}
+
+// Open-string anchors search the nut position; fretted anchors search every
+// four-fret hand window containing them. Other open strings remain available.
+func anchorInWindow(anchor *Position, pos, span int) bool {
+	if anchor == nil {
+		return true
+	}
+	if anchor.Fret == 0 {
+		return pos == 1
+	}
+	return anchor.Fret >= pos && anchor.Fret < pos+span
 }
 
 // candidateFrets lists, per string, every fret worth trying with the hand at
@@ -75,6 +94,10 @@ func candidateFrets(openMidi []int, spec chordSpec, pos int, cfg genConfig) [][]
 	}
 	options := make([][]int, len(openMidi))
 	for s, open := range openMidi {
+		if cfg.Anchor != nil && s == cfg.Anchor.String {
+			options[s] = []int{cfg.Anchor.Fret}
+			continue
+		}
 		opts := []int{-1}
 		if inChord[open%12] {
 			opts = append(opts, 0)

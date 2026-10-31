@@ -907,6 +907,11 @@ main {
     0 0 0 2px var(--surface),
     0 0 0 4px var(--ink);
 }
+.fret.anchor span {
+  outline: 2px solid var(--accent);
+  outline-offset: 5px;
+  border-radius: 4px;
+}
 button.fret:disabled {
   opacity: 1;
   cursor: default;
@@ -1331,6 +1336,84 @@ dialog::backdrop {
   color: var(--muted);
   min-height: 26px;
   padding: 4px 0;
+}
+.harmony-toggle {
+  margin-bottom: 4px;
+  min-height: 32px;
+  font-size: 12px;
+}
+.voicing-results {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+  margin-bottom: 10px;
+}
+.voicing-results-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.voicing-results-heading h3 {
+  font-size: 15px;
+}
+.voicing-results-heading p,
+.voicing-pagination {
+  font-size: 12px;
+  color: var(--muted);
+}
+.voicing-pagination {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.voicing-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+.voicing-choice {
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  padding: 7px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+}
+.voicing-choice[aria-pressed="true"] {
+  border: 2px solid var(--accent);
+  padding: 6px;
+  background: var(--accent-dim);
+}
+.voicing-choice strong {
+  font-size: 13px;
+}
+.voicing-choice .chord-box {
+  width: 100%;
+  height: 135px;
+  min-height: 135px;
+}
+.voicing-choice > span {
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+.voicing-empty {
+  padding: 35px 10px;
+  border: 1px dashed var(--line);
+  font-size: 13px;
+}
+@media (max-width: 1300px) {
+  .voicing-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .voicing-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .voicing-results-heading {
+    flex-wrap: wrap;
+  }
 }
 .editor-footer {
   display: flex;

@@ -4,15 +4,22 @@ import "fmt"
 
 type Finger int
 
+// Position identifies one physical string and fret, using bass-to-treble indices.
+type Position struct {
+	String int `json:"string"`
+	Fret   int `json:"fret"`
+}
+
 // Request describes a chord in concert pitch. OpenMidi follows physical string
 // order (bass side to treble side), which need not be ascending in pitch.
 type Request struct {
-	OpenMidi []int `json:"openMidi"`
-	Tones    []int `json:"tones"`
-	Root     int   `json:"root"`
-	Bass     int   `json:"bass"`    // -1 allows any inversion
-	MinFret  int   `json:"minFret"` // open strings remain available
-	MaxFret  int   `json:"maxFret"`
+	OpenMidi []int     `json:"openMidi"`
+	Tones    []int     `json:"tones"`
+	Root     int       `json:"root"`
+	Bass     int       `json:"bass"`    // -1 allows any inversion
+	MinFret  int       `json:"minFret"` // open strings remain available
+	MaxFret  int       `json:"maxFret"`
+	Anchor   *Position `json:"anchor,omitempty"`
 }
 
 type Voicing struct {
@@ -23,6 +30,7 @@ type Voicing struct {
 
 // Generate validates the browser boundary before searching a bounded neck.
 // Extended chords may omit a perfect fifth; all other tones are required.
+// An anchor returns every playable nearby shape containing that exact position.
 func Generate(r Request) ([]Voicing, error) {
 	if err := r.validate(); err != nil {
 		return nil, err
@@ -34,7 +42,7 @@ func Generate(r Request) ([]Voicing, error) {
 		}
 	}
 	spec := chordSpec{required: required, all: r.Tones, rootPC: r.Root, bassPC: r.Bass}
-	candidates := generateVoicings(r.OpenMidi, spec, genConfig{MinFret: r.MinFret, MaxFret: r.MaxFret, SpanFrets: 4, Results: 12})
+	candidates := generateVoicings(r.OpenMidi, spec, genConfig{MinFret: r.MinFret, MaxFret: r.MaxFret, SpanFrets: 4, Results: 12, Anchor: r.Anchor})
 	result := make([]Voicing, 0, len(candidates))
 	for _, c := range candidates {
 		result = append(result, Voicing{c.frets, c.fingers, c.score})
@@ -72,6 +80,14 @@ func (r Request) validate() error {
 	}
 	if r.Bass >= 0 && !seen[r.Bass] {
 		return fmt.Errorf("bass must be a chord tone")
+	}
+	if r.Anchor != nil {
+		if r.Anchor.String < 0 || r.Anchor.String >= len(r.OpenMidi) || r.Anchor.Fret < 0 || r.Anchor.Fret > 24 {
+			return fmt.Errorf("anchor must identify an existing string and fret 0–24")
+		}
+		if !seen[(r.OpenMidi[r.Anchor.String]+r.Anchor.Fret)%12] {
+			return fmt.Errorf("anchor must be a chord tone")
+		}
 	}
 	return nil
 }

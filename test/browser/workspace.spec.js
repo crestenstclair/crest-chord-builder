@@ -46,58 +46,67 @@ test("real WASM generation, octave editing, adapted name, save and reload", asyn
   expect(errors).toEqual([]);
 });
 
-test("select voicing starts fresh, accumulates notes and saves the exact grip to the main view", async ({
-  page,
-}, testInfo) => {
+test("a fret anchor lists nearby voicings and the chosen card saves the exact grip", async ({ page }, testInfo) => {
   await addAm7(page);
   await page.getByRole("button", { name: "Edit Am7", exact: true }).click();
   const fret = (string, position) =>
     page.locator(`#editor [data-string="${string}"][data-fret="${position}"]`);
-  await expect(page.getByRole("button", { name: "Select voicing", exact: true }))
+  await expect(page.getByRole("button", { name: "Find voicings", exact: true }))
     .toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByRole("button", { name: "Move notes", exact: true }))
-    .toHaveCount(0);
   await expect(fret(5, 1)).toBeDisabled();
-  // Start on a note already in the suggested grip: it becomes the only voice.
-  await fret(3, 0).click();
-  await expect(page.locator("#editor .fret.chosen")).toHaveCount(1);
-  await expect(fret(3, 0)).toHaveAttribute("aria-pressed", "true");
-  await expect(page.locator(".workshop-formula")).toHaveText("1 · ♭3 · 5 · ♭7");
-  await expect(page.locator(".editor-status")).toContainText("Not yet voiced: 1 · ♭3 · 5");
-  await fret(1, 0).click();
-  await fret(2, 2).click();
   await fret(4, 1).click();
-  // Choose a different tone on the same string, then deselect a duplicate.
-  await fret(2, 5).click();
-  await expect(fret(2, 2)).toHaveAttribute("aria-pressed", "false");
-  await expect(page.locator("#editor .fret.chosen")).toHaveCount(4);
-  await fret(3, 0).click();
-  await fret(5, 0).click();
-  await expect(page.locator("#editor-title")).toHaveText("Am7");
-  await expect(page.locator(".editor-status")).toContainText("All chord tones voiced");
-  await page.screenshot({ path: testInfo.outputPath("selected-voicing.png") });
+  const cards = page.locator(".voicing-choice");
+  await expect(cards).toHaveCount(6);
+  await expect(page.locator(".voicing-results")).toHaveAttribute("aria-busy", "false");
+  await expect(page.getByRole("button", { name: "Save chord", exact: true })).toBeDisabled();
+  await expect(fret(4, 1)).toHaveClass(/anchor/);
+  await expect(page.locator(".workshop-formula")).toHaveText("1 · ♭3 · 5 · ♭7");
+  await expect(page.getByRole("button", { name: "Edit chord tones", exact: true })).toBeVisible();
+  for (const values of await cards.evaluateAll((nodes) => nodes.map((n) => n.dataset.frets))) {
+    const positions = values.split(",").map(Number);
+    expect(positions[4]).toBe(1);
+    expect(Math.max(...positions)).toBeLessThanOrEqual(4);
+  }
+  await page.getByRole("button", { name: "Next grip", exact: true }).click();
+  await expect(cards.first()).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "Next voicings", exact: true }).click();
+  await expect(page.locator(".voicing-pagination")).toContainText("7–12 /");
+  const chosen = cards.nth(1);
+  const grip = (await chosen.getAttribute("data-frets")).split(",").map(Number);
+  await chosen.click();
+  await expect(chosen).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "Save chord", exact: true })).toBeEnabled();
+  const selectedFrets = await page.locator("#editor .fret.chosen").evaluateAll((nodes) =>
+    nodes.map((n) => [Number(n.dataset.string), Number(n.dataset.fret)]));
+  expect(selectedFrets.sort((a, b) => a[0] - b[0]))
+    .toEqual(grip.flatMap((f, string) => f < 0 ? [] : [[string, f]]));
+  await page.screenshot({ path: testInfo.outputPath("nearby-voicings.png") });
+  const layout = await page.evaluate(() => ({
+    board: document.querySelector("#editor .fretboard").getBoundingClientRect().bottom,
+    gridTop: document.querySelector(".voicing-results").getBoundingClientRect().top,
+    gridBottom: document.querySelector(".voicing-results").getBoundingClientRect().bottom,
+    footer: document.querySelector(".editor-footer").getBoundingClientRect().top,
+  }));
+  expect(layout.gridTop).toBeGreaterThan(layout.board);
+  expect(layout.gridBottom).toBeLessThanOrEqual(layout.footer);
+  // Paging must not change the chosen grip.
+  await page.getByRole("button", { name: "Previous voicings", exact: true }).click();
   await page.getByRole("button", { name: "Save chord", exact: true }).click();
-  const grip = [-1, 0, 5, -1, 1, 0];
-  expect((await saved(page)).parts[0].chords[0].fingerings["40,45,50,55,59,64"])
-    .toEqual(grip);
-  await expect(page.locator(".chord-card .fret-values")).toHaveText("× 0 5 × 1 0");
+  const text = grip.map((f) => f < 0 ? "×" : f).join(" ");
+  expect((await saved(page)).parts[0].chords[0].fingerings["40,45,50,55,59,64"]).toEqual(grip);
+  await expect(page.locator(".chord-card .fret-values")).toHaveText(text);
   await page.locator('.nav-item[data-view="display"]').click();
-  await expect(page.locator(".display-chords .fret-values")).toHaveText("× 0 5 × 1 0");
+  await expect(page.locator(".display-chords .fret-values")).toHaveText(text);
   await page.reload();
-  await page.getByRole("button", { name: "Edit Am7", exact: true }).click();
-  await expect(page.locator("#editor .fret.chosen")).toHaveCount(4);
-  await expect(fret(2, 5)).toHaveAttribute("aria-pressed", "true");
-  // Unsaved replacement voicings must not alter the saved chord.
+  await page.locator('.chord-card [data-action="edit-chord"]').first().click();
   await fret(5, 5).click();
-  await expect(page.locator("#editor .fret.chosen")).toHaveCount(1);
+  await expect(page.locator(".voicing-results")).toHaveAttribute("aria-busy", "false");
+  await expect(page.getByRole("button", { name: "Save chord", exact: true })).toBeDisabled();
   await page.getByRole("button", { name: "Cancel", exact: true }).click();
-  expect((await saved(page)).parts[0].chords[0].fingerings["40,45,50,55,59,64"])
-    .toEqual(grip);
+  expect((await saved(page)).parts[0].chords[0].fingerings["40,45,50,55,59,64"]).toEqual(grip);
 });
 
-test("eight-string custom tuning supports partial voicings, clear, and keyboard selection", async ({
-  page,
-}) => {
+test("eight-string anchors respect inversion filters, hand positions and keyboard choice", async ({ page }, testInfo) => {
   await page.locator('.nav-item[data-view="guitars"]').click();
   await page.getByLabel("Tuning preset").selectOption("eightDropE");
   await page.getByLabel("String 1 note", { exact: true }).selectOption("2");
@@ -107,29 +116,41 @@ test("eight-string custom tuning supports partial voicings, clear, and keyboard 
   await expect(page.getByRole("button", { name: "Add to part", exact: true })).toBeEnabled();
   const fret = (string, position) =>
     page.locator(`#editor [data-string="${string}"][data-fret="${position}"]`);
-  // D4 at fret 7 is A4. It can start a voicing without being in the suggestion.
-  await fret(7, 7).press("Enter");
+  await fret(7, 7).press("Enter"); // D4 + 7 = A4.
+  await expect(page.locator(".voicing-choice")).toHaveCount(6);
   await expect(fret(7, 7)).toBeFocused();
-  await expect(page.locator("#editor .fret.chosen")).toHaveCount(1);
-  await page.getByRole("button", { name: "Light theme", exact: true }).click();
+  await page.getByRole("button", { name: "5 in bass", exact: true }).click();
+  await expect(page.locator(".voicing-results")).toHaveAttribute("aria-busy", "false");
+  for (const values of await page.locator(".voicing-choice").evaluateAll((nodes) => nodes.map((n) => n.dataset.frets))) {
+    const positions = values.split(",").map(Number);
+    expect(positions[7]).toBe(7);
+    const midis = positions.flatMap((f, i) => f < 0 ? [] : [[28,35,40,45,50,55,59,62][i] + f]);
+    expect(Math.min(...midis) % 12).toBe(4);
+    expect(positions.filter((f) => f > 0).every((f) => f >= 4 && f <= 10)).toBe(true);
+  }
+  // A new anchor replaces the earlier search and requires a new choice.
   await fret(6, 1).click();
-  await expect(page.locator("#editor .fret.chosen")).toHaveCount(2);
-  await page.getByRole("button", { name: "Clear grip", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Select voicing", exact: true }))
-    .toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator(".voicing-results")).toHaveAttribute("aria-busy", "false");
+  await expect(page.locator("#editor .fret.anchor")).toHaveCount(1);
+  await expect(fret(6, 1)).toHaveClass(/anchor/);
   await expect(page.getByRole("button", { name: "Add to part", exact: true })).toBeDisabled();
-  await fret(7, 7).click();
-  await fret(6, 1).click();
-  await expect(page.locator("#editor .fret.chosen")).toHaveCount(2);
+  await page.getByRole("combobox", { name: "Hand position", exact: true }).selectOption("13");
+  await expect(page.locator(".voicing-empty")).toContainText("No matching voicings");
+  await expect(page.getByRole("button", { name: "Add to part", exact: true })).toBeDisabled();
+  await page.getByRole("combobox", { name: "Hand position", exact: true }).selectOption("any");
+  await expect(page.locator(".voicing-choice")).toHaveCount(6);
+  await page.locator(".voicing-choice").nth(1).press("Enter");
+  await expect(page.locator(".voicing-choice").nth(1)).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "Light theme", exact: true }).click();
+  await page.screenshot({ path: testInfo.outputPath("eight-string-voicings.png") });
+  const fits = await page.evaluate(() =>
+    document.querySelector(".voicing-results").getBoundingClientRect().bottom <=
+    document.querySelector(".editor-footer").getBoundingClientRect().top);
+  expect(fits).toBe(true);
+  const grip = (await page.locator('.voicing-choice[aria-pressed="true"]').getAttribute("data-frets")).split(",").map(Number);
   await page.getByRole("button", { name: "Add to part", exact: true }).click();
   await page.reload();
-  await expect(
-    page.getByRole("button", { name: "Open Am7/C workshop", exact: true }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Edit Am7/C", exact: true }).click();
-  await expect(page.locator(".workshop-formula")).toHaveText("1 · ♭3 · 5 · ♭7");
-  await expect(page.locator("#editor .fret.chosen")).toHaveCount(2);
-  expect((await saved(page)).parts[0].chords[0].intervals).toEqual([0, 3, 7, 10]);
+  expect((await saved(page)).parts[0].chords[0].fingerings["28,35,40,45,50,55,59,62"]).toEqual(grip);
 });
 
 test("eight-string tuning, multiple parts and tuning-specific grip recovery", async ({
@@ -278,7 +299,7 @@ test("concurrent tab changes pause autosave instead of overwriting another sessi
 test("a failed engine download still allows manual chord editing", async ({
   page,
 }) => {
-  await page.route("**/chords.wasm", (route) => route.abort());
+  await page.route("**/chords*.wasm", (route) => route.abort());
   await page
     .getByRole("button", { name: "Open Am chord workshop", exact: true })
     .click();
@@ -691,9 +712,29 @@ test("inversion filters audition the exact adjusted grip and constrain alternati
   )).toBe(7);
   await expect(page.getByRole("button", { name: "♭7 in bass", exact: true }))
     .toHaveAttribute("aria-pressed", "true");
+  await page.evaluate(() => { window.playedMidi = []; });
+  await page.locator('#editor [data-string="4"][data-fret="1"]').click();
+  await expect(page.locator(".voicing-results")).toHaveAttribute("aria-busy", "false");
+  await expect.poll(() => page.evaluate(() => window.playedMidi)).toEqual([60]);
+  await page.evaluate(() => { window.playedMidi = []; });
+  const card = page.locator(".voicing-choice").first();
+  const frets = (await card.getAttribute("data-frets")).split(",").map(Number);
+  const pitches = frets.flatMap((f, i) => f < 0 ? [] : [[40, 45, 50, 55, 59, 64][i] + f]);
+  await card.click();
+  await expect.poll(() => page.evaluate(() => window.playedMidi)).toEqual(pitches);
+  await page.evaluate(() => { window.playedMidi = []; });
+  await page.getByRole("button", { name: "5 in bass", exact: true }).click();
+  await expect(page.locator(".voicing-results")).toHaveAttribute("aria-busy", "false");
+  const filtered = (await page.locator('.voicing-choice[aria-pressed="true"]')
+    .getAttribute("data-frets")).split(",").map(Number);
+  const adjusted = filtered.flatMap((f, i) => f < 0 ? [] : [[40, 45, 50, 55, 59, 64][i] + f]);
+  expect(filtered[4]).toBe(1);
+  expect(Math.min(...adjusted) % 12).toBe(4);
+  expect(adjusted).not.toEqual(pitches);
+  await expect.poll(() => page.evaluate(() => window.playedMidi)).toEqual(adjusted);
 });
 
-test("manual selection detects inversion by sounding pitch and clears the grip filter", async ({ page }, testInfo) => {
+test("manual drawing detects inversion by sounding pitch and clears the grip filter", async ({ page }, testInfo) => {
   await page.locator('.nav-item[data-view="guitars"]').click();
   // Re-entrant tuning: the bass-side string is now E4, above inner strings.
   await page.getByLabel("String 6 octave", { exact: true }).selectOption("4");
@@ -705,12 +746,15 @@ test("manual selection detects inversion by sounding pitch and clears the grip f
   const fret = (string, position) =>
     page.locator(`#editor [data-string="${string}"][data-fret="${position}"]`);
   const detected = page.getByLabel("Detected inversion", { exact: true });
+  await page.getByRole("button", { name: "Draw / remove", exact: true }).click();
+  await page.getByRole("button", { name: "Clear grip", exact: true }).click();
   await fret(0, 0).click(); // E4
   await expect(detected).toHaveText("Current: 5 in bass");
   await expect(page.getByRole("button", { name: "Any inversion", exact: true }))
     .toHaveAttribute("aria-pressed", "true");
   await fret(1, 3).click(); // C3 is below E4 despite being a later string.
   await fret(2, 7).click(); // A3
+  await fret(5, 3).click(); // G4
   await expect(detected).toHaveText("Current: ♭3 in bass");
   await expect(page.locator("#editor-title")).toHaveText("Am7/C");
   await page.screenshot({ path: testInfo.outputPath("detected-inversion.png") });
