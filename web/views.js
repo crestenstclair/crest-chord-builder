@@ -138,7 +138,10 @@ function triadPalette(part) {
         `<button class="harmony-chord" data-action="open-triad" data-degree="${i}" aria-label="Open ${esc(chord.name)} chord workshop"><strong>${esc(INTERVALS[mod12(chord.root - part.root)])} · ${esc(chordQuality(chord).name)}</strong><span>${esc(chord.name)}<span>${esc(chord.roman)}</span></span></button>`,
     )
     .join("");
-  return `<div class="palette-heading"><h2>Triads in scale</h2><span>Select a chord to open the workshop.</span></div><div class="harmony-grid">${cells || "<p>No standard triads fit this interval set. Use Chord workshop to build a chord.</p>"}</div>`;
+  const scaleIntervals = scaleNotes(part.root, partScale(part))
+    .map((note) => `<button class="harmony-chord" data-action="open-scale-tone" data-root="${note.pc}" aria-label="Build chord from interval ${esc(note.interval)}"><strong>${esc(note.interval)}</strong><span>${esc(note.name)}</span></button>`)
+    .join("");
+  return `<div class="palette-heading"><h2>${cells ? "Triads in scale" : "Intervals in scale"}</h2><span>${cells ? "Select an interval to open its chord workshop." : "Select an interval, then choose the chord tones."}</span></div><div class="harmony-grid">${cells || scaleIntervals}</div>`;
 }
 
 function chordCard(chord, index, part, guitar, state, display = false) {
@@ -189,8 +192,8 @@ export function partsView(project, state) {
       part.guitarId,
     )}</select></label><div class="scale-select"><label>Root<select data-field="part-root" aria-label="Scale root">${noteOptions(part.root)}</select></label><label>Scale<select data-field="part-scale" aria-label="Scale">${options([...Object.entries(SCALES).map(([key, s]) => [key, s.name]), ["custom", "Custom scale"]], part.scale)}</select></label></div>${button("remove-part", "", "trash", "icon-button", `aria-label="Delete this part" ${project.parts.length <= 1 ? "disabled" : ""}`)}</div>
     ${customScaleControls(part)}<div class="scale-summary"><strong>${esc(scaleName(part))}</strong><div class="scale-tones">${notes.map((n) => `<span><b>${esc(n.interval)}</b><small>${esc(n.name)}</small></span>`).join("")}</div></div>${triadPalette(part)}</section>
-    <section class="progression"><div class="section-heading"><div><h2>${esc(part.name)} — progression <span class="count-badge">${part.chords.length}</span></h2><p>Chord numbers are relative to the scale root. Diagram intervals are relative to each chord root.</p></div>${button("custom-chord", "Chord workshop", "plus", "primary")}</div>
-    ${part.chords.length ? `<div class="chord-cards">${part.chords.map((c, i) => chordCard(c, i, part, guitar, state)).join("")}</div>` : `<div class="empty-progression"><h3>No chords in this part</h3><p>Select a triad, edit its intervals and fingering, then save it to ${esc(part.name)}.</p></div>`}</section>`;
+    <section class="progression"><div class="section-heading"><div><h2>${esc(part.name)} — progression <span class="count-badge">${part.chords.length}</span></h2><p>Chord numbers are relative to the scale root. Diagram intervals are relative to each chord root.</p></div></div>
+    ${part.chords.length ? `<div class="chord-cards">${part.chords.map((c, i) => chordCard(c, i, part, guitar, state)).join("")}</div>` : `<div class="empty-progression"><h3>No chords in this part</h3><p>Select an interval above, edit the chord tones and fingering, then save it to ${esc(part.name)}.</p></div>`}</section>`;
 }
 
 export function displayView(project, state) {

@@ -32,7 +32,8 @@ function intervalCell(label, session) {
   const inKey = session.keyTones.includes(
     mod12(session.chord.root + FORMULA_TONES[label].pitch),
   );
-  return `<td>${button("interval", esc(label), "", "interval-choice", `data-tone="${label}" data-focus="tone-${label}" aria-label="Chord interval ${label}" aria-pressed="${selected}" title="${label} · ${inKey ? "in" : "outside"} the part scale · ${selected ? "click to remove" : "click to select"}"`)}</td>`;
+  const keyStatus = inKey ? "In key" : "Out of key";
+  return `<td>${button("interval", `<span>${esc(label)}</span><small id="tone-key-${label}">${keyStatus}</small>`, "", `interval-choice ${inKey ? "in-key" : "out-of-key"}`, `data-tone="${label}" data-focus="tone-${label}" aria-label="Chord interval ${label}" aria-describedby="tone-key-${label}" aria-pressed="${selected}" title="${label} · ${keyStatus.toLowerCase()} · ${selected ? "click to remove" : "click to select"}"`)}</td>`;
 }
 
 function intervalMatrix(session) {

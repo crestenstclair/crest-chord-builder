@@ -12,7 +12,6 @@ import {
   id,
   createProject,
   makePart,
-  makeChord,
   parseProject,
   getFingering,
   setFingering,
@@ -359,7 +358,18 @@ const actions = {
       true,
     );
   },
-  "custom-chord": () => editChord(makeChord(currentPart().root), true),
+  "open-scale-tone": (target) =>
+    editChord(
+      {
+        id: id(),
+        root: Number(target.dataset.root),
+        intervals: [0],
+        bass: Number(target.dataset.root),
+        label: "",
+        fingerings: {},
+      },
+      true,
+    ),
   "edit-chord": (target) => {
     if (target.dataset.partId) state.partId = target.dataset.partId;
     editChord(chordById(target.dataset.id));

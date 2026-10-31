@@ -523,6 +523,7 @@ test("grouped presets set string count directly and leave the tuning editor read
 test("interval grid supports reversible alterations and separate bass choices without implied tones", async ({
   page,
 }, testInfo) => {
+  await expect(page.locator('[data-action="custom-chord"]')).toHaveCount(0);
   await page
     .getByRole("button", { name: "Open Am chord workshop", exact: true })
     .click();
@@ -530,7 +531,11 @@ test("interval grid supports reversible alterations and separate bass choices wi
   await expect(page.locator(".interval-matrix")).toBeVisible();
   const tone = (label) =>
     page.getByRole("button", { name: `Chord interval ${label}`, exact: true });
+  await expect(tone("♭3").locator("small")).toHaveText("In key");
+  await expect(tone("3").locator("small")).toHaveText("Out of key");
   await tone("3").click();
+  await expect(tone("3")).toHaveAttribute("aria-pressed", "true");
+  await expect(tone("3").locator("small")).toHaveText("Out of key");
   await expect(tone("♭3")).toHaveAttribute("aria-pressed", "false");
   await expect(page.locator("#editor-title")).toHaveText("A");
   await tone("♭3").click();
@@ -571,4 +576,31 @@ test("interval grid supports reversible alterations and separate bass choices wi
   await expect(
     page.getByRole("button", { name: "♭3 in bass", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
+});
+
+test("interval key hints follow the chord root within the part scale", async ({ page }) => {
+  await page.getByRole("button", { name: "Open Am chord workshop", exact: true }).click();
+  const tone = (label) => page.getByRole("button", { name: `Chord interval ${label}`, exact: true });
+  await expect(tone("3")).toHaveAccessibleDescription("Out of key");
+  await expect(tone("♭3")).toHaveAccessibleDescription("In key");
+  await page.getByRole("button", { name: "Root C", exact: true }).click();
+  await expect(tone("3")).toHaveAccessibleDescription("In key");
+  await expect(tone("♭3")).toHaveAccessibleDescription("Out of key");
+  await page.getByRole("button", { name: "Root B", exact: true }).click();
+  await expect(tone("♭9")).toHaveAccessibleDescription("In key");
+  await expect(tone("9")).toHaveAccessibleDescription("Out of key");
+});
+
+test("a custom scale without triads can start a chord from its intervals", async ({ page }) => {
+  await page.getByLabel("Scale", { exact: true }).selectOption("custom");
+  for (const interval of ["2", "♭3", "4", "5", "♭6", "♭7"])
+    await page.getByRole("button", { name: `Scale interval ${interval}`, exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Intervals in scale" })).toBeVisible();
+  await page.getByRole("button", { name: "Build chord from interval 1", exact: true }).click();
+  await expect(page.locator(".workshop-formula")).toHaveText("1");
+  await expect(page.getByRole("button", { name: "Chord interval 1", exact: true })).toHaveAccessibleDescription("In key");
+  await expect(page.getByRole("button", { name: "Chord interval 3", exact: true })).toHaveAccessibleDescription("Out of key");
+  await page.getByRole("button", { name: "Chord interval 3", exact: true }).click();
+  await page.getByRole("button", { name: "Add to part", exact: true }).click();
+  expect((await saved(page)).parts[0].chords[0].intervals).toEqual([0, 4]);
 });
