@@ -44,6 +44,11 @@ async function audition(midis) {
 function showGrip(index) {
   session.voicingIndex = index;
   session.frets = [...session.voicings[index].frets];
+  session.chord.bass = describeFingering(
+    session.tuning,
+    session.frets,
+    session.chord.root,
+  ).bass;
   session.selectingVoicing = false;
   const fretted = session.frets.filter((n) => n > 0);
   session.start =
@@ -52,7 +57,7 @@ function showGrip(index) {
       : 0;
 }
 
-async function suggestGrip() {
+async function suggestGrip({ preview = false } = {}) {
   const current = session;
   const version = ++requestVersion;
   current.busy = true;
@@ -70,11 +75,17 @@ async function suggestGrip() {
             Number(current.position) === 0 ? 4 : Number(current.position) + 3,
         };
   try {
-    const voicings = await findVoicings(current.tuning, current.chord, bounds);
+    const voicings = await findVoicings(
+      current.tuning,
+      { ...current.chord, bass: current.bassFilter },
+      bounds,
+    );
     if (session !== current || version !== requestVersion) return;
     current.voicings = voicings;
-    if (voicings.length) showGrip(0);
-    else {
+    if (voicings.length) {
+      showGrip(0);
+      if (preview) audition(soundingNotes(current.tuning, current.frets));
+    } else {
       current.frets = current.tuning.map(() => -1);
       current.message =
         "No complete grip found in this hand position. Choose another position or select a voicing manually.";
@@ -93,8 +104,10 @@ async function suggestGrip() {
 }
 
 function regenerate() {
-  audition(previewPitches(session.chord));
-  suggestGrip();
+  // Unlock audio in the click handler and stop the previous audition. Play
+  // only the returned grip once the latest search has completed.
+  audition([]);
+  return suggestGrip({ preview: true });
 }
 
 // Selecting a voicing changes positions, not harmony. Draw / remove changes
@@ -113,6 +126,7 @@ function updateManualGrip() {
     session.chord.bass = -1;
   }
   session.selectingVoicing = session.mode === "select";
+  session.bassFilter = -1;
   session.voicings = [];
   audition(actual.midis);
 }
@@ -139,7 +153,7 @@ function saveChord() {
   const { chord, tuning, frets, onSave } = session;
   const actual = describeFingering(tuning, frets, chord.root);
   if (!actual.midis.length) return;
-  // Keep Any inversion when chosen; manual voicing edits set actual bass.
+  chord.bass = actual.bass;
   chord.label = chord.label.trim();
   setFingering(chord, tuning, frets);
   onSave(chord);
@@ -154,8 +168,11 @@ function editGrip(action, target) {
   }
   if (action === "clear") {
     session.frets = session.tuning.map(() => -1);
+    session.chord.bass = -1;
+    session.bassFilter = -1;
     session.voicings = [];
     session.selectingVoicing = session.mode === "select";
+    audition([]);
   }
   if (action === "mute") {
     session.frets[Number(target.dataset.string)] = -1;
@@ -172,6 +189,7 @@ function editGrip(action, target) {
         session.chord.root,
       ).bass;
       session.voicings = [];
+      session.bassFilter = -1;
       session.selectingVoicing = session.mode === "select";
       audition(soundingNotes(session.tuning, session.frets));
     }
@@ -206,15 +224,22 @@ dialog.addEventListener("click", (event) => {
       renderEditor();
       return;
     }
-    if (action === "suggest") return suggestGrip();
+    if (action === "suggest") return regenerate();
     if (action === "audition")
       return audition(
         session.frets?.some((n) => n >= 0)
           ? soundingNotes(session.tuning, session.frets)
-          : previewPitches(session.chord),
+          : previewPitches({ ...session.chord, bass: session.bassFilter }),
       );
     if (action === "interval") {
       session.chord = selectChordTone(session.chord, target.dataset.tone);
+      if (
+        session.bassFilter >= 0 &&
+        !session.chord.intervals.includes(
+          mod12(session.bassFilter - session.chord.root),
+        )
+      )
+        session.bassFilter = -1;
       return regenerate();
     }
     if (["root", "family", "bass"].includes(action)) {
@@ -222,14 +247,17 @@ dialog.addEventListener("click", (event) => {
         const difference = Number(target.dataset.value) - session.chord.root;
         if (session.chord.bass >= 0)
           session.chord.bass = mod12(session.chord.bass + difference);
+        if (session.bassFilter >= 0)
+          session.bassFilter = mod12(session.bassFilter + difference);
         session.chord.root = Number(target.dataset.value);
       }
       if (action === "family") {
         session.chord.intervals = [...FAMILIES[target.dataset.value].intervals];
         delete session.chord.formula;
         session.chord.bass = session.chord.root;
+        session.bassFilter = -1;
       }
-      if (action === "bass") session.chord.bass = Number(target.dataset.value);
+      if (action === "bass") session.bassFilter = Number(target.dataset.value);
       return regenerate();
     }
     editGrip(action, target);
@@ -283,6 +311,7 @@ export function openChordEditor(
     toggleTheme,
     mode: "select",
     selectingVoicing: false,
+    bassFilter: -1,
     start: 0,
     position: "any",
     busy: false,

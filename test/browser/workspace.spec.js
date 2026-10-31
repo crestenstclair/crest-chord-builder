@@ -640,8 +640,93 @@ test("interval grid supports reversible alterations and separate bass choices wi
   await expect(tone("♯11")).toHaveAttribute("aria-pressed", "true");
   await expect(tone("♭5")).toHaveAttribute("aria-pressed", "false");
   await expect(
-    page.getByRole("button", { name: "♭3 in bass", exact: true }),
+    page.getByRole("button", { name: "Any inversion", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByLabel("Detected inversion", { exact: true }))
+    .toHaveText("Current: ♭3 in bass");
+});
+
+test("inversion filters audition the exact adjusted grip and constrain alternatives", async ({ page }) => {
+  await page.evaluate(() => {
+    window.playedMidi = [];
+    const create = AudioContext.prototype.createOscillator;
+    AudioContext.prototype.createOscillator = function (...args) {
+      const oscillator = create.apply(this, args);
+      const start = oscillator.start;
+      oscillator.start = function (...times) {
+        window.playedMidi.push(Math.round(69 + 12 * Math.log2(this.frequency.value / 440)));
+        return start.apply(this, times);
+      };
+      return oscillator;
+    };
+  });
+  await page.getByRole("button", { name: "Open Am chord workshop", exact: true }).click();
+  await page.getByRole("button", { name: "Chord interval ♭7", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Add to part", exact: true })).toBeEnabled();
+  let previous = [];
+  for (const [label, bass] of [["1", 9], ["♭3", 0], ["5", 4], ["♭7", 7]]) {
+    await page.evaluate(() => { window.playedMidi = []; });
+    await page.getByRole("button", { name: `${label} in bass`, exact: true }).click();
+    await expect(page.getByRole("button", { name: "Add to part", exact: true })).toBeEnabled();
+    const expected = await page.locator("#editor .fret.chosen").evaluateAll((nodes) =>
+      nodes.map((node) => [Number(node.dataset.string), Number(node.dataset.fret)])
+        .sort((a, b) => a[0] - b[0])
+        .map(([string, fret]) => [40, 45, 50, 55, 59, 64][string] + fret),
+    );
+    expect(Math.min(...expected) % 12).toBe(bass);
+    expect(expected).not.toEqual(previous);
+    await expect.poll(() => page.evaluate(() => window.playedMidi)).toEqual(expected);
+    await expect(page.getByLabel("Detected inversion", { exact: true }))
+      .toContainText(label === "1" ? "Root position" : `${label} in bass`);
+    // Explicit Preview must play exactly what the filter change auditioned.
+    await page.evaluate(() => { window.playedMidi = []; });
+    await page.getByRole("button", { name: "Preview", exact: true }).click();
+    await expect.poll(() => page.evaluate(() => window.playedMidi)).toEqual(expected);
+    previous = expected;
+  }
+  await page.evaluate(() => { window.playedMidi = []; });
+  await page.getByRole("button", { name: "Next grip", exact: true }).click();
+  await expect.poll(() => page.evaluate(() =>
+    window.playedMidi.length ? Math.min(...window.playedMidi) % 12 : -1,
+  )).toBe(7);
+  await expect(page.getByRole("button", { name: "♭7 in bass", exact: true }))
+    .toHaveAttribute("aria-pressed", "true");
+});
+
+test("manual selection detects inversion by sounding pitch and clears the grip filter", async ({ page }, testInfo) => {
+  await page.locator('.nav-item[data-view="guitars"]').click();
+  // Re-entrant tuning: the bass-side string is now E4, above inner strings.
+  await page.getByLabel("String 6 octave", { exact: true }).selectOption("4");
+  await page.locator('.nav-item[data-view="parts"]').click();
+  await page.getByRole("button", { name: "Open Am chord workshop", exact: true }).click();
+  await page.getByRole("button", { name: "Chord interval ♭7", exact: true }).click();
+  await page.getByRole("button", { name: "1 in bass", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Add to part", exact: true })).toBeEnabled();
+  const fret = (string, position) =>
+    page.locator(`#editor [data-string="${string}"][data-fret="${position}"]`);
+  const detected = page.getByLabel("Detected inversion", { exact: true });
+  await fret(0, 0).click(); // E4
+  await expect(detected).toHaveText("Current: 5 in bass");
+  await expect(page.getByRole("button", { name: "Any inversion", exact: true }))
+    .toHaveAttribute("aria-pressed", "true");
+  await fret(1, 3).click(); // C3 is below E4 despite being a later string.
+  await fret(2, 7).click(); // A3
+  await expect(detected).toHaveText("Current: ♭3 in bass");
+  await expect(page.locator("#editor-title")).toHaveText("Am7/C");
+  await page.screenshot({ path: testInfo.outputPath("detected-inversion.png") });
+  await page.getByRole("button", { name: "Add to part", exact: true }).click();
+  expect((await saved(page)).parts[0].chords[0].bass).toBe(0);
+  await page.reload();
+  await page.getByRole("button", { name: "Edit Am7/C", exact: true }).click();
+  await expect(detected).toHaveText("Current: ♭3 in bass");
+  await expect(page.getByRole("button", { name: "Any inversion", exact: true }))
+    .toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "String 5 up one octave", exact: true }).click();
+  await expect(detected).toHaveText("Current: Root position · 1 in bass");
+  await page.getByRole("button", { name: "Mute string 4", exact: true }).click();
+  await expect(detected).toHaveText("Current: ♭3 in bass");
+  await page.getByRole("button", { name: "Clear grip", exact: true }).click();
+  await expect(detected).toHaveText("Current: No notes selected");
 });
 
 test("interval key hints follow the chord root within the part scale", async ({ page }) => {

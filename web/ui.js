@@ -54,7 +54,8 @@ let audio;
 let audition = 0;
 const playing = new Set();
 export async function playNotes(midis) {
-  if (!midis.length) return;
+  // An empty preview unlocks audio from a user gesture and silences any
+  // previous voicing while an asynchronous fingering search is running.
   const version = ++audition;
   audio ??= new AudioContext();
   await audio.resume();
