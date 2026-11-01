@@ -8,7 +8,7 @@ import {
   voicedChord,
 } from "./music.js";
 import { getFingering, setFingering } from "./project.js";
-import { findVoicings } from "./voicings.js";
+import { findVoicings, groupVoicings } from "./voicings.js";
 import { playNotes } from "./ui.js";
 import { editorView, VOICINGS_PER_PAGE } from "./editor-view.js";
 
@@ -41,6 +41,40 @@ async function audition(midis) {
   }
 }
 
+function clearSuggestions() {
+  session.voicings = [];
+  session.voicingGroups = [];
+  session.voicingGroup = 0;
+  session.voicingIndex = -1;
+  session.voicingPage = 0;
+}
+
+function endVoicingSearch() {
+  session.anchors = [];
+  session.selectionBackup = null;
+  session.showHarmony = true;
+  clearSuggestions();
+}
+
+function closeVoicingSearch() {
+  // A close during a pending request must not let its result reopen the search.
+  requestVersion++;
+  session.busy = false;
+  session.message = "";
+  if (!session.frets?.some((fret) => fret >= 0)) {
+    session.frets = session.selectionBackup?.frets ?? null;
+    if (session.selectionBackup) session.start = session.selectionBackup.start;
+  }
+  endVoicingSearch();
+  session.chord.bass = session.frets
+    ? describeFingering(session.tuning, session.frets, session.chord.root).bass
+    : -1;
+  audition([]);
+  if (!session.frets) suggestGrip();
+  else renderEditor();
+  dialog.querySelector('[data-focus="select-mode"]')?.focus({ preventScroll: true });
+}
+
 function showGrip(index) {
   session.voicingIndex = index;
   session.frets = [...session.voicings[index].frets];
@@ -49,7 +83,9 @@ function showGrip(index) {
     session.frets,
     session.chord.root,
   ).bass;
-  session.voicingPage = Math.floor(index / VOICINGS_PER_PAGE);
+  session.voicingGroup = session.voicingGroups.findIndex((group) => group.indices.includes(index));
+  const groupIndex = session.voicingGroups[session.voicingGroup].indices.indexOf(index);
+  session.voicingPage = Math.floor(groupIndex / VOICINGS_PER_PAGE);
   const fretted = session.frets.filter((n) => n > 0);
   session.start =
     fretted.length && Math.max(...fretted) > 12
@@ -63,9 +99,7 @@ async function suggestGrip({ preview = false, choose = true } = {}) {
   current.busy = true;
   current.message = "";
   current.frets = null;
-  current.voicings = [];
-  current.voicingIndex = -1;
-  current.voicingPage = 0;
+  clearSuggestions();
   renderEditor();
   const bounds =
     current.position === "any"
@@ -79,18 +113,19 @@ async function suggestGrip({ preview = false, choose = true } = {}) {
     const voicings = await findVoicings(
       current.tuning,
       { ...current.chord, bass: current.bassFilter },
-      { ...bounds, anchor: current.anchor },
+      { ...bounds, anchors: current.anchors },
     );
     if (session !== current || version !== requestVersion) return;
     current.voicings = voicings;
+    current.voicingGroups = groupVoicings(current.tuning, current.chord.root, voicings);
     if (voicings.length && choose) {
       showGrip(0);
       if (preview) audition(soundingNotes(current.tuning, current.frets));
     } else if (!voicings.length) {
       current.frets = current.tuning.map(() => -1);
       current.message =
-        current.anchor
-          ? "No nearby voicing contains this note with the current filters. Choose another note, change a filter, or use Draw / remove."
+        current.anchors.length
+          ? "No nearby voicing contains all required notes with these filters. Remove a required note, change a filter, or use Draw / remove."
           : "No complete grip found in this hand position. Choose another position or use Draw / remove.";
     }
   } catch (error) {
@@ -110,15 +145,10 @@ function regenerate() {
   // Unlock audio in the click handler and stop the previous audition. Play
   // only the returned grip once the latest search has completed.
   audition([]);
-  if (
-    session.anchor &&
-    !session.chord.intervals.includes(
-      mod12(session.tuning[session.anchor.string] + session.anchor.fret - session.chord.root),
-    )
-  ) {
-    session.anchor = null;
-    session.showHarmony = true;
-  }
+  session.anchors = session.anchors.filter(({ string, fret }) =>
+    session.chord.intervals.includes(mod12(session.tuning[string] + fret - session.chord.root)),
+  );
+  if (!session.anchors.length) endVoicingSearch();
   return suggestGrip({ preview: true });
 }
 
@@ -136,10 +166,8 @@ function updateManualGrip() {
   } else {
     session.chord.bass = -1;
   }
-  session.anchor = null;
-  session.showHarmony = true;
+  endVoicingSearch();
   session.bassFilter = -1;
-  session.voicings = [];
   audition(actual.midis);
 }
 
@@ -150,10 +178,17 @@ function changeFret(string, fret) {
   if (mode === "select") {
     const interval = mod12(tuning[string] + fret - chord.root);
     if (!chord.intervals.includes(interval)) return;
-    session.anchor = { string, fret };
-    session.showHarmony = false;
+    const existing = session.anchors.find((position) => position.string === string);
+    if (!session.anchors.length) {
+      session.selectionBackup = { frets: session.frets?.slice() ?? null, start: session.start };
+      session.showHarmony = false;
+    }
+    session.anchors = session.anchors.filter((position) => position.string !== string);
+    if (existing?.fret !== fret) session.anchors.push({ string, fret });
+    if (!session.anchors.length) return closeVoicingSearch();
+    session.anchors.sort((a, b) => a.string - b.string);
     session.chord.bass = -1;
-    audition([tuning[string] + fret]);
+    audition(session.anchors.map((position) => tuning[position.string] + position.fret));
     return suggestGrip({ choose: false });
   }
   session.frets[string] = session.frets[string] === fret ? -1 : fret;
@@ -173,33 +208,53 @@ function saveChord() {
   dialog.close();
 }
 
-function editGrip(action, target) {
-  if (session.busy) return;
-  if (action === "mode" && session.mode !== target.dataset.value) {
-    session.mode = target.dataset.value;
-    session.anchor = null;
-    session.showHarmony = true;
-    session.voicings = [];
-    session.frets ??= session.tuning.map(() => -1);
-  }
-  if (action === "harmony") session.showHarmony = !session.showHarmony;
+function editVoicingResults(action, target) {
   if (action === "choose-voicing") {
-    showGrip(Number(target.dataset.index));
-    audition(soundingNotes(session.tuning, session.frets));
+    const index = Number(target.dataset.index);
+    if (session.voicingIndex === index) {
+      session.voicingIndex = -1;
+      session.frets = null;
+      session.chord.bass = -1;
+      audition([]);
+    } else {
+      showGrip(index);
+      audition(soundingNotes(session.tuning, session.frets));
+    }
   }
+  if (action === "voicing-group") {
+    session.voicingGroup = Number(target.dataset.index);
+    session.voicingPage = 0;
+  }
+  const indices = session.voicingGroups[session.voicingGroup]?.indices ?? [];
   if (action === "voicing-page") {
-    const last = Math.ceil(session.voicings.length / VOICINGS_PER_PAGE) - 1;
+    const last = Math.ceil(indices.length / VOICINGS_PER_PAGE) - 1;
     session.voicingPage = Math.max(0, Math.min(last,
       session.voicingPage + Number(target.dataset.direction),
     ));
   }
+  if (action === "alternative" && session.voicings.length) {
+    const choices = session.anchors.length ? indices : session.voicings.map((_, index) => index);
+    const direction = Number(target.dataset.direction);
+    const selected = choices.indexOf(session.voicingIndex);
+    const index = selected < 0 ? (direction > 0 ? -1 : 0) : selected;
+    showGrip(choices[(index + direction + choices.length) % choices.length]);
+    audition(soundingNotes(session.tuning, session.frets));
+  }
+}
+
+function editGrip(action, target) {
+  if (session.busy) return;
+  if (action === "mode" && session.mode !== target.dataset.value) {
+    session.mode = target.dataset.value;
+    endVoicingSearch();
+    session.frets ??= session.tuning.map(() => -1);
+  }
+  if (action === "harmony") session.showHarmony = !session.showHarmony;
   if (action === "clear") {
     session.frets = session.tuning.map(() => -1);
     session.chord.bass = -1;
     session.bassFilter = -1;
-    session.voicings = [];
-    session.anchor = null;
-    session.showHarmony = true;
+    endVoicingSearch();
     audition([]);
   }
   if (action === "mute") {
@@ -216,23 +271,12 @@ function editGrip(action, target) {
         session.frets,
         session.chord.root,
       ).bass;
-      session.voicings = [];
+      endVoicingSearch();
       session.bassFilter = -1;
-      session.anchor = null;
-      session.showHarmony = true;
       audition(soundingNotes(session.tuning, session.frets));
     }
   }
-  if (action === "alternative" && session.voicings.length) {
-    const direction = Number(target.dataset.direction);
-    const index = session.voicingIndex < 0
-      ? (direction > 0 ? -1 : 0)
-      : session.voicingIndex;
-    showGrip(
-      (index + direction + session.voicings.length) % session.voicings.length,
-    );
-    audition(soundingNotes(session.tuning, session.frets));
-  }
+  editVoicingResults(action, target);
   renderEditor();
 }
 
@@ -248,6 +292,9 @@ dialog.addEventListener("click", (event) => {
       );
     const action = target.dataset.action;
     if (action === "close") return dialog.close();
+    if (action === "close-search") return closeVoicingSearch();
+    if (action === "remove-anchor")
+      return changeFret(Number(target.dataset.string), Number(target.dataset.position));
     if (action === "save") return saveChord();
     if (action === "theme") {
       session.toggleTheme();
@@ -262,6 +309,7 @@ dialog.addEventListener("click", (event) => {
           : previewPitches({ ...session.chord, bass: session.bassFilter }),
       );
     if (action === "interval") {
+      session.selectionBackup = null;
       session.chord = selectChordTone(session.chord, target.dataset.tone);
       if (
         session.bassFilter >= 0 &&
@@ -273,6 +321,7 @@ dialog.addEventListener("click", (event) => {
       return regenerate();
     }
     if (["root", "family", "bass"].includes(action)) {
+      if (action !== "bass") session.selectionBackup = null;
       if (action === "root") {
         const difference = Number(target.dataset.value) - session.chord.root;
         if (session.chord.bass >= 0)
@@ -340,7 +389,10 @@ export function openChordEditor(
     isNew,
     toggleTheme,
     mode: "select",
-    anchor: null,
+    anchors: [],
+    selectionBackup: null,
+    voicingGroups: [],
+    voicingGroup: 0,
     showHarmony: true,
     voicingPage: 0,
     bassFilter: -1,

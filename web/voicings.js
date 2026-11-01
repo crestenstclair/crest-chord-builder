@@ -1,3 +1,5 @@
+import { describeFingering, mod12 } from "./music.js";
+
 // The worker keeps the existing Go search off the interface thread. Requests
 // share promises by tuning + chord, and callers discard stale selections.
 let worker;
@@ -29,7 +31,7 @@ function getWorker() {
 export function findVoicings(
   tuning,
   chord,
-  { minFret = 0, maxFret = 24, anchor = null } = {},
+  { minFret = 0, maxFret = 24, anchors = [] } = {},
 ) {
   if (chord.intervals.length > 7) return Promise.resolve([]);
   const request = {
@@ -39,7 +41,7 @@ export function findVoicings(
     bass: chord.bass ?? -1,
     minFret,
     maxFret,
-    ...(anchor ? { anchor } : {}),
+    ...(anchors.length ? { anchors } : {}),
   };
   const key = JSON.stringify(request);
   if (!cache.has(key)) {
@@ -53,4 +55,14 @@ export function findVoicings(
     if (cache.size > 256) cache.delete(cache.keys().next().value);
   }
   return cache.get(key);
+}
+// Keep engine ranking inside each group; use sounding pitch for re-entrant tunings.
+export function groupVoicings(tuning, root, voicings) {
+  const groups = new Map();
+  voicings.forEach((voicing, index) => {
+    const { bass } = describeFingering(tuning, voicing.frets, root);
+    if (!groups.has(bass)) groups.set(bass, { bass, indices: [] });
+    groups.get(bass).indices.push(index);
+  });
+  return [...groups.values()].sort((a, b) => mod12(a.bass - root) - mod12(b.bass - root));
 }

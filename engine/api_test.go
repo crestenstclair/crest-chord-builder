@@ -154,3 +154,59 @@ func TestAnchorBoundsAndBassFilter(t *testing.T) {
 		}
 	}
 }
+
+func TestMultipleAnchorsNarrowCompleteResults(t *testing.T) {
+	for _, tuning := range [][]int{
+		{40, 45, 50, 55, 59, 64},
+		{35, 40, 45, 50, 55, 59, 64},
+		{28, 35, 40, 45, 50, 55, 59, 64},
+	} {
+		c := Position{String: len(tuning) - 2, Fret: 1}
+		g := Position{String: len(tuning) - 3, Fret: 0}
+		r := Request{OpenMidi: tuning, Tones: []int{9, 0, 4, 7}, Root: 9, Bass: -1, MaxFret: 24, Anchors: []Position{c}}
+		all, err := Generate(r)
+		if err != nil {
+			t.Fatal(err)
+		}
+		expected := map[string]bool{}
+		for _, shape := range all {
+			if shape.Frets[g.String] == g.Fret {
+				expected[shapeKey(shape.Frets)] = true
+			}
+		}
+		r.Anchors = []Position{g, c} // An open constraint must not depend on click order.
+		narrowed, err := Generate(r)
+		if err != nil || len(narrowed) == 0 || len(narrowed) >= len(all) || len(narrowed) != len(expected) {
+			t.Fatalf("expected complete narrowed results for %d strings: %d -> %d, %v", len(tuning), len(all), len(narrowed), err)
+		}
+		for _, shape := range narrowed {
+			if !expected[shapeKey(shape.Frets)] {
+				t.Fatalf("result violates required notes: %v", shape.Frets)
+			}
+		}
+		r.Anchors = []Position{c, {String: len(tuning) - 1, Fret: 5}}
+		incompatible, err := Generate(r)
+		if err != nil || len(incompatible) != 0 {
+			t.Fatal("required notes outside one hand span must return no results")
+		}
+	}
+}
+
+func TestMultipleAnchorValidation(t *testing.T) {
+	r := Request{OpenMidi: []int{40, 45, 50, 55, 59, 64}, Tones: []int{9, 0, 4, 7}, Root: 9, Bass: -1, MaxFret: 24}
+	for _, anchors := range [][]Position{
+		{{String: 4, Fret: 1}, {String: 4, Fret: 5}},
+		{{String: 4, Fret: 1}, {String: 4, Fret: 1}},
+		{{String: 6}}, {{String: -1}}, {{Fret: 25}}, {{String: 5, Fret: 1}},
+	} {
+		r.Anchors = anchors
+		if _, err := Generate(r); err == nil {
+			t.Fatalf("accepted invalid anchors: %+v", anchors)
+		}
+	}
+	r.Anchor = &Position{String: 4, Fret: 1}
+	r.Anchors = []Position{{String: 3, Fret: 0}}
+	if _, err := Generate(r); err == nil {
+		t.Fatal("accepted ambiguous single and multiple anchor fields")
+	}
+}

@@ -67,7 +67,7 @@ function fretCell({
   labels,
   spelling,
   frets,
-  anchor,
+  anchors,
   editing,
   chordTonesOnly,
   keyTones,
@@ -79,7 +79,7 @@ function fretCell({
   const pc = mod12(midi);
   const relevant = tones.includes(pc);
   const selected = frets?.[string] === fret;
-  const anchored = anchor?.string === string && anchor.fret === fret;
+  const anchored = anchors.some((position) => position.string === string && position.fret === fret);
   const label =
     labels === "intervals"
       ? (intervalLabels?.[pc] ?? chordInterval(chord, pc))
@@ -93,10 +93,10 @@ function fretCell({
     selected ? "chosen" : "",
     anchored ? "anchor" : "",
   ].join(" ");
-  const title = `String ${count - string}, fret ${fret}: ${pitchName(midi)}, ${intervalLabels?.[pc] ?? chordInterval(chord, pc)}${keyTones ? (keyTones.includes(pc) ? ", in scale" : ", outside scale") : ""}${selected ? ", selected" : ""}${anchored ? ", search anchor" : ""}${chordTonesOnly && !relevant ? ", not a chord tone" : ""}`;
+  const title = `String ${count - string}, fret ${fret}: ${pitchName(midi)}, ${intervalLabels?.[pc] ?? chordInterval(chord, pc)}${keyTones ? (keyTones.includes(pc) ? ", in scale" : ", outside scale") : ""}${selected ? ", selected" : ""}${anchored ? ", required note" : ""}${chordTonesOnly && !relevant ? ", not a chord tone" : ""}`;
   const content = `<span>${relevant || editing || selected ? esc(label) : ""}</span>`;
   return editing
-    ? `<button type="button" class="${cls}" data-fret="${fret}" data-string="${string}" data-focus="fret-${string}-${fret}" aria-label="${esc(title)}" aria-pressed="${selected}" title="${esc(title)}" ${chordTonesOnly && !relevant ? "disabled" : ""}>${content}</button>`
+    ? `<button type="button" class="${cls}" data-fret="${fret}" data-string="${string}" data-focus="fret-${string}-${fret}" aria-label="${esc(title)}" aria-pressed="${chordTonesOnly ? anchored : selected}" title="${esc(title)}" ${chordTonesOnly && !relevant ? "disabled" : ""}>${content}</button>`
     : `<div class="${cls}" title="${esc(title)}">${content}</div>`;
 }
 
@@ -116,7 +116,7 @@ export function fretboard(
     labels = "intervals",
     spelling = NOTES,
     frets = null,
-    anchor = null,
+    anchors = [],
     editing = false,
     chordTonesOnly = false,
     keyTones = null,
@@ -135,7 +135,7 @@ export function fretboard(
     labels,
     spelling,
     frets,
-    anchor,
+    anchors,
     editing,
     chordTonesOnly,
   };
