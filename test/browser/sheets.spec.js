@@ -90,3 +90,70 @@ test("v2 browser saves migrate to v3 without changing the old slot", async ({ pa
   expect(await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), key)).toEqual({ ...old, version: 3 });
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('crest-chord-builder.project.v2')))).toEqual(old);
 });
+
+test("tab playback produces audio, follows its cursor, seeks and pauses other tabs", async ({ page }) => {
+  // Observe the real Web Audio graph, including actual nonzero output samples.
+  await page.addInitScript(() => {
+    const NativeAudio = window.AudioContext;
+    window.AudioContext = class extends NativeAudio {
+      constructor(...args) {
+        super(...args);
+        const analyser = this.createAnalyser();
+        analyser.connect(this.destination);
+        const voices = [];
+        window.tabAudio = { audio: this, analyser, voices };
+        const oscillator = this.createOscillator.bind(this);
+        this.createOscillator = () => {
+          const node = oscillator();
+          voices.push(node);
+          return node;
+        };
+        const gain = this.createGain.bind(this);
+        this.createGain = () => {
+          const node = gain(), connect = node.connect.bind(node);
+          node.connect = (target) => connect(target === this.destination ? analyser : target);
+          return node;
+        };
+      }
+    };
+  });
+  await openEditor(page);
+  await page.locator('#sheet-attachments').setInputFiles(upload('phrase.json', JSON.stringify(phrase), 'application/json'));
+  await page.getByRole('textbox', { name: 'Sheet source', exact: true }).fill('<guitar-tab src="phrase.json" strings="1,2,3"></guitar-tab>\n\n<guitar-tab src="phrase.json" from-bar="21" bars="2" strings="1,2,3"></guitar-tab>');
+  await page.getByRole('button', { name: 'Save sheet', exact: true }).click();
+  const frame = page.frameLocator('main iframe');
+  const first = frame.locator('.tablature').nth(0), second = frame.locator('.tablature').nth(1);
+  await first.getByRole('button', { name: 'Play tab', exact: true }).click();
+  await expect(first).toHaveAttribute('data-playback-state', 'playing');
+  await expect(first.locator('.tab-note-playing')).toHaveCount(1);
+  await expect.poll(() => frame.locator('body').evaluate(() => {
+    const samples = new Float32Array(window.tabAudio.analyser.fftSize);
+    window.tabAudio.analyser.getFloatTimeDomainData(samples);
+    return Math.max(...samples.map(Math.abs));
+  })).toBeGreaterThan(0.001);
+  const x = await first.locator('.tab-playhead').first().getAttribute('x1');
+  await expect.poll(() => first.locator('.tab-playhead').first().getAttribute('x1')).not.toBe(x);
+  await first.getByRole('button', { name: 'Pause tab', exact: true }).click();
+  await expect(first).toHaveAttribute('data-playback-state', 'paused');
+  await expect(first.locator('.tab-note-playing')).toHaveCount(0);
+  await first.getByLabel('Playback tempo', { exact: true }).fill('120');
+  await first.getByLabel('Playback tempo', { exact: true }).press('Tab');
+  await first.getByLabel('Playback position', { exact: true }).evaluate((input) => {
+    input.value = '12.5'; input.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await first.getByRole('button', { name: 'Play tab', exact: true }).click();
+  await expect(first.locator('.tab-note-playing[data-midi="74"]')).toHaveCount(1);
+  expect(await frame.locator('body').evaluate(() => window.tabAudio.voices.at(-1).frequency.value)).toBeCloseTo(587.3295, 2);
+  await second.getByRole('button', { name: 'Play tab', exact: true }).click();
+  await expect(second).toHaveAttribute('data-playback-state', 'playing');
+  await expect(first).toHaveAttribute('data-playback-state', 'paused');
+  await second.getByRole('button', { name: 'Stop tab', exact: true }).click();
+  await expect(second.getByLabel('Playback position', { exact: true })).toHaveValue('12');
+  await first.getByRole('button', { name: 'Play tab', exact: true }).click();
+  await page.getByRole('button', { name: 'Edit sheet', exact: true }).click();
+  await expect(first).toHaveAttribute('data-playback-state', 'paused');
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await page.emulateMedia({ media: 'print' });
+  await expect(first.locator('.tab-transport')).not.toBeVisible();
+  await expect(first.locator('.tab-playhead').first()).not.toBeVisible();
+});

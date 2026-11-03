@@ -1,5 +1,5 @@
 import { openSheetEditor } from "./sheet-editor.js";
-import { mountSheet } from "./sheet-renderer.js";
+import { mountSheet, pauseSheetPlayback } from "./sheet-renderer.js";
 import {
   PRESETS,
   scaleChords,
@@ -164,6 +164,7 @@ function hydrateCustomSheet() {
 }
 
 function editSheet() {
+  pauseSheetPlayback();
   const part = currentPart();
   openSheetEditor(part.sheet, sheetContext(part), (sheet) => {
     commit((doc) => {

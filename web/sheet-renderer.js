@@ -1,6 +1,7 @@
 import { marked } from "./vendor/marked.js";
 import { parseSheet } from "./sheet-data.js";
 import { renderTab } from "./tablature.js";
+import { tabPlaybackScript } from "./tab-playback.js";
 import { chordBox, fretboard } from "./diagrams.js";
 import { getFingering } from "./project.js";
 import { chordName, describeFingering, partScale, pitchName, scaleNotes } from "./music.js";
@@ -136,11 +137,15 @@ export async function sheetDocument(input, context) {
   const data = JSON.stringify({ files: sheet.files, guitar: context.guitar, part: { ...context.part, sheet: undefined } }).replaceAll("<", "\\u003c");
   const css = await sheetStyles();
   const policy = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'";
-  return `<!doctype html><html lang="en" data-theme="${context.theme === "light" ? "light" : "dark"}"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${policy}"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(context.part.name)}</title><style>${css}</style><script>(${frameRuntime.toString()})(${data});</script></head><body class="sheet-document" style="--display-zoom:${context.zoom ?? 1}">${body}</body></html>`;
+  return `<!doctype html><html lang="en" data-theme="${context.theme === "light" ? "light" : "dark"}"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${policy}"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(context.part.name)}</title><style>${css}</style><script>(${frameRuntime.toString()})(${data});\n${tabPlaybackScript()}</script></head><body class="sheet-document" style="--display-zoom:${context.zoom ?? 1}">${body}</body></html>`;
 }
 
 export function sheetFrame(title = "Custom practice sheet") {
-  return `<iframe class="custom-sheet-frame" title="${esc(title)}" sandbox="allow-scripts allow-modals" referrerpolicy="no-referrer"></iframe>`;
+  return `<iframe class="custom-sheet-frame" title="${esc(title)}" sandbox="allow-scripts allow-modals" allow="autoplay" referrerpolicy="no-referrer"></iframe>`;
+}
+
+export function pauseSheetPlayback() {
+  document.querySelectorAll(".custom-sheet-frame").forEach((frame) => frame.contentWindow.postMessage({ type: "crest-sheet-pause" }, "*"));
 }
 
 export async function mountSheet(frame, sheet, context) {

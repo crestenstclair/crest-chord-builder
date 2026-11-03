@@ -29,6 +29,14 @@ Count **1 · 2 · 3** and sustain through each written duration.
 | `chord-sheet` | Displays all saved chord fingerings in the current part, using the selected guitar. Choose fingerings in Parts first. |
 | `file-content` | Includes an attached Markdown, HTML, image, or text file. JSON and other text are shown as code. Includes can nest four levels. |
 
+### Tab playback
+
+Every `guitar-tab` has **Play/Pause**, **Stop**, a **Tempo** field (20–400 BPM), and a position slider. The moving cursor follows the current bar and beat; sounding fret numbers are highlighted. Use the slider to start at a particular phrase, including after a leading rest. Stop returns to the first displayed bar. Playback finishes at the end of the displayed range, including trailing rests.
+
+The browser synth plays the tab's MIDI pitches and exact quarter-note durations. Chords sound together, held notes continue across rows, and `from-bar`/`bars` limit playback to the visible excerpt. A declared `pitchShift` is applied to the sound once, without changing fret labels. Tempo changes affect playback speed without transposing notes or changing the saved tab file. This is a built-in synth, not a connection to Ableton or an external MIDI device.
+
+Only one tab plays at a time within a sheet. Playback pauses when the sheet editor opens, the browser tab becomes hidden, or a containing details panel closes. Leaving or replacing the sheet releases its audio. Controls and the cursor are excluded from print. Existing tab JSON needs no changes, and playback requires no external samples, account, or network service.
+
 Images can also use Markdown, for example `![Picking pattern](picking.png)`. HTML `<img src="picking.png">`, `<link rel="stylesheet" href="layout.css">`, and `<script src="components.js"></script>` resolve attached files by exact filename. Files are embedded in the project JSON; no paths to files on your computer are retained. Reattaching the same filename replaces that file in the editor draft. Text attachments can be edited by clicking their name.
 
 ## Full HTML and your own components
