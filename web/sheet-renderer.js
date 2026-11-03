@@ -1,6 +1,7 @@
 import { marked } from "./vendor/marked.js";
 import { parseSheet } from "./sheet-data.js";
 import { renderTab } from "./tablature.js";
+import { engraveTab } from "./tab-engraver.js";
 import { tabPlaybackScript } from "./tab-playback.js";
 import { chordBox, fretboard } from "./diagrams.js";
 import { getFingering } from "./project.js";
@@ -38,13 +39,16 @@ function scaleComponent(context, element) {
   return `<section class="scale-map"><h2>${esc(partScale(part).name)}</h2>${fretboard(guitar.strings, notes.map((n) => n.pc), part.root, { start, labels, intervalLabels: Object.fromEntries(notes.map((n) => [n.pc, n.interval])) })}</section>`;
 }
 
+export function sheetChordCard(chord, context, position = "Voicing") {
+  const frets = getFingering(chord, context.guitar.strings);
+  const bass = frets ? describeFingering(context.guitar.strings, frets, chord.root).bass : chord.bass;
+  const name = chordName(chord, bass);
+  const disabled = context.canCycle ? "" : "disabled";
+  return `<article class="sheet-component-chord" data-chord="${esc(chord.id)}"><h3>${esc(chord.label || name)}</h3>${chord.label && chord.label !== name ? `<small>${esc(name)}</small>` : ""}${frets ? chordBox(context.guitar.strings, frets, chord.root, name, false, "intervals", chord) : '<p>Open this chord in Parts to choose a fingering.</p>'}<div class="fret-values">${frets?.map((fret) => fret < 0 ? "×" : fret).join(" ") ?? ""}</div><div class="sheet-voicing-controls no-print"><button type="button" data-sheet-voicing="-1" aria-label="Previous voicing for ${esc(name)}" ${disabled}>‹</button><span class="sheet-voicing-status" role="status">${esc(position)}</span><button type="button" data-sheet-voicing="1" aria-label="Next voicing for ${esc(name)}" ${disabled}>›</button></div></article>`;
+}
+
 function chordComponent(context) {
-  return `<section><h2>Chord sheet</h2><div class="sheet-component-chords">${context.part.chords.map((chord) => {
-    const frets = getFingering(chord, context.guitar.strings);
-    const bass = frets ? describeFingering(context.guitar.strings, frets, chord.root).bass : chord.bass;
-    const name = chordName(chord, bass);
-    return `<article class="sheet-component-chord"><h3>${esc(chord.label || name)}</h3>${frets ? chordBox(context.guitar.strings, frets, chord.root, name, false, "intervals", chord) : '<p>Open this chord in Parts to choose a fingering.</p>'}</article>`;
-  }).join("") || "<p>No chords in this part.</p>"}</div></section>`;
+  return `<section><h2>Chord sheet</h2><div class="sheet-component-chords">${context.part.chords.map((chord) => sheetChordCard(chord, context)).join("") || "<p>No chords in this part.</p>"}</div></section>`;
 }
 
 function includedFile(element, sheet, context, depth) {
@@ -89,6 +93,7 @@ function expandMarkup(markup, sheet, context, depth = 0) {
     else html = includedFile(element, sheet, context, depth);
     const replacement = document.createElement("template");
     replacement.innerHTML = html;
+    if (element.tagName === "GUITAR-TAB") engraveTab(replacement.content);
     element.replaceWith(replacement.content);
   }
   bindFiles(template.content, sheet);
@@ -128,6 +133,32 @@ function frameRuntime(data) {
   addEventListener("message", (event) => {
     if (event.source === parent && event.data?.type === "crest-sheet-print") window.print();
   });
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-sheet-voicing]");
+    if (!button || button.disabled || button.getAttribute("aria-disabled") === "true") return;
+    const card = button.closest("[data-chord]");
+    card.querySelectorAll("button").forEach((node) => node.setAttribute("aria-disabled", "true"));
+    card.querySelector(".sheet-voicing-status").textContent = "Finding…";
+    parent.postMessage({ type: "crest-sheet-cycle", chordId: card.dataset.chord, direction: Number(button.dataset.sheetVoicing) }, "*");
+  });
+  addEventListener("message", (event) => {
+    if (event.source !== parent || event.data?.type !== "crest-sheet-chord") return;
+    if (event.data.part) data.part.chords = event.data.part.chords;
+    const cards = [...document.querySelectorAll(".sheet-component-chord")].filter((card) => card.dataset.chord === event.data.chordId);
+    for (const card of cards) {
+      if (event.data.error) {
+        card.querySelectorAll("button").forEach((node) => node.removeAttribute("aria-disabled"));
+        card.querySelector(".sheet-voicing-status").textContent = event.data.error;
+      } else {
+        const template = document.createElement("template");
+        template.innerHTML = event.data.html;
+        const next = template.content.firstElementChild;
+        const focused = card.contains(document.activeElement);
+        card.replaceWith(next);
+        if (focused) next.querySelector(`[data-sheet-voicing="${event.data.direction}"]`)?.focus({ preventScroll: true });
+      }
+    }
+  });
 }
 
 export async function sheetDocument(input, context) {
@@ -148,17 +179,29 @@ export function pauseSheetPlayback() {
   document.querySelectorAll(".custom-sheet-frame").forEach((frame) => frame.contentWindow.postMessage({ type: "crest-sheet-pause" }, "*"));
 }
 
-export async function mountSheet(frame, sheet, context) {
+export async function mountSheet(frame, sheet, context, onCycle = null) {
   const revision = Symbol();
   frame.sheetRevision = revision;
+  frame.onCycle = onCycle;
   frame.dataset.ready = "false";
-  const html = await sheetDocument(sheet, context);
+  const html = await sheetDocument(sheet, { ...context, canCycle: Boolean(onCycle) });
   if (frame.isConnected && frame.sheetRevision === revision) frame.srcdoc = html;
 }
 
 addEventListener("message", (event) => {
   const frame = [...document.querySelectorAll(".custom-sheet-frame")].find((node) => node.contentWindow === event.source);
   if (!frame) return;
+  if (event.data?.type === "crest-sheet-cycle" && frame.onCycle &&
+      typeof event.data.chordId === "string" && [-1, 1].includes(event.data.direction)) {
+    const revision = frame.sheetRevision;
+    Promise.resolve().then(() => frame.onCycle(event.data.chordId, event.data.direction)).then((result) => {
+      if (result && frame.isConnected && frame.sheetRevision === revision)
+        frame.contentWindow.postMessage({ type: "crest-sheet-chord", chordId: event.data.chordId, direction: event.data.direction, ...result }, "*");
+    }).catch((error) => {
+      if (frame.isConnected && frame.sheetRevision === revision)
+        frame.contentWindow.postMessage({ type: "crest-sheet-chord", chordId: event.data.chordId, error: error.message }, "*");
+    });
+  }
   if (event.data?.type === "crest-sheet-ready") frame.dataset.ready = "true";
   if (event.data?.type === "crest-sheet-height" && Number.isFinite(event.data.height))
     frame.style.height = `${Math.max(160, Math.min(60000, event.data.height))}px`;

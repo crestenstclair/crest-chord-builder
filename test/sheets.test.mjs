@@ -49,9 +49,9 @@ test("tablature retains exact durations and absolute bars without hiding notes",
   assert.equal(parsed.events[2].duration, 1.25);
   const markup = renderTab(tab(), { "bars-per-row": "4", strings: "1,2,3" });
   assert.match(markup, /bars 17–24/);
-  assert.match(markup, /data-beat="13.75" data-duration="1.25"/);
-  assert.equal((markup.match(/class="tab-system"/g) ?? []).length, 2);
-  assert.throws(() => renderTab(tab(), { strings: "2,3" }), /hide notes/);
+  assert.match(markup, /data-notation=/);
+  assert.match(markup, /sourceBeat&quot;:13.75/);
+  assert.equal(renderTab(tab(), { strings: "2,3" }), renderTab(tab()));
   assert.match(renderTab(tab(), {}, [28,33,40,45,50,55,59,64]), /different tuning/);
 });
 

@@ -1,5 +1,5 @@
 import { openSheetEditor } from "./sheet-editor.js";
-import { mountSheet, pauseSheetPlayback } from "./sheet-renderer.js";
+import { mountSheet, pauseSheetPlayback, sheetChordCard } from "./sheet-renderer.js";
 import {
   PRESETS,
   scaleChords,
@@ -133,7 +133,7 @@ function render(preserveInput = false) {
   hydrateCustomSheet();
 }
 
-function commit(update, { undo = true, preserveInput = false } = {}) {
+function commit(update, { undo = true, preserveInput = false, redraw = true } = {}) {
   const next = structuredClone(project);
   update(next);
   const valid = parseProject(next);
@@ -143,7 +143,7 @@ function commit(update, { undo = true, preserveInput = false } = {}) {
   }
   project = valid;
   persist();
-  render(preserveInput);
+  if (redraw) render(preserveInput);
 }
 
 function sheetContext(part = currentPart()) {
@@ -154,7 +154,7 @@ function hydrateCustomSheet() {
   const frame = app.querySelector(".custom-sheet-frame");
   const part = currentPart();
   if (!frame || !part.sheet) return;
-  mountSheet(frame, part.sheet, sheetContext(part)).catch((error) => {
+  mountSheet(frame, part.sheet, sheetContext(part), (chordId, direction) => cycleVoicing(chordId, direction, frame)).catch((error) => {
     if (!frame.isConnected) return;
     const message = document.createElement("p");
     message.className = "component-error";
@@ -248,9 +248,10 @@ async function generateFingering(partId, chord, tuning, key) {
   }
 }
 
-async function cycleVoicing(chordId, direction) {
+async function cycleVoicing(chordId, direction, frame = null) {
   const partId = currentPart().id;
   const chord = chordById(chordId);
+  if (!chord) throw new Error("Chord is no longer in this part.");
   const tuning = [...guitarForPart().strings];
   const signature = chordSignature(chord, tuning);
   const voicings = await findVoicings(tuning, chord);
@@ -258,16 +259,16 @@ async function cycleVoicing(chordId, direction) {
   const current = part?.chords.find((c) => c.id === chordId);
   if (
     !current ||
+    (frame && (!frame.isConnected || currentPart().id !== partId)) ||
     chordSignature(current, guitarForPart(part).strings) !== signature
   )
     return;
   if (!voicings.length) {
-    notify("No automatic grip found. Use Edit to craft one.");
-    return;
+    throw new Error("No automatic grip found. Use Edit to craft one.");
   }
   const selected = getFingering(current, tuning)?.join(",");
   const index = voicings.findIndex((v) => v.frets.join(",") === selected);
-  const next = (index + direction + voicings.length) % voicings.length;
+  const next = index < 0 ? (direction > 0 ? 0 : voicings.length - 1) : (index + direction + voicings.length) % voicings.length;
   commit((doc) =>
     setFingering(
       doc.parts
@@ -275,8 +276,16 @@ async function cycleVoicing(chordId, direction) {
         .chords.find((c) => c.id === chordId),
       tuning,
       voicings[next].frets,
-    ),
+    ), { redraw: !frame },
   );
+  if (frame) {
+    const updated = project.parts.find((entry) => entry.id === partId);
+    // Keep the sheet, its expanded panels and its tab playback in place.
+    document.querySelector('[data-action="undo"]')?.removeAttribute("disabled");
+    return { html: sheetChordCard(updated.chords.find((entry) => entry.id === chordId),
+      { ...sheetContext(updated), canCycle: true }, `${next + 1} / ${voicings.length}`),
+      part: { chords: updated.chords } };
+  }
 }
 
 function editChord(chord, isNew = false) {

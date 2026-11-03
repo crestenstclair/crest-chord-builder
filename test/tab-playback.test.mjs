@@ -33,7 +33,9 @@ test("visible tab playback clips held notes, preserves rests and applies output 
     events: [{ beat: 3, duration: 1, midi: 67 }, { beat: 5.75, duration: 0.25, midi: 69 }] });
   assert.deepEqual(tab, before);
   assert.equal(tabPlaybackPlan(tab, { first: 17, bars: 4 }).events.length, 4);
-  assert.equal(tabPosition(3, 0, 4, 3), 314.5);
+  assert.equal(tabPosition(3, [[0, 80], [2, 240], [4, 480]]), 360);
+  assert.equal(tabPosition(-1, [[0, 80], [2, 240]]), 80);
+  assert.equal(tabPosition(3, [[0, 80], [2, 240]]), 240);
 });
 
 test("audio clock preserves leading/trailing rests, exact pitch and note-off time", async (t) => {

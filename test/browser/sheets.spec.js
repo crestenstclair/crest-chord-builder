@@ -21,12 +21,12 @@ test("Markdown file components preview, save, print and survive export/reload", 
   ]);
   await page.getByRole("textbox", { name: "Sheet source", exact: true }).fill('# Melody\n\n<guitar-tab src="phrase.json" strings="1,2,3"></guitar-tab>\n\n<file-content src="notes.md"></file-content>');
   const preview = page.frameLocator('#sheet-editor iframe');
-  await expect(preview.locator('.tab-note')).toHaveCount(3);
+  await expect(preview.locator('.tab-note[data-attack="true"]')).toHaveCount(3);
   await expect(preview.getByRole('heading', { name: 'Count slowly' })).toBeVisible();
   await page.getByRole('button', { name: 'Save sheet', exact: true }).click();
   await expect(page.locator('#sheet-editor')).not.toBeVisible();
   const sheet = page.frameLocator('main iframe');
-  await expect(sheet.locator('.tab-note[data-beat="13.75"]')).toHaveAttribute('data-duration', '1.25');
+  await expect(sheet.locator('.tab-note[data-beat="13.75"]')).toHaveAttribute('data-duration', '0.25');
   await expect(page.locator('main iframe')).toHaveAttribute('data-ready', 'true');
   const frame = await page.locator('main iframe').contentFrame();
   await frame.locator('body').evaluate(() => { window.print = () => { window.printCalled = true; }; });
@@ -41,9 +41,9 @@ test("Markdown file components preview, save, print and survive export/reload", 
   await (await download).saveAs(path);
   await page.reload();
   await page.locator('.nav-item[data-view="display"]').click();
-  await expect(page.frameLocator('main iframe').locator('.tab-note')).toHaveCount(3);
+  await expect(page.frameLocator('main iframe').locator('.tab-note[data-attack="true"]')).toHaveCount(3);
   await page.locator('#import-file').setInputFiles(path);
-  await expect(page.frameLocator('main iframe').locator('.tab-note')).toHaveCount(3);
+  await expect(page.frameLocator('main iframe').locator('.tab-note[data-attack="true"]')).toHaveCount(3);
   await page.screenshot({ path: testInfo.outputPath('custom-sheet.png') });
 });
 
@@ -156,4 +156,68 @@ test("tab playback produces audio, follows its cursor, seeks and pauses other ta
   await page.emulateMedia({ media: 'print' });
   await expect(first.locator('.tab-transport')).not.toBeVisible();
   await expect(first.locator('.tab-playhead').first()).not.toBeVisible();
+});
+
+for (const strings of [6, 7, 8]) test(`${strings}-string tabs engrave full staves, polyphony, triplets and ties`, async ({ page }, testInfo) => {
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  const tuning = [28,35,40,45,50,55,59,64].slice(8 - strings);
+  const notes = [
+    { beat: 0, duration: 1/3, string: 1, fret: 0 },
+    { beat: 1/3, duration: 1/3, string: 1, fret: 1 },
+    { beat: 2/3, duration: 1/3, string: 1, fret: 3 },
+    { beat: 0, duration: 4, string: strings, fret: 0 },
+    { beat: 2, duration: 5, string: 2, fret: 5 },
+  ];
+  await openEditor(page);
+  await page.locator('#sheet-attachments').setInputFiles(upload('phrase.json', JSON.stringify({ ...phrase, tuning, events: notes }), 'application/json'));
+  await page.getByRole('textbox', { name: 'Sheet source', exact: true }).fill('<guitar-tab src="phrase.json" bars-per-row="2" strings="1,2,3"></guitar-tab>');
+  await page.getByRole('button', { name: 'Save sheet', exact: true }).click();
+  const frame = page.frameLocator('main iframe');
+  await expect(frame.locator(`.tab-system[data-strings="${strings}"]`)).toHaveCount(4);
+  await expect(frame.locator('.tab-note[data-attack="true"]')).toHaveCount(5);
+  await expect(frame.locator('.tab-duration,.tab-hold')).toHaveCount(0);
+  await expect(frame.locator('.tab-note[data-attack="false"]').first()).toBeVisible();
+  await expect(page.locator('main iframe')).toHaveAttribute('data-ready', 'true');
+  const plan = await frame.locator('.tablature').evaluate((section) => JSON.parse(section.dataset.playback));
+  expect(plan.events).toHaveLength(5);
+  expect(plan.events.some((event) => event.beat === 2 && event.duration === 5)).toBe(true);
+  await page.screenshot({ path: testInfo.outputPath(`standard-${strings}-strings.png`) });
+  expect(errors).toEqual([]);
+});
+
+test('custom chord arrows persist, go backwards and undo without replacing the live sheet', async ({ page }, testInfo) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: 'Open Am chord workshop', exact: true }).click();
+  await page.getByRole('button', { name: 'Add to part', exact: true }).click();
+  await page.locator('.nav-item[data-view="display"]').click();
+  await page.getByRole('button', { name: 'Edit sheet', exact: true }).click();
+  await page.locator('#sheet-attachments').setInputFiles(upload('phrase.json', JSON.stringify(phrase), 'application/json'));
+  await page.getByRole('textbox', { name: 'Sheet source', exact: true }).fill('<guitar-tab src="phrase.json"></guitar-tab>\n\n<details open><summary>Chords</summary><chord-sheet></chord-sheet></details>');
+  await expect(page.frameLocator('#sheet-editor iframe').locator('[data-sheet-voicing="1"]')).toBeDisabled();
+  await page.getByRole('button', { name: 'Save sheet', exact: true }).click();
+  const frame = page.frameLocator('main iframe');
+  const card = frame.locator('.sheet-component-chord');
+  const original = await card.locator('.fret-values').textContent();
+  await frame.locator('body').evaluate(() => { window.sheetIdentity = 'retained'; });
+  await frame.getByRole('button', { name: 'Play tab', exact: true }).click();
+  await card.locator('[data-sheet-voicing="1"]').click();
+  await expect(card.locator('.fret-values')).not.toHaveText(original);
+  const changed = await card.locator('.fret-values').textContent();
+  await expect(card.locator('.sheet-voicing-status')).toContainText('/');
+  await expect(card.locator('[data-sheet-voicing="1"]')).toBeFocused();
+  await expect(frame.locator('details')).toHaveAttribute('open', '');
+  expect(await frame.locator('body').evaluate(() => window.sheetIdentity)).toBe('retained');
+  await expect(frame.locator('.tablature')).toHaveAttribute('data-playback-state', 'playing');
+  const persisted = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), key);
+  expect(persisted.parts[0].chords[0].fingerings['40,45,50,55,59,64'].map((f) => f < 0 ? '×' : f).join(' ')).toBe(changed);
+  await card.locator('[data-sheet-voicing="-1"]').click();
+  await expect(card.locator('.fret-values')).toHaveText(original);
+  await page.locator('[data-action="undo"]').focus();
+  await page.locator('[data-action="undo"]').press('Enter');
+  await expect(card.locator('.fret-values')).toHaveText(changed);
+  await page.reload();
+  await page.locator('.nav-item[data-view="display"]').click();
+  await expect(card.locator('.fret-values')).toHaveText(changed);
+  await page.screenshot({ path: testInfo.outputPath('sheet-voicing-arrows.png') });
 });

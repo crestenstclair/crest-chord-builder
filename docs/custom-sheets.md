@@ -13,7 +13,7 @@ Markdown supports headings, lists, tables, links, code fences, and embedded HTML
 
 Count **1 · 2 · 3** and sustain through each written duration.
 
-<guitar-tab src="melody.json" bars-per-row="4" strings="1,2,3"></guitar-tab>
+<guitar-tab src="melody.json" bars-per-row="4"></guitar-tab>
 
 <scale-map start="5" labels="intervals"></scale-map>
 
@@ -24,10 +24,12 @@ Count **1 · 2 · 3** and sustain through each written duration.
 
 | Component | Behavior |
 | --- | --- |
-| `guitar-tab` | Loads an attached `crest-tab` JSON file. `bars-per-row` is 1–8 (default 4). Optional `from-bar` and `bars` select an absolute bar range. `strings` selects visible string numbers; it cannot hide played notes. |
+| `guitar-tab` | Loads an attached `crest-tab` JSON file. `bars-per-row` is 1–8 (default 4). Optional `from-bar` and `bars` select an absolute bar range. Always shows every string, treble first; the legacy `strings` attribute is ignored. |
 | `scale-map` | Uses the current part's scale and guitar tuning. `start` is fret 0–12. `labels` is `intervals` (default) or `notes`. |
-| `chord-sheet` | Displays all saved chord fingerings in the current part, using the selected guitar. Choose fingerings in Parts first. |
+| `chord-sheet` | Displays all saved chord fingerings in the current part, using the selected guitar. Use the previous/next arrows to browse voicings. Each choice saves to the current tuning and supports Undo. Editor previews show disabled arrows; save the sheet to change fingerings. |
 | `file-content` | Includes an attached Markdown, HTML, image, or text file. JSON and other text are shown as code. Includes can nest four levels. |
+
+Tab notation is engraved with bundled VexFlow (MIT), including its music glyphs. It works without a font CDN or external notation service.
 
 ### Tab playback
 
@@ -101,7 +103,7 @@ The project remains browser-only and portable. Limits: 200,000 source characters
 - `string` is the player's string number: **1 is the treble string**. `fret` is 0–24. The written pitch is `tuning[tuning.length - string] + fret`; optional `midi` must match it.
 - `beat` is a zero-based offset from this tab's start, in **quarter notes**. `duration` uses the same unit. A 3/4 bar lasts 3; a 6/8 bar also lasts 3. Preserve fractional timing instead of rounding it to a grid.
 - `startBar` gives the first absolute arrangement bar, default 1. `bars` is 1–256. All events must fit inside that range. Events on one string cannot overlap. Different strings may sound together.
-- Empty time is a rest. A horizontal line shows each note's duration, and “hold” marks continuation from a preceding row. Do not add repeated attacks for a held note.
+- Empty time is a rest. Tabs use conventional fret numbers, rhythmic stems/flags, dots, beams, barlines, and ties. Sustains split at barlines or rhythmic boundaries with ties, without extra playback attacks. Binary rhythms through 128th notes and triplets are supported. Finer timing is rounded for engraving with an explicit notice; MIDI playback keeps the original timing. Notes too short to engrave report an error.
 - `pitchShift` documents an external guitar output shift in semitones (default 0). It does not change fret labels. To match source MIDI through a −2-semitone shifter, choose frets that produce source MIDI + 2.
 - Tabs preserve their original tuning when the guitar changes. A tuning mismatch is shown explicitly; frets are never silently reinterpreted.
 

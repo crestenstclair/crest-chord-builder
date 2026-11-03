@@ -34,19 +34,15 @@
 .sheet-component-chords { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
 .sheet-component-chord { text-align: center; padding: 10px; border: 1px solid var(--line); border-radius: 6px; break-inside: avoid; }
 .sheet-component-chord .chord-box { height: 190px; width: 100%; }
+.sheet-voicing-controls { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+.sheet-voicing-controls button { min-width: 36px; font-size: 24px; }
+.sheet-voicing-controls button[aria-disabled="true"] { opacity: .5; cursor: wait; }
+.sheet-voicing-status { font-size: 12px; color: var(--muted); }
 .tablature header h2 { margin-bottom: 0; }
 .tablature header p { margin: 3px 0; }
 .tab-key, .tablature footer { font-size: .75em; color: var(--muted); }
 .tab-system { display: block; width: 100%; height: auto; overflow: visible; break-inside: avoid; margin: 14px 0; }
-.tab-lines line { stroke: var(--line); stroke-width: .8; }
-.tab-lines .tab-barline { stroke: var(--muted); stroke-width: 1.3; }
-.tab-system text { fill: var(--ink); font: 14px ui-monospace, monospace; }
-.tab-system .tab-tuning { font-size: 12px; }
-.tab-system .tab-beat { fill: var(--muted); font-size: 11px; text-anchor: middle; }
-.tab-system .tab-bar { font: bold 13px system-ui, sans-serif; }
-.tab-system .tab-fret { text-anchor: middle; font-size: 17px; font-weight: 700; paint-order: stroke; stroke: var(--surface); stroke-width: 7px; stroke-linejoin: round; }
-.tab-system .tab-duration { stroke: var(--accent); stroke-width: 2; fill: none; }
-.tab-system .tab-hold { fill: var(--muted); font-size: 9px; }
+.tab-system { color: var(--ink); }
 .tab-transport { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 10px 0 2px; font-size: .85em; }
 .tab-transport button { min-width: 68px; }
 .tab-tempo-label { display: flex; flex-direction: row; align-items: center; gap: 6px; }
@@ -55,8 +51,7 @@
 .tab-position { min-width: 148px; font-variant-numeric: tabular-nums; }
 .tab-playback-status { color: var(--muted); font-size: .85em; }
 .tab-playhead { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 4 3; pointer-events: none; }
-.tab-note-playing .tab-fret, .tab-note-playing .tab-hold { fill: var(--accent); }
-.tab-note-playing .tab-duration { stroke-width: 4; }
+.tab-note-playing { color: var(--accent); }
 @media (max-width: 900px) { .sheet-editor-layout { grid-template-columns: 1fr; } .sheet-preview-panel { max-height: none; } }
 @media print {
   .sheet-document { padding: 0; font-size: 11pt; background: white; }
@@ -65,6 +60,5 @@
   .sheet-document .scale-map { break-inside: avoid; }
   .sheet-component-chords { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .tab-system { margin: 8px 0; }
-  .tab-note-playing .tab-fret, .tab-note-playing .tab-hold { fill: var(--ink); }
-  .tab-note-playing .tab-duration { stroke-width: 2; }
+  .tab-note-playing { color: var(--ink); }
 }

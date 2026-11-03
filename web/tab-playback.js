@@ -129,7 +129,7 @@ function updateTabRow(row, beat, playing) {
   const cursor = row.querySelector(".tab-playhead");
   cursor.style.display = current ? "" : "none";
   if (current) {
-    const x = tabPosition(beat, start, Number(row.dataset.bars), Number(row.dataset.barLength));
+    const x = tabPosition(beat, row.tabPositions ??= JSON.parse(row.dataset.positions));
     cursor.setAttribute("x1", x);
     cursor.setAttribute("x2", x);
   }

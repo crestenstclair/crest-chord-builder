@@ -1,5 +1,6 @@
 import { pitchName } from "./music.js";
 import { esc } from "./ui.js";
+import { tabNotation } from "./tab-notation.js";
 
 const fail = (message) => { throw new Error(`Tab: ${message}`); };
 function integer(value, min, max, name) {
@@ -46,34 +47,18 @@ function tabOptions(tab, attributes) {
   const perRow = integer(Number(attributes["bars-per-row"] ?? 4), 1, 8, "Bars per row");
   const first = integer(Number(attributes["from-bar"] ?? tab.startBar), tab.startBar, tab.startBar + tab.bars - 1, "First bar");
   const bars = integer(Number(attributes.bars ?? tab.startBar + tab.bars - first), 1, tab.startBar + tab.bars - first, "Visible bars");
-  const strings = attributes.strings
-    ? attributes.strings.split(",").map((n) => integer(Number(n.trim()), 1, tab.tuning.length, "Visible string"))
-    : Array.from({ length: tab.tuning.length }, (_, i) => i + 1);
-  if (new Set(strings).size !== strings.length) fail("visible strings must be unique.");
-  strings.sort((a, b) => a - b);
-  const firstBeat = (first - tab.startBar) * tab.meter[0] * 4 / tab.meter[1];
-  const lastBeat = firstBeat + bars * tab.meter[0] * 4 / tab.meter[1];
-  if (tab.events.some((e) => e.beat < lastBeat && e.beat + e.duration > firstBeat && !strings.includes(e.string)))
-    fail("visible strings would hide notes. Include every played string.");
+  // Standard tablature always shows the complete instrument, treble first.
+  const strings = Array.from({ length: tab.tuning.length }, (_, i) => i + 1);
   return { perRow, first, bars, strings };
 }
 
-function noteMark(event, context) {
-  const { x, start, end, strings } = context;
-  if (event.beat >= end || event.beat + event.duration <= start) return "";
-  const y = 64 + strings.indexOf(event.string) * 24;
-  const left = x(Math.max(start, event.beat));
-  const right = x(Math.min(end, event.beat + event.duration));
-  const attack = event.beat >= start;
-  return `<g class="tab-note" data-midi="${event.midi}" data-beat="${event.beat}" data-duration="${event.duration}" data-string="${event.string}" data-fret="${event.fret}"><title>${esc(pitchName(event.midi))}, string ${event.string}, fret ${event.fret}; start ${event.beat}, duration ${event.duration} quarter notes</title><path class="tab-duration" d="M${left + (attack ? 11 : 0)} ${y + 7} H${right - 3}"/>${attack ? `<text class="tab-fret" x="${left}" y="${y + 5}">${event.fret}</text>` : `<text class="tab-hold" x="${left + 7}" y="${y - 5}">hold</text>`}</g>`;
-}
-
-// Shared by the SVG renderer and its moving playback cursor.
-export function tabPosition(beat, start, bars, barLength) {
-  const barWidth = 910 / bars;
-  const relative = (beat - start) / barLength;
-  const bar = Math.min(bars - 1, Math.floor(relative));
-  return 70 + bar * barWidth + 17 + (relative - bar) * (barWidth - 30);
+// Interpolate the cursor through the engraver's actual note positions.
+export function tabPosition(beat, points) {
+  const next = points.findIndex(([time]) => time > beat);
+  if (next === 0) return points[0][1];
+  if (next < 0) return points.at(-1)[1];
+  const [a, x] = points[next - 1], [b, y] = points[next];
+  return x + (y - x) * (beat - a) / (b - a);
 }
 
 // Both inputs have already passed the tab and visible-range validators.
@@ -98,33 +83,12 @@ function playbackControls(tab, plan) {
     <output class="tab-position" aria-live="off"></output><span class="tab-playback-status" role="status">Ready</span></div>`;
 }
 
-function tabSystem(tab, options, offset) {
-  const count = Math.min(options.perRow, options.bars - offset);
-  const barLength = tab.meter[0] * 4 / tab.meter[1];
-  const start = (options.first - tab.startBar + offset) * barLength;
-  const end = start + count * barLength;
-  const width = 1000, left = 70, barWidth = (width - left - 20) / count;
-  const height = 95 + (options.strings.length - 1) * 24;
-  // Keep a margin at bar boundaries so fret numbers never collide with barlines.
-  const x = (beat) => tabPosition(beat, start, count, barLength);
-  const strings = options.strings.map((string, row) => {
-    const y = 64 + row * 24;
-    return `<text class="tab-tuning" x="4" y="${y + 5}">${string} · ${esc(pitchName(tab.tuning[tab.tuning.length - string]))}</text><line x1="${left}" x2="${width - 20}" y1="${y}" y2="${y}"/>`;
-  }).join("");
-  const measures = Array.from({ length: count }, (_, bar) => {
-    const number = options.first + offset + bar;
-    const ticks = Array.from({ length: tab.meter[0] }, (_, beat) => `<text class="tab-beat" x="${x(start + (bar * tab.meter[0] + beat) * 4 / tab.meter[1])}" y="39">${beat + 1}</text>`).join("");
-    return `<text class="tab-bar" x="${left + bar * barWidth + 6}" y="17">${number}</text><line class="tab-barline" x1="${left + bar * barWidth}" x2="${left + bar * barWidth}" y1="48" y2="${height - 20}"/>${ticks}`;
-  }).join("");
-  const notes = tab.events.map((event) => noteMark(event, { x, start, end, strings: options.strings })).join("");
-  return `<svg class="tab-system" data-start="${start}" data-end="${end}" data-bars="${count}" data-bar-length="${barLength}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(tab.title)}; bars ${options.first + offset}–${options.first + offset + count - 1}"><g class="tab-lines">${strings}${measures}</g><line class="tab-playhead no-print" x1="${x(start)}" x2="${x(start)}" y1="44" y2="${height - 20}" style="display:none"/>${notes}</svg>`;
-}
-
 export function renderTab(input, attributes = {}, currentTuning = null) {
   const tab = parseTab(input);
   const options = tabOptions(tab, attributes);
   const plan = tabPlaybackPlan(tab, options);
-  const systems = Array.from({ length: Math.ceil(options.bars / options.perRow) }, (_, i) => tabSystem(tab, options, i * options.perRow)).join("");
+  const notation = tabNotation(tab, options);
+  const systems = `<div class="tab-score" data-notation="${esc(JSON.stringify(notation))}"></div>`;
   const mismatch = currentTuning && currentTuning.join() !== tab.tuning.join();
-  return `<section class="tablature" data-playback="${esc(JSON.stringify(plan))}"><header><h2>${esc(tab.title)}</h2><p>${tab.tempo} BPM · ${tab.meter.join("/")} · bars ${options.first}–${options.first + options.bars - 1}${tab.pitchShift ? ` · guitar output shift ${tab.pitchShift > 0 ? "+" : ""}${tab.pitchShift} semitones` : ""}</p><p class="tab-key">Frets shown at note attacks; lines show duration. “hold” continues a note from the previous row. Empty measures are rests.</p>${mismatch ? `<p class="component-error">This tab uses a different tuning from the selected guitar. Its original string/fret positions are preserved.</p>` : ""}</header>${playbackControls(tab, plan)}${systems}<footer>Open strings, treble to bass: ${esc([...tab.tuning].reverse().map(pitchName).join(" · "))}${tab.source ? `<br>${esc(tab.source)}` : ""}</footer></section>`;
+  return `<section class="tablature" data-playback="${esc(JSON.stringify(plan))}"><header><h2>${esc(tab.title)}</h2><p>${tab.tempo} BPM · ${tab.meter.join("/")} · bars ${options.first}–${options.first + options.bars - 1}${tab.pitchShift ? ` · guitar output shift ${tab.pitchShift > 0 ? "+" : ""}${tab.pitchShift} semitones` : ""}</p><p class="tab-key">Standard tablature · treble string at top · tied notes sustain without another attack.</p>${mismatch ? `<p class="component-error">This tab uses a different tuning from the selected guitar. Its original string/fret positions are preserved.</p>` : ""}</header>${playbackControls(tab, plan)}${notation.rounded ? '<p class="tab-key">Notation rounds fine timing to a readable rhythmic grid. Playback retains the original timing.</p>' : ""}${systems}<footer>Open strings, treble to bass: ${esc([...tab.tuning].reverse().map(pitchName).join(" · "))}${tab.source ? `<br>${esc(tab.source)}` : ""}</footer></section>`;
 }

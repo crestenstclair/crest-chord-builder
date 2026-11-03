@@ -12,6 +12,8 @@ await mkdir(path.join(dist, "engine"), { recursive: true });
 await mkdir(path.join(dist, "vendor"), { recursive: true });
 await cp(path.join(root, "node_modules/marked/lib/marked.esm.js"), path.join(dist, "vendor/marked.js"));
 await cp(path.join(root, "node_modules/marked/LICENSE.md"), path.join(dist, "vendor/marked.LICENSE.md"));
+await cp(path.join(root, "node_modules/vexflow/build/cjs/vexflow-bravura.js"), path.join(dist, "vendor/vexflow.js"));
+await cp(path.join(root, "node_modules/vexflow/LICENSE"), path.join(dist, "vendor/vexflow.LICENSE"));
 execFileSync(
   "go",
   [

@@ -13,6 +13,7 @@
     "@playwright/test": "^1.55.0"
   },
   "dependencies": {
-    "marked": "17.0.1"
+    "marked": "17.0.1",
+    "vexflow": "4.2.5"
   }
 }
