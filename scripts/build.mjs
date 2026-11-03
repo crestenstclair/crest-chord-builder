@@ -9,6 +9,9 @@ const dist = path.join(root, "dist");
 await rm(dist, { recursive: true, force: true });
 await cp(path.join(root, "web"), dist, { recursive: true });
 await mkdir(path.join(dist, "engine"), { recursive: true });
+await mkdir(path.join(dist, "vendor"), { recursive: true });
+await cp(path.join(root, "node_modules/marked/lib/marked.esm.js"), path.join(dist, "vendor/marked.js"));
+await cp(path.join(root, "node_modules/marked/LICENSE.md"), path.join(dist, "vendor/marked.LICENSE.md"));
 execFileSync(
   "go",
   [

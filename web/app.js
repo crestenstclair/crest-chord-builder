@@ -1,3 +1,5 @@
+import { openSheetEditor } from "./sheet-editor.js";
+import { mountSheet } from "./sheet-renderer.js";
 import {
   PRESETS,
   scaleChords,
@@ -8,6 +10,7 @@ import {
 import {
   STORAGE_KEY,
   LEGACY_STORAGE_KEY,
+  PREVIOUS_STORAGE_KEY,
   MAX_FILE_BYTES,
   id,
   createProject,
@@ -31,6 +34,7 @@ let startupError = "";
 try {
   const saved =
     localStorage.getItem(STORAGE_KEY) ??
+    localStorage.getItem(PREVIOUS_STORAGE_KEY) ??
     localStorage.getItem(LEGACY_STORAGE_KEY);
   if (saved) project = parseProject(saved);
 } catch (error) {
@@ -126,6 +130,7 @@ function render(preserveInput = false) {
   if (buttonSelector)
     app.querySelector(buttonSelector)?.focus({ preventScroll: true });
   hydrateFingerings();
+  hydrateCustomSheet();
 }
 
 function commit(update, { undo = true, preserveInput = false } = {}) {
@@ -139,6 +144,42 @@ function commit(update, { undo = true, preserveInput = false } = {}) {
   project = valid;
   persist();
   render(preserveInput);
+}
+
+function sheetContext(part = currentPart()) {
+  return { part, guitar: guitarForPart(part), projectTitle: project.title, theme: state.theme, zoom: state.zoom / 100 };
+}
+
+function hydrateCustomSheet() {
+  const frame = app.querySelector(".custom-sheet-frame");
+  const part = currentPart();
+  if (!frame || !part.sheet) return;
+  mountSheet(frame, part.sheet, sheetContext(part)).catch((error) => {
+    if (!frame.isConnected) return;
+    const message = document.createElement("p");
+    message.className = "component-error";
+    message.textContent = `Sheet could not render: ${error.message} Use Edit sheet to fix it.`;
+    frame.replaceWith(message);
+  });
+}
+
+function editSheet() {
+  const part = currentPart();
+  openSheetEditor(part.sheet, sheetContext(part), (sheet) => {
+    commit((doc) => {
+      const target = doc.parts.find((entry) => entry.id === part.id);
+      if (sheet) target.sheet = sheet;
+      else delete target.sheet;
+    });
+    notify("Sheet saved.");
+  });
+}
+
+function printSheet() {
+  if (!currentPart().sheet) return window.print();
+  const frame = app.querySelector(".custom-sheet-frame");
+  if (frame?.dataset.ready !== "true") return notify("Wait for the sheet preview to finish loading before printing.");
+  frame.contentWindow.postMessage({ type: "crest-sheet-print" }, "*");
 }
 
 function chordSignature(chord, tuning) {
@@ -410,7 +451,8 @@ const actions = {
     render();
   },
   fullscreen: toggleFullscreen,
-  print: () => window.print(),
+  print: printSheet,
+  "edit-sheet": editSheet,
   export: () => {
     downloadJSON(project);
     notify("JSON downloaded. Keep it as a portable backup.");
@@ -511,7 +553,7 @@ document.addEventListener("fullscreenchange", () => {
 });
 window.addEventListener("storage", (event) => {
   if (
-    ![STORAGE_KEY, LEGACY_STORAGE_KEY].includes(event.key) ||
+    ![STORAGE_KEY, PREVIOUS_STORAGE_KEY, LEGACY_STORAGE_KEY].includes(event.key) ||
     event.newValue === JSON.stringify(project)
   )
     return;
@@ -526,6 +568,7 @@ document.addEventListener("keydown", (event) => {
   if (
     event.key === "Escape" &&
     !document.querySelector("#editor").open &&
+    !document.querySelector("#sheet-editor").open &&
     state.focus
   ) {
     state.focus = false;

@@ -1,8 +1,10 @@
+import { parseSheet } from "./sheet-data.js";
 import { parseFormula } from "./chord-formula.js";
 import { PRESETS, SCALES, QUALITIES, mod12, toneSet } from "./music.js";
 
 export const LEGACY_STORAGE_KEY = "crest-chord-builder.project.v1";
-export const STORAGE_KEY = "crest-chord-builder.project.v2";
+export const PREVIOUS_STORAGE_KEY = "crest-chord-builder.project.v2";
+export const STORAGE_KEY = "crest-chord-builder.project.v3";
 export const MAX_FILE_BYTES = 2 * 1024 * 1024;
 export const id = () => crypto.randomUUID();
 export const tuningKey = (strings) => strings.join(",");
@@ -32,7 +34,7 @@ export function createProject() {
   const part = makePart(guitar.id);
   return {
     format: "crest-chord-builder",
-    version: 2,
+    version: 3,
     title: "Untitled session",
     guitars: [guitar],
     parts: [part],
@@ -135,6 +137,7 @@ function parsePart(value, guitarIds) {
       ? { customScale: parseCustomScale(value.customScale) }
       : {}),
     chords,
+    ...(value.sheet !== undefined ? { sheet: parseSheet(value.sheet) } : {}),
   };
 }
 
@@ -165,8 +168,8 @@ export function parseProject(input) {
     fail("Project files must be smaller than 2 MB.");
   const value = typeof input === "string" ? JSON.parse(input) : input;
   record(value, "Project");
-  if (value.format !== "crest-chord-builder" || ![1, 2].includes(value.version))
-    fail("Expected a Crest Chord Builder version 1 or 2 JSON project.");
+  if (value.format !== "crest-chord-builder" || ![1, 2, 3].includes(value.version))
+    fail("Expected a Crest Chord Builder version 1, 2 or 3 JSON project.");
   const guitars = list(value.guitars, 1, 16, "Guitars").map(parseGuitar);
   uniqueIds(guitars, "Guitar");
   const guitarIds = new Set(guitars.map((g) => g.id));
@@ -176,7 +179,7 @@ export function parseProject(input) {
   uniqueIds(parts, "Part");
   const project = {
     format: value.format,
-    version: 2,
+    version: 3,
     title: text(value.title, "Project title"),
     guitars,
     parts,

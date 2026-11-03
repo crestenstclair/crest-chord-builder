@@ -1,0 +1,58 @@
+.custom-sheet-frame { width: 100%; min-height: 160px; border: 0; display: block; background: var(--surface); }
+#sheet-editor { width: min(1800px, 96vw); max-width: 96vw; max-height: 94vh; }
+#sheet-editor .editor-header p { font-size: 13px; color: var(--muted); margin-top: 6px; }
+.sheet-editor-layout { display: grid; grid-template-columns: minmax(320px, .9fr) minmax(400px, 1.3fr); gap: 22px; padding-top: 16px; }
+.sheet-source-tools, .sheet-insert-tools, .sheet-files-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-bottom: 10px; }
+.sheet-source-tools label { flex: 1; min-width: 120px; }
+.sheet-source-tools button, .sheet-insert-tools button { font-size: 12px; }
+.sheet-source-label { display: flex; flex-direction: column; gap: 6px; }
+#sheet-source { width: 100%; min-height: 340px; height: 42vh; resize: vertical; padding: 12px; background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; font: 13px/1.6 ui-monospace, monospace; tab-size: 2; }
+.sheet-files-heading { justify-content: space-between; margin-top: 14px; }
+.sheet-file-list { list-style: none; margin: 0; padding: 0; max-height: 170px; overflow: auto; }
+.sheet-file-list li { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--line); font-size: 13px; }
+.sheet-file-list li > button:first-child { flex: 1; justify-content: flex-start; min-width: 0; overflow-wrap: anywhere; }
+.sheet-help, .sheet-editor-status { color: var(--muted); font-size: 12px; line-height: 1.6; }
+.sheet-help { margin-top: 9px; }
+.sheet-editor-status.error, .component-error { color: var(--outside); }
+.sheet-preview-panel { min-width: 0; max-height: 70vh; overflow: auto; padding: 10px; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; }
+.sheet-preview-panel > h3 { margin-bottom: 10px; }
+.sheet-document { min-height: 0; margin: 0; padding: 22px; background: var(--surface); color: var(--ink); font-size: calc(16px * var(--display-zoom, 1)); line-height: 1.6; overflow-wrap: anywhere; }
+.sheet-document h1 { font-size: 2em; margin: 0 0 .5em; }
+.sheet-document h2 { font-size: 1.35em; margin: 1em 0 .5em; }
+.sheet-document h3 { font-size: 1.1em; margin: .8em 0 .4em; }
+.sheet-document p, .sheet-document ul, .sheet-document ol { margin: .5em 0 1em; }
+.sheet-document ul, .sheet-document ol { padding-left: 1.5em; }
+.sheet-document blockquote { margin: 1em 0; padding: .3em 1em; border-left: 3px solid var(--accent); background: var(--raised); }
+.sheet-document pre { white-space: pre-wrap; padding: 14px; background: var(--bg); overflow: auto; }
+.sheet-document code { font-family: ui-monospace, monospace; }
+.sheet-document img { max-width: 100%; height: auto; }
+.sheet-document table { border-collapse: collapse; width: 100%; }
+.sheet-document th, .sheet-document td { padding: 6px 10px; border: 1px solid var(--line); text-align: left; }
+.sheet-document section { margin-bottom: 20px; }
+.sheet-document .fretboard { min-width: 650px; }
+.sheet-document .scale-map { padding: 12px; }
+.sheet-component-chords { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.sheet-component-chord { text-align: center; padding: 10px; border: 1px solid var(--line); border-radius: 6px; break-inside: avoid; }
+.sheet-component-chord .chord-box { height: 190px; width: 100%; }
+.tablature header h2 { margin-bottom: 0; }
+.tablature header p { margin: 3px 0; }
+.tab-key, .tablature footer { font-size: .75em; color: var(--muted); }
+.tab-system { display: block; width: 100%; height: auto; overflow: visible; break-inside: avoid; margin: 14px 0; }
+.tab-lines line { stroke: var(--line); stroke-width: .8; }
+.tab-lines .tab-barline { stroke: var(--muted); stroke-width: 1.3; }
+.tab-system text { fill: var(--ink); font: 14px ui-monospace, monospace; }
+.tab-system .tab-tuning { font-size: 12px; }
+.tab-system .tab-beat { fill: var(--muted); font-size: 11px; text-anchor: middle; }
+.tab-system .tab-bar { font: bold 13px system-ui, sans-serif; }
+.tab-system .tab-fret { text-anchor: middle; font-size: 17px; font-weight: 700; paint-order: stroke; stroke: var(--surface); stroke-width: 7px; stroke-linejoin: round; }
+.tab-system .tab-duration { stroke: var(--accent); stroke-width: 2; fill: none; }
+.tab-system .tab-hold { fill: var(--muted); font-size: 9px; }
+@media (max-width: 900px) { .sheet-editor-layout { grid-template-columns: 1fr; } .sheet-preview-panel { max-height: none; } }
+@media print {
+  .sheet-document { padding: 0; font-size: 11pt; background: white; }
+  .sheet-document h1, .sheet-document h2, .tablature header { break-after: avoid; }
+  .sheet-document .fretboard { min-width: 0; }
+  .sheet-document .scale-map { break-inside: avoid; }
+  .sheet-component-chords { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .tab-system { margin: 8px 0; }
+}

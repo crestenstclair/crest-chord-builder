@@ -1,3 +1,4 @@
+import { sheetFrame } from "./sheet-renderer.js";
 import { chordFormula } from "./chord-formula.js";
 import {
   NOTES,
@@ -218,8 +219,8 @@ export function displayView(project, state) {
       [12, "12–24"],
     ],
     state.start,
-  )}</select></label><label class="inline-label size-control">Size<input type="range" min="90" max="150" step="10" value="${state.zoom}" data-field="zoom" aria-label="Display size"></label>${button("theme", state.theme === "light" ? "Dark theme" : "Light theme", "", "outlined")}${button("fullscreen", state.focus ? "Exit focus" : "Fullscreen", "expand", "outlined")}${button("print", "Print sheet", "print", "primary")}</div></div>
-    <div class="sheet" style="--display-zoom:${state.zoom / 100}"><div class="sheet-heading"><div><div class="eyebrow">${esc(project.title)} / PART ${project.parts.indexOf(part) + 1}</div><h1>${esc(part.name)}</h1></div><div class="sheet-meta"><strong>${esc(scaleName(part))}</strong><span>${esc(guitar.name)} · ${guitar.strings.length} strings</span><small>Treble to bass: ${esc([...guitar.strings].reverse().map(pitchName).join(" · "))}</small></div></div>
+  )}</select></label><label class="inline-label size-control">Size<input type="range" min="90" max="150" step="10" value="${state.zoom}" data-field="zoom" aria-label="Display size"></label>${button("theme", state.theme === "light" ? "Dark theme" : "Light theme", "", "outlined")}${button("fullscreen", state.focus ? "Exit focus" : "Fullscreen", "expand", "outlined")}${button("edit-sheet", "Edit sheet", "edit", "outlined")}${button("print", "Print sheet", "print", "primary")}</div></div>
+    ${part.sheet ? `<div class="sheet custom-sheet">${sheetFrame()}</div>` : `<div class="sheet" style="--display-zoom:${state.zoom / 100}"><div class="sheet-heading"><div><div class="eyebrow">${esc(project.title)} / PART ${project.parts.indexOf(part) + 1}</div><h1>${esc(part.name)}</h1></div><div class="sheet-meta"><strong>${esc(scaleName(part))}</strong><span>${esc(guitar.name)} · ${guitar.strings.length} strings</span><small>Treble to bass: ${esc([...guitar.strings].reverse().map(pitchName).join(" · "))}</small></div></div>
     <section class="scale-map"><div class="map-heading"><h2>Scale fretboard</h2><div class="legend"><span><i class="root-key"></i>Root</span><span><i></i>Scale interval</span><span>Treble string at top</span></div></div>${fretboard(
       guitar.strings,
       notes.map((n) => n.pc),
@@ -234,7 +235,7 @@ export function displayView(project, state) {
       },
     )}</section>
     <div class="sheet-chords-heading"><h2>Chord sheet</h2><span>Intervals relative to chord root · × muted · ○ open</span><div class="page-controls no-print">${button("sheet-page", "", "left", "icon-button", `data-direction="-1" aria-label="Previous chord page" ${page === 0 ? "disabled" : ""}`)}<span>${page + 1} / ${pages}</span>${button("sheet-page", "", "right", "icon-button", `data-direction="1" aria-label="Next chord page" ${page >= pages - 1 ? "disabled" : ""}`)}</div></div>
-    <div class="chord-cards display-chords screen-only">${visible.map((c, i) => chordCard(c, page * 6 + i, part, guitar, state, true)).join("") || '<div class="empty-progression">This part has no chords. Add chords in Parts.</div>'}</div><div class="print-only chord-cards">${part.chords.map((c, i) => chordCard(c, i, part, guitar, state, true)).join("")}</div></div></div>`;
+    <div class="chord-cards display-chords screen-only">${visible.map((c, i) => chordCard(c, page * 6 + i, part, guitar, state, true)).join("") || '<div class="empty-progression">This part has no chords. Add chords in Parts.</div>'}</div><div class="print-only chord-cards">${part.chords.map((c, i) => chordCard(c, i, part, guitar, state, true)).join("")}</div></div>`}</div>`;
 }
 
 export const renderView = (project, state) =>

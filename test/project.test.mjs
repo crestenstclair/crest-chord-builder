@@ -100,7 +100,7 @@ test("v1 migration preserves all musical data and leaves its input unchanged", (
   const before = structuredClone(legacy);
   const migrated = parseProject(legacy);
   assert.deepEqual(legacy, before);
-  assert.deepEqual(migrated, { ...before, version: 2 });
+  assert.deepEqual(migrated, { ...before, version: 3 });
   assert.deepEqual(parseProject(JSON.stringify(migrated)), migrated);
 });
 

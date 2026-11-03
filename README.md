@@ -2,18 +2,19 @@
 
 A browser-only guitar workspace: configure your instrument, build harmony for each part, edit individual chord fingerings, and play from a large scale map and printable chord sheet.
 
-The website has no backend, accounts, runtime package dependencies, analytics, or external font/CDN requests. GitHub Pages serves the static files. A Go WebAssembly worker runs the ergonomic chord engine locally; your project stays in browser storage until you download it as JSON.
+The website has no backend, accounts, analytics, or external font/CDN requests. GitHub Pages serves the static files. A bundled Marked parser renders Markdown without CDN requests. A Go WebAssembly worker runs the ergonomic chord engine locally; your project stays in browser storage until you download it as JSON.
 
 ## Run locally
 
 Install Go 1.26 and Node.js 20 or newer, then run:
 
 ```sh
+npm ci
 npm run build
 npm start
 ```
 
-Open <http://127.0.0.1:4173/crest-chord-builder/>. The preview server also serves the site at `/`. Rebuild and reload after source changes. `npm ci` is only needed for the optional browser tests; building the site uses the standard libraries in Go and Node.
+Open <http://127.0.0.1:4173/crest-chord-builder/>. The preview server also serves the site at `/`. Rebuild and reload after source changes. `npm ci` installs the bundled Markdown parser and browser-test tools. Builds copy the parser into the static site; production requires no Node server.
 
 ## Publish on GitHub Pages
 
@@ -34,6 +35,7 @@ The build versions the engine worker, Go runtime, and WebAssembly files together
 - **Manual fingering:** **Draw / remove** sets any fret and updates the chord intervals and name. The fretboard distinguishes chord tones, scale notes, and outside-scale notes (dashed borders). Per-string octave buttons shift 12 frets on the same string, within frets 0–24. Cancel or Escape discards unsaved changes.
 - **Themes and labels:** high-contrast light and dark themes work throughout the workspace and workshop. Intervals are the default; Play & Print also offers note names. Theme and label choices persist separately from project JSON.
 - **Play & print:** shows the selected part's scale and six chord boxes at a time. Choose note names or intervals, select a fret window, increase size, and enter fullscreen/focus view. The default focus layout fits an eight-string scale and six chords at 1920×1080. Larger size settings intentionally use more space. Longer parts have chord-page arrows. **Print sheet** prints the scale and every chord in the selected part, including chords outside the current screen page. Browser “Save as PDF” also works; landscape and background graphics are recommended.
+- **Custom sheets:** **Play & Print → Edit sheet** supports Markdown, full HTML/CSS/JavaScript in an isolated document, local file attachments, tabs, scale maps, chord sheets, and native custom elements. Each part can use its own layout. [Component syntax, tab JSON, and LLM instructions](docs/custom-sheets.md) cover the portable format.
 - **Save JSON / Open JSON:** move projects between browsers and keep backups. Opening a project validates the complete document before replacing the current session. Undo restores the previous session. Browser storage is per origin; local preview and GitHub Pages have separate saved sessions. Private browsing or clearing site data can remove browser saves, so download JSON for durable storage.
 
 Retuning does not delete saved fingerings. Each chord stores a grip for each exact tuning it has used. Returning to that tuning restores the grip. Drawing notes updates harmonic intervals; voicing selection and automatic generation keep the selected harmony when tones are omitted. An older tuning snapshot with pitches outside the current chord is displayed using its actual harmony. Slash-bass labels follow the lowest sounding pitch. If two tabs edit the same browser session, the receiving tab pauses autosave rather than overwriting the other version; download its JSON before reloading.
@@ -45,7 +47,7 @@ See [`examples/first-idea.json`](examples/first-idea.json) for a complete portab
 ```json
 {
   "format": "crest-chord-builder",
-  "version": 2,
+  "version": 3,
   "title": "First idea",
   "guitars": [
     { "id": "guitar1", "name": "Guitar 1", "strings": [40, 45, 50, 55, 59, 64] }
@@ -77,7 +79,7 @@ See [`examples/first-idea.json`](examples/first-idea.json) for a complete portab
 
 Preset scale IDs and interval collections are defined in [`web/music.js`](web/music.js). A custom scale uses `"scale": "custom"` and `"customScale": {"name": "My scale", "intervals": [0, 2, 3, 7, 10]}` on the part. Scale intervals must include `0` and have no duplicates. IDs contain letters, numbers, underscores, or hyphens. Limits are 16 guitars, 100 parts, 64 chords per part, 32 saved tunings per chord, and 2 MiB per formatted JSON project. Imports reject unknown versions, missing guitar references, invalid pitches, duplicate IDs, or malformed fret arrays. Extra fields are discarded. The schema differs from the original `chordgen` song-sheet format; that older format is not directly imported.
 
-Version 2 adds custom scales and rootless harmony. Imports accept versions 1 and 2 and export version 2. On startup, the browser reads `crest-chord-builder.project.v2`; when absent, it migrates the v1 slot into v2 and leaves the original slot untouched. An invalid v2 save never falls back silently or overwrites either slot. For rollback, the old site can still read its original v1 slot; v2 changes require exporting JSON and are not automatically copied backward. Keep the v1 example as a compatibility fixture. Storage changes to either slot pause autosave in other open tabs.
+Version 2 added custom scales and rootless harmony. Version 3 adds optional per-part `sheet` documents and attachments. Imports accept versions 1, 2 and 3 and export version 3. Startup reads `crest-chord-builder.project.v3`; when absent, it migrates v2, then v1 if v2 is absent. Original slots remain untouched for rollback. An invalid newest save never silently falls back or overwrites its older versions. Older sites cannot read v3 exports and continue to use their preserved old storage. Download JSON to retain new sheet work; it is not copied backward. Changes to any of the three slots pause autosave in other open tabs.
 
 ## Engine and design
 

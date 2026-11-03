@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 
-const key = "crest-chord-builder.project.v2";
+const key = "crest-chord-builder.project.v3";
 const saved = (page) =>
   page.evaluate((k) => JSON.parse(localStorage.getItem(k)), key);
 const addChord = async (page, name = "Am", extension = "7") => {
@@ -546,7 +546,7 @@ test("legacy browser saves migrate once without overwriting the original slot", 
   );
   await page.reload();
   const migrated = await saved(page);
-  expect(migrated).toEqual({ ...legacy, version: 2 });
+  expect(migrated).toEqual({ ...legacy, version: 3 });
   await page.getByLabel("Project title", { exact: true }).fill("Migrated edit");
   await page.getByLabel("Project title", { exact: true }).press("Tab");
   expect(
@@ -638,7 +638,7 @@ test("both workshop themes keep readable text contrast; eight-string controls st
   expect((await saved(page)).parts[0].chords[0].intervals).toEqual([3, 7]);
 });
 
-test("invalid v2 browser data blocks autosave and does not silently replace it with v1", async ({
+test("invalid v3 browser data blocks autosave and does not silently replace it with v1", async ({
   page,
 }) => {
   await page.evaluate((key) => {
