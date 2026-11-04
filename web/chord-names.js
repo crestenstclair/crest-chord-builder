@@ -20,16 +20,19 @@ function nameOption(tuning, frets, root, keyTones) {
   };
 }
 
-// Every option accounts for all sounding pitches. A rootless interpretation's
-// key check includes its implied root, even though that note is not played.
-// At most one reading per root keeps the list bounded. Fewer than two distinct
-// pitches cannot establish a chord name.
+// Every suggested root must be played. Omitted fifths remain valid, and their
+// implied pitches still count toward key membership. At most one reading per
+// root keeps the list bounded. Fewer than two distinct pitches cannot name a chord.
 export function chordNameOptions(tuning, frets, keyTones, preferredRoot) {
   const pitches = unique(soundingNotes(tuning, frets).map(mod12));
   if (pitches.length < 2) return [];
-  const options = Array.from({ length: 12 }, (_, root) => nameOption(tuning, frets, root, keyTones))
+  const options = pitches.map((root) => nameOption(tuning, frets, root, keyTones))
     .filter((option) => option.rank < 4);
-  if (!options.length) return [nameOption(tuning, frets, preferredRoot, keyTones)];
+  if (!options.length) {
+    const root = pitches.includes(preferredRoot) ? preferredRoot
+      : describeFingering(tuning, frets, preferredRoot).bass;
+    return [nameOption(tuning, frets, root, keyTones)];
+  }
   return options.sort((a, b) => a.rank - b.rank || Number(b.inKey) - Number(a.inKey)
     || Number(b.root === preferredRoot) - Number(a.root === preferredRoot)
     || Number(b.root === b.bass) - Number(a.root === a.bass) || a.root - b.root);

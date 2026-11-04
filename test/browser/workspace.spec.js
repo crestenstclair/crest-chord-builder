@@ -989,14 +989,12 @@ test('name from fretboard offers alternate roots and saves the chosen name with 
   await expect(page.getByRole('button',{name:'Edit Fmaj7',exact:true})).toBeVisible();
 });
 
-test('naming works without the voicing engine and distinguishes out-of-key implied roots', async ({ page }) => {
+test('naming works without the voicing engine and never recommends an unplayed root', async ({ page }) => {
   await page.route('**/chords*.wasm', route => route.abort());
   await page.getByRole('button',{name:'Name from fretboard',exact:true}).click();
   for(const [string,fret] of [[0,0],[3,0],[4,0]]) await fretAt(page,string,fret).click();
   await expect(page.getByRole('button',{name:'Use Em',exact:true})).toContainText('In key');
-  await expect(page.getByRole('button',{name:'Use Cmaj7(no1)/E',exact:true})).toContainText('In key');
-  await expect(page.getByRole('button',{name:'Use D♭m7♭5(no1)/E',exact:true})).toContainText('Out of key');
-  await expect(page.getByRole('button',{name:'Use D♭m7♭5(no1)/E',exact:true})).toContainText('Implied: D♭');
+  await expect(page.getByRole('button',{name:/^Use .*no1/})).toHaveCount(0);
   await page.getByRole('button',{name:'Use Em',exact:true}).click();
   await fretAt(page,4,1).click();
   await expect(page.getByRole('button',{name:'Add to part',exact:true})).toBeDisabled();
@@ -1005,4 +1003,20 @@ test('naming works without the voicing engine and distinguishes out-of-key impli
   await page.getByRole('button',{name:'Use C/E',exact:true}).click();
   await page.getByRole('button',{name:'Add to part',exact:true}).click();
   expect((await saved(page)).parts[0].chords[0].root).toBe(0);
+});
+
+test('D C F E recommends Dm9 without rootless A minor and saves the exact grip', async ({ page }) => {
+  await page.getByRole('button',{name:'Name from fretboard',exact:true}).click();
+  for (const [string,fret] of [[2,0],[3,5],[4,6],[5,0]]) await fretAt(page,string,fret).click();
+  await expect(page.locator('.chord-name-choice').first()).toContainText('Dm9(no5)');
+  await expect(page.getByRole('button',{name:/^Use .*no1/})).toHaveCount(0);
+  await expect(page.getByRole('button',{name:'Use Dm9(no5)',exact:true})).toContainText('In key');
+  await page.getByRole('button',{name:'Use Dm9(no5)',exact:true}).click();
+  await page.getByRole('button',{name:'Add to part',exact:true}).click();
+  await page.reload();
+  const chord = (await saved(page)).parts[0].chords[0];
+  expect(chord.root).toBe(2);
+  expect(chord.intervals).toEqual([0,2,3,10]);
+  expect(chord.fingerings['40,45,50,55,59,64']).toEqual([-1,-1,0,5,6,0]);
+  await expect(page.getByRole('button',{name:'Edit Dm9(no5)',exact:true})).toBeVisible();
 });

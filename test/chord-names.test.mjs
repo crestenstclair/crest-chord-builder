@@ -21,19 +21,37 @@ test("naming offers alternate roots without changing the selected notes", () => 
   assert.equal(new Set(options.map((option) => option.root)).size, options.length);
 });
 
-test("key membership checks implied roots and fifths, not just played tones", () => {
+test("names never recommend an unplayed root", () => {
   const options = chordNameOptions(tuning, [0,-1,-1,0,0,-1], key, 9); // E G B
   assert.equal(chordName(options[0]), "Em");
-  const cMajor = options.find((option) => option.root === 0);
-  assert.equal(chordName(cMajor), "Cmaj7(no1)/E");
-  assert.deepEqual(cMajor.impliedTones, [0]);
-  assert.ok(cMajor.inKey);
-  const alteredRoot = options.find((option) => option.root === 1);
-  assert.equal(alteredRoot.inKey, false);
-  assert.deepEqual(alteredRoot.impliedTones, [1]);
-  const modified = options.find((option) => option.root === 6);
-  assert.ok(modified.impliedTones.includes(6));
-  assert.equal(modified.inKey, false);
+  for (const option of options) {
+    assert.ok([4,7,11].includes(option.root));
+    assert.ok(option.intervals.includes(0));
+    assert.ok(!chordName(option).includes("no1"));
+  }
+});
+
+test("D C F E suggests Dm9(no5), with key membership including its omitted fifth", () => {
+  const frets = [-1,-1,0,5,6,0];
+  const options = chordNameOptions(tuning, frets, key, 9);
+  assert.equal(chordName(options[0]), "Dm9(no5)");
+  assert.deepEqual(options[0].impliedTones, [9]);
+  assert.ok(options[0].inKey);
+  assert.ok(options.every((option) => option.intervals.includes(0)));
+  assert.ok(!options.some((option) => option.root === 9));
+  const withoutFifth = chordNameOptions(tuning, frets, [0,2,4,5], 9);
+  assert.equal(withoutFifth.find((option) => option.root === 2).inKey, false);
+});
+
+test("an unnamed cluster falls back to a played root instead of the absent preferred root", () => {
+  const frets = [-1,3,-1,-1,2,-1]; // C D♭, with C in the bass.
+  const options = chordNameOptions(tuning, frets, key, 9);
+  assert.equal(options.length, 1);
+  assert.equal(options[0].root, 0);
+  assert.ok(options[0].intervals.includes(0));
+  assert.ok(!chordName(options[0]).includes("no1"));
+  const preferredPlayed = chordNameOptions(tuning, frets, key, 1);
+  assert.equal(preferredPlayed[0].root, 1);
 });
 
 test("empty, single-note, custom-scale and re-entrant inputs remain honest", () => {
