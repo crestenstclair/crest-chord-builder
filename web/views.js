@@ -142,7 +142,7 @@ function triadPalette(part) {
   const scaleIntervals = scaleNotes(part.root, partScale(part))
     .map((note) => `<button class="harmony-chord" data-action="open-scale-tone" data-root="${note.pc}" aria-label="Build chord from interval ${esc(note.interval)}"><strong>${esc(note.interval)}</strong><span>${esc(note.name)}</span></button>`)
     .join("");
-  return `<div class="palette-heading"><h2>${cells ? "Triads in scale" : "Intervals in scale"}</h2><span>${cells ? "Select an interval to open its chord workshop." : "Select an interval, then choose the chord tones."}</span></div><div class="harmony-grid">${cells || scaleIntervals}</div>`;
+  return `<div class="palette-heading"><h2>${cells ? "Triads in scale" : "Intervals in scale"}</h2><span>${cells ? "Select an interval to open its chord workshop." : "Select an interval, then choose the chord tones."}</span>${button("name-from-fretboard", "Name from fretboard", "", "outlined")}</div><div class="harmony-grid">${cells || scaleIntervals}</div>`;
 }
 
 function chordCard(chord, index, part, guitar, state, display = false) {

@@ -288,7 +288,7 @@ async function cycleVoicing(chordId, direction, frame = null) {
   }
 }
 
-function editChord(chord, isNew = false) {
+function editChord(chord, { isNew = false, nameFromNotes = false } = {}) {
   const current = currentPart();
   const partId = current.id;
   const scale = partScale(current);
@@ -314,6 +314,7 @@ function editChord(chord, isNew = false) {
       scaleName: `${keyNotes[0].name} ${scale.name}`,
       partName: current.name,
       isNew,
+      nameFromNotes,
       toggleTheme,
     },
   );
@@ -408,7 +409,7 @@ const actions = {
         label: "",
         fingerings: {},
       },
-      true,
+      { isNew: true },
     );
   },
   "open-scale-tone": (target) =>
@@ -421,8 +422,11 @@ const actions = {
         label: "",
         fingerings: {},
       },
-      true,
+      { isNew: true },
     ),
+  "name-from-fretboard": () => editChord({
+    id: id(), root: currentPart().root, intervals: [], bass: -1, label: "", fingerings: {},
+  }, { isNew: true, nameFromNotes: true }),
   "edit-chord": (target) => {
     if (target.dataset.partId) state.partId = target.dataset.partId;
     editChord(chordById(target.dataset.id));

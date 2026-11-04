@@ -963,3 +963,46 @@ test('clicked notes save while search is pending and survive a late engine failu
   await expect(page.getByLabel('Detected inversion', { exact: true })).toHaveText('Current: ♭6 in bass');
   await expect(page.locator('.editor-status')).not.toContainText('failed');
 });
+
+test('name from fretboard offers alternate roots and saves the chosen name with the exact grip', async ({ page }, testInfo) => {
+  await page.getByRole('button', {name:'Name from fretboard',exact:true}).click();
+  await expect(page.locator('#editor .fret.chosen')).toHaveCount(0);
+  await expect(page.locator('.name-empty')).toBeVisible();
+  await expect(page.getByRole('button',{name:'Add to part',exact:true})).toBeDisabled();
+  for(const [string,fret] of [[2,3],[3,2],[4,1],[5,0]]) await fretAt(page,string,fret).click();
+  await expect(page.locator('.chord-name-choice').first()).toContainText('Fmaj7');
+  await expect(page.getByRole('button',{name:'Use Fmaj7',exact:true})).toContainText('In key');
+  await expect(page.getByRole('button',{name:'Use Am(♭13)/F',exact:true})).toContainText('In key');
+  const original = await currentGrip(page);
+  await page.getByRole('button',{name:'Use Am(♭13)/F',exact:true}).click();
+  await expect(page.locator('#editor-title')).toHaveText('Am(♭13)/F');
+  await page.getByRole('button',{name:'Use Fmaj7',exact:true}).click();
+  await expect(page.locator('#editor-title')).toHaveText('Fmaj7');
+  expect(await currentGrip(page)).toEqual(original);
+  await page.screenshot({path:testInfo.outputPath('chord-names.png')});
+  await page.getByRole('button',{name:'Add to part',exact:true}).click();
+  await page.reload();
+  const chord = (await saved(page)).parts[0].chords[0];
+  expect(chord.root).toBe(5);
+  expect(chord.intervals).toEqual([0,4,7,11]);
+  expect(chord.fingerings['40,45,50,55,59,64']).toEqual([-1,-1,3,2,1,0]);
+  await expect(page.getByRole('button',{name:'Edit Fmaj7',exact:true})).toBeVisible();
+});
+
+test('naming works without the voicing engine and distinguishes out-of-key implied roots', async ({ page }) => {
+  await page.route('**/chords*.wasm', route => route.abort());
+  await page.getByRole('button',{name:'Name from fretboard',exact:true}).click();
+  for(const [string,fret] of [[0,0],[3,0],[4,0]]) await fretAt(page,string,fret).click();
+  await expect(page.getByRole('button',{name:'Use Em',exact:true})).toContainText('In key');
+  await expect(page.getByRole('button',{name:'Use Cmaj7(no1)/E',exact:true})).toContainText('In key');
+  await expect(page.getByRole('button',{name:'Use D♭m7♭5(no1)/E',exact:true})).toContainText('Out of key');
+  await expect(page.getByRole('button',{name:'Use D♭m7♭5(no1)/E',exact:true})).toContainText('Implied: D♭');
+  await page.getByRole('button',{name:'Use Em',exact:true}).click();
+  await fretAt(page,4,1).click();
+  await expect(page.getByRole('button',{name:'Add to part',exact:true})).toBeDisabled();
+  await expect(page.getByRole('button',{name:'Use Em',exact:true})).toHaveCount(0);
+  await expect(page.getByRole('button',{name:'Use C/E',exact:true})).toContainText('In key');
+  await page.getByRole('button',{name:'Use C/E',exact:true}).click();
+  await page.getByRole('button',{name:'Add to part',exact:true}).click();
+  expect((await saved(page)).parts[0].chords[0].root).toBe(0);
+});

@@ -141,6 +141,8 @@ function editorPanels(session, actual) {
 
 function editorStatus(session) {
   if (session.message) return session.message;
+  if (session.nameFromNotes && !session.busy) return session.namedRoot === null
+    ? "Place notes, then choose a chord name below." : "Name selected. Add to part to save this exact fingering.";
   if (session.busy) return session.anchors.length
     ? "Selected notes are ready to save. Finding nearby voicings…"
     : "Finding fingerings…";
@@ -210,13 +212,26 @@ function gripPanel(session, name, actual) {
     )}</div><label class="chord-label-input">Label (optional)<input data-editor="label" data-focus="label" value="${esc(chord.label)}" maxlength="120" placeholder="Chord label"></label></aside>`;
 }
 
+function chordNameChoice(choice, session) {
+  const name = chordName(choice, choice.bass, session.spelling);
+  const implied = choice.impliedTones.length
+    ? `Implied: ${choice.impliedTones.map((tone) => esc(session.spelling[tone])).join(" · ")}` : "All tones played";
+  return button("choose-name", `<strong>${esc(name)}</strong><span class="name-key ${choice.inKey ? "in-key" : "out-of-key"}">${choice.inKey ? "In key" : "Out of key"}</span><small>${simpleFormula(choice).join(" · ")}</small><small>${implied}</small>`, "", "chord-name-choice", `data-root="${choice.root}" data-focus="name-${choice.root}" aria-label="Use ${esc(name)}" aria-pressed="${session.namedRoot === choice.root}"`);
+}
+
+function chordNames(session) {
+  const choices = session.nameChoices.map((choice) => chordNameChoice(choice, session)).join("");
+  return `<section class="chord-names" aria-labelledby="chord-names-heading"><div class="voicing-results-heading"><h3 id="chord-names-heading">Chord names</h3><span>Key checks include implied notes.</span></div><p>Choose a name; your frets stay the same.</p>${choices ? `<div class="chord-name-grid">${choices}</div>` : '<p class="name-empty">Select at least two different notes to compare chord names.</p>'}</section>`;
+}
+
 export function editorView(session) {
   const { chord, tuning, frets } = session;
   const actual = frets ? describeFingering(tuning, frets, chord.root) : null;
-  const name = chord.intervals.length ? chordName(
+  const name = session.nameFromNotes && session.namedRoot === null && chord.intervals.length
+    ? "Choose a chord name" : chord.intervals.length ? chordName(
     chord,
     actual?.midis.length ? actual.bass : chord.bass,
     session.spelling,
   ) : "No notes selected";
-  return `<header class="editor-header"><div><div class="eyebrow">CHORD WORKSHOP · ${esc(session.partName)} · ${tuning.length} STRINGS</div><div class="workshop-title"><h2 id="editor-title">${esc(name)}</h2><span>${chord.intervals.length ? esc(chordQuality(chord).name) : ""}</span><strong class="workshop-formula">${simpleFormula(chord).join(" · ")}</strong></div></div><div>${button("theme", document.documentElement.dataset.theme === "light" ? "Dark theme" : "Light theme", "", "outlined", 'data-focus="theme"')}${button("close", "", "close", "icon-button", 'aria-label="Close chord editor"')}</div></header><div class="workshop-layout"><div class="workshop-main">${editorPanels(session, actual)}<div class="editor-status" role="status">${esc(editorStatus(session))}</div>${voicingGrid(session)}</div>${gripPanel(session, name, actual)}</div><footer class="editor-footer"><span>Changes apply when saved.</span><div>${button("close", "Cancel", "", "quiet")}${button("save", session.isNew ? "Add to part" : "Save chord", "plus", "primary", !actual?.midis.length ? "disabled" : "")}</div></footer>`;
+  return `<header class="editor-header"><div><div class="eyebrow">CHORD WORKSHOP · ${esc(session.partName)} · ${tuning.length} STRINGS</div><div class="workshop-title"><h2 id="editor-title">${esc(name)}</h2><span>${chord.intervals.length && (!session.nameFromNotes || session.namedRoot !== null) ? esc(chordQuality(chord).name) : ""}</span><strong class="workshop-formula">${simpleFormula(chord).join(" · ")}</strong></div></div><div>${button("theme", document.documentElement.dataset.theme === "light" ? "Dark theme" : "Light theme", "", "outlined", 'data-focus="theme"')}${button("close", "", "close", "icon-button", 'aria-label="Close chord editor"')}</div></header><div class="workshop-layout"><div class="workshop-main">${editorPanels(session, actual)}<div class="editor-status" role="status">${esc(editorStatus(session))}</div>${session.nameFromNotes ? chordNames(session) : voicingGrid(session)}</div>${gripPanel(session, name, actual)}</div><footer class="editor-footer"><span>Changes apply when saved.</span><div>${button("close", "Cancel", "", "quiet")}${button("save", session.isNew ? "Add to part" : "Save chord", "plus", "primary", !actual?.midis.length || (session.nameFromNotes && session.namedRoot === null) ? "disabled" : "")}</div></footer>`;
 }

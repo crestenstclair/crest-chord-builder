@@ -1,4 +1,5 @@
 import { selectChordTone, withSoundingIntervals } from "./chord-formula.js";
+import { chordNameOptions } from "./chord-names.js";
 import {
   FAMILIES,
   NOTES,
@@ -23,7 +24,8 @@ function renderEditor() {
     ? document.activeElement.dataset.focus
     : null;
   const scroll = dialog.scrollTop;
-  dialog.innerHTML = editorView(session);
+  dialog.innerHTML = editorView({ ...session, nameChoices: session.nameFromNotes
+    ? chordNameOptions(session.tuning, session.frets, session.keyTones, session.chord.root) : [] });
   if (focus)
     dialog
       .querySelector(`[data-focus="${focus}"]`)
@@ -149,6 +151,7 @@ function setSelectedGrip() {
 }
 
 function regenerate() {
+  session.namedRoot = null;
   audition([]);
   // Keep compatible notes visible while the engine places the edited formula.
   session.frets = (session.frets ?? session.tuning.map(() => -1)).map((fret, string) =>
@@ -175,13 +178,14 @@ function updateFingering() {
   session.busy = false;
   session.message = "";
   session.searchError = "";
+  session.namedRoot = null;
   const actual = describeFingering(session.tuning, session.frets, session.chord.root);
   session.chord = { ...withSoundingIntervals(session.chord, actual.intervals), bass: actual.bass };
   session.bassFilter = -1;
   session.anchors = session.anchors.filter(({ string, fret }) => session.frets[string] === fret);
   clearSuggestions();
   audition(actual.midis);
-  if (!actual.midis.length) {
+  if (!actual.midis.length || session.nameFromNotes) {
     endVoicingSearch();
     renderEditor();
     return;
@@ -202,6 +206,7 @@ function changeFret(string, fret) {
 function saveChord() {
   const { chord, tuning, frets, onSave } = session;
   if (!frets) return;
+  if (session.nameFromNotes && session.namedRoot === null) return;
   const actual = describeFingering(tuning, frets, chord.root);
   if (!actual.midis.length) return;
   requestVersion++; // A background search cannot replace a saved selection.
@@ -210,6 +215,22 @@ function saveChord() {
   setFingering(chord, tuning, frets);
   onSave(chord);
   dialog.close();
+}
+
+function chooseChordName(root) {
+  const option = chordNameOptions(session.tuning, session.frets, session.keyTones, session.chord.root)
+    .find((choice) => choice.root === root);
+  if (!option) return;
+  requestVersion++; // Naming must not let an older grip search replace the notes.
+  session.busy = false;
+  session.message = "";
+  endVoicingSearch();
+  session.chord = { ...session.chord, root, intervals: [...option.intervals], bass: option.bass };
+  delete session.chord.formula;
+  session.namedRoot = root;
+  session.bassFilter = -1;
+  audition(soundingNotes(session.tuning, session.frets));
+  renderEditor();
 }
 
 function editVoicingResults(action, target) {
@@ -292,6 +313,7 @@ dialog.addEventListener("click", (event) => {
     if (action === "remove-anchor")
       return changeFret(Number(target.dataset.string), Number(target.dataset.position));
     if (action === "save") return saveChord();
+    if (action === "choose-name") return chooseChordName(Number(target.dataset.root));
     if (action === "theme") {
       session.toggleTheme();
       renderEditor();
@@ -379,9 +401,9 @@ export function openChordEditor(
   chord,
   tuning,
   onSave,
-  { keyNotes, scaleName, partName, isNew, toggleTheme },
+  { keyNotes, scaleName, partName, isNew, toggleTheme, nameFromNotes = false },
 ) {
-  const frets = getFingering(chord, tuning);
+  const frets = nameFromNotes ? tuning.map(() => -1) : getFingering(chord, tuning);
   chord = voicedChord(
     chord,
     frets ? describeFingering(tuning, frets, chord.root) : null,
@@ -396,6 +418,8 @@ export function openChordEditor(
     scaleName,
     partName,
     isNew,
+    nameFromNotes,
+    namedRoot: null,
     toggleTheme,
     view: "fretboard",
     searchOpen: false,

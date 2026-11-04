@@ -1364,6 +1364,39 @@ dialog::backdrop {
   min-height: 32px;
   font-size: 12px;
 }
+.chord-names {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+.chord-names h3 { font-size: 15px; }
+.chord-names p, .chord-names .voicing-results-heading > span {
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+.chord-name-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 8px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding: 2px;
+}
+.chord-name-choice {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  text-align: left;
+  gap: 5px 8px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  padding: 10px;
+}
+.chord-name-choice[aria-pressed="true"] { outline: 2px solid var(--accent); }
+.chord-name-choice small { grid-column: 1 / -1; color: var(--muted); font-size: 11px; }
+.chord-name-choice strong { overflow-wrap: anywhere; font-size: 13px; }
+.name-key { font-size: 11px; white-space: nowrap; }
+.name-key.in-key { color: var(--accent); }
+.name-key.out-of-key { color: var(--outside); }
 .voicing-results {
   border-top: 1px solid var(--line);
   padding-top: 10px;
