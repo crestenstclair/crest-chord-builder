@@ -14,6 +14,8 @@ import {
   DEGREE_COLUMNS,
   FORMULA_TONES,
   chordFormula,
+  simpleInterval,
+  simpleFormula,
 } from "./chord-formula.js";
 import { esc, options, button } from "./ui.js";
 import { fretboard, chordBox } from "./diagrams.js";
@@ -30,12 +32,17 @@ function voiceRow(open, string, session) {
 function intervalCell(label, session) {
   if (!label)
     return '<td class="interval-unavailable" aria-label="Not applicable">—</td>';
-  const selected = chordFormula(session.chord).includes(label);
+  const primary = simpleInterval(label);
+  // A saved sus2/sus4 occupies the same visible cell as 2/4. Clicking that
+  // active cell removes its original tone instead of silently respelling it.
+  const active = chordFormula(session.chord).find((tone) => simpleInterval(tone) === primary);
+  const selected = Boolean(active);
   const inKey = session.keyTones.includes(
     mod12(session.chord.root + FORMULA_TONES[label].pitch),
   );
   const keyStatus = inKey ? "In key" : "Out of key";
-  return `<td>${button("interval", `<span>${esc(label)}</span><small id="tone-key-${label}">${keyStatus}</small>`, "", `interval-choice ${inKey ? "in-key" : "out-of-key"}`, `data-tone="${label}" data-focus="tone-${label}" aria-label="Chord interval ${label}" aria-describedby="tone-key-${label}" aria-pressed="${selected}" title="${label} · ${keyStatus.toLowerCase()} · ${selected ? "click to remove" : "click to select"}"`)}</td>`;
+  const extension = primary !== label ? ` / ${label}th` : "";
+  return `<td>${button("interval", `<span>${esc(primary)}${extension ? `<span class="interval-alias">${esc(extension)}</span>` : ""}</span><small id="tone-key-${primary}">${keyStatus}</small>`, "", `interval-choice ${inKey ? "in-key" : "out-of-key"}`, `data-tone="${active ?? label}" data-focus="tone-${primary}" aria-label="Chord interval ${primary}" aria-describedby="tone-key-${primary}" aria-pressed="${selected}" title="${primary}${extension} · ${keyStatus.toLowerCase()} · ${selected ? "click to remove" : "click to select"}"`)}</td>`;
 }
 
 function intervalMatrix(session) {
@@ -76,12 +83,13 @@ function chordControls(session, actual) {
     ),
     ...chordFormula(chord).map((label) => {
       const pc = mod12(chord.root + FORMULA_TONES[label].pitch);
+      const interval = simpleInterval(label);
       return button(
         "bass",
-        label === "1" ? "Root · 1" : `${label} in bass`,
+        interval === "1" ? "Root · 1" : `${interval} in bass`,
         "",
         "choice-button",
-        `data-value="${pc}" data-focus="bass-${pc}" aria-label="${label} in bass" aria-pressed="${session.bassFilter === pc}"`,
+        `data-value="${pc}" data-focus="bass-${pc}" aria-label="${interval} in bass" aria-pressed="${session.bassFilter === pc}"`,
       );
     }),
   ].join("");
@@ -192,5 +200,5 @@ export function editorView(session) {
     chord,
     actual?.midis.length ? actual.bass : chord.bass,
   );
-  return `<header class="editor-header"><div><div class="eyebrow">CHORD WORKSHOP · ${esc(session.partName)} · ${tuning.length} STRINGS</div><div class="workshop-title"><h2 id="editor-title">${esc(name)}</h2><span>${esc(chordQuality(chord).name)}</span><strong class="workshop-formula">${chordFormula(chord).join(" · ")}</strong></div></div><div>${button("theme", document.documentElement.dataset.theme === "light" ? "Dark theme" : "Light theme", "", "outlined", 'data-focus="theme"')}${button("close", "", "close", "icon-button", 'aria-label="Close chord editor"')}</div></header><div class="workshop-layout"><div class="workshop-main">${chordControls(session, actual)}${neckPanel(session)}<div class="editor-status" role="status">${esc(editorStatus(session))}</div>${voicingGrid(session)}</div>${gripPanel(session, name, actual)}</div><footer class="editor-footer"><span>Changes apply when saved.</span><div>${button("close", "Cancel", "", "quiet")}${button("save", session.isNew ? "Add to part" : "Save chord", "plus", "primary", busy || !actual?.midis.length ? "disabled" : "")}</div></footer>`;
+  return `<header class="editor-header"><div><div class="eyebrow">CHORD WORKSHOP · ${esc(session.partName)} · ${tuning.length} STRINGS</div><div class="workshop-title"><h2 id="editor-title">${esc(name)}</h2><span>${esc(chordQuality(chord).name)}</span><strong class="workshop-formula">${simpleFormula(chord).join(" · ")}</strong></div></div><div>${button("theme", document.documentElement.dataset.theme === "light" ? "Dark theme" : "Light theme", "", "outlined", 'data-focus="theme"')}${button("close", "", "close", "icon-button", 'aria-label="Close chord editor"')}</div></header><div class="workshop-layout"><div class="workshop-main">${chordControls(session, actual)}${neckPanel(session)}<div class="editor-status" role="status">${esc(editorStatus(session))}</div>${voicingGrid(session)}</div>${gripPanel(session, name, actual)}</div><footer class="editor-footer"><span>Changes apply when saved.</span><div>${button("close", "Cancel", "", "quiet")}${button("save", session.isNew ? "Add to part" : "Save chord", "plus", "primary", busy || !actual?.midis.length ? "disabled" : "")}</div></footer>`;
 }

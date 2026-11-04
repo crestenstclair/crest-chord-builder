@@ -4,6 +4,10 @@ import {
   selectChordTone,
   chordFormula,
   withSoundingIntervals,
+  DEGREE_COLUMNS,
+  FORMULA_TONES,
+  simpleFormula,
+  simpleInterval,
 } from "../web/chord-formula.js";
 import { chordName, chordInterval, chordFamily } from "../web/music.js";
 import { createProject, makeChord, parseProject } from "../web/project.js";
@@ -32,7 +36,7 @@ test("grid variants replace their degree in both directions and toggle off", () 
 test("enharmonic choices retain spelling and correct altered chord names", () => {
   let chord = selectChordTone(makeChord(0, "dom7"), "♯9");
   assert.equal(chordName(chord), "C7(♯9)");
-  assert.equal(chordInterval(chord, 3), "♯9");
+  assert.equal(chordInterval(chord, 3), "♯2");
   assert.equal(chordFamily(chord), "dominant");
   chord = selectChordTone(chord, "♯11");
   assert.equal(chordName(chord), "C7(♯9,♯11)");
@@ -82,4 +86,28 @@ test("optional formulas round trip and malformed spelling cannot corrupt pitches
     invalid.parts[0].chords[0].formula = formula;
     assert.throws(() => parseProject(invalid), /formula/);
   }
+});
+
+test("interval grid follows 1–7, covers every pitch, and keeps compound labels secondary", () => {
+  assert.deepEqual(DEGREE_COLUMNS.map(({ name }) => name), ["1", "2", "3", "4", "5", "6", "7"]);
+  const tones = DEGREE_COLUMNS.flatMap(({ choices }) => choices.filter(Boolean));
+  assert.deepEqual([...new Set(tones.map((label) => FORMULA_TONES[label].pitch))].sort((a, b) => a - b),
+    Array.from({ length: 12 }, (_, i) => i));
+  assert.deepEqual(["9", "11", "13", "♭9", "♯11", "♭13"].map(simpleInterval), ["2", "4", "6", "♭2", "♯4", "♭6"]);
+});
+
+test("adding second, fourth and sixth keeps the third and existing JSON spellings", () => {
+  let chord = minor();
+  for (const tone of ["9", "11", "13"]) chord = selectChordTone(chord, tone);
+  const before = structuredClone(chord);
+  assert.deepEqual(simpleFormula(chord), ["1", "2", "♭3", "4", "5", "6"]);
+  assert.deepEqual(chord.intervals, [0, 2, 3, 5, 7, 9]);
+  assert.deepEqual(chord, before, "display order must not mutate the saved chord");
+  assert.equal(chordName(selectChordTone(minor(), "13")), "Am6");
+  assert.equal(chordName(selectChordTone(makeChord(0, "maj"), "13")), "C6");
+  const project = createProject();
+  project.parts[0].chords.push(chord, makeChord(0, "sus2"), makeChord(0, "sus4"));
+  assert.deepEqual(parseProject(JSON.stringify(project)), project);
+  assert.deepEqual(simpleFormula(project.parts[0].chords[1]), ["1", "2", "5"]);
+  assert.deepEqual(simpleFormula(project.parts[0].chords[2]), ["1", "4", "5"]);
 });

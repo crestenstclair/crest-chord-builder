@@ -1,6 +1,6 @@
 // Degree spelling belongs to the chord, not its fingering. Enharmonic choices
 // such as ♭5 and ♯11 share a pitch but occupy different places in the editor.
-export const DEGREE_COLUMNS = [
+const FORMULA_GROUPS = [
   { name: "Root", choices: [null, "1", null, null] },
   { name: "3rd / sus", choices: ["4", "3", "♭3", "2"] },
   { name: "5th", choices: ["♯5", "5", "♭5", null] },
@@ -9,6 +9,27 @@ export const DEGREE_COLUMNS = [
   { name: "11th", choices: ["♯11", "11", null, null] },
   { name: "13th / 6th", choices: [null, "13", "♭13", null] },
 ];
+// The editor follows simple interval order. Stored chord spelling still
+// distinguishes extensions from suspensions and keeps older projects intact.
+export const DEGREE_COLUMNS = [
+  { name: "1", choices: [null, "1", null, null] },
+  { name: "2", choices: ["♯9", "9", "♭9", null] },
+  { name: "3", choices: [null, "3", "♭3", null] },
+  { name: "4", choices: ["♯11", "11", null, null] },
+  { name: "5", choices: ["♯5", "5", "♭5", null] },
+  { name: "6", choices: [null, "13", "♭13", null] },
+  { name: "7", choices: [null, "7", "♭7", "♭♭7"] },
+];
+
+export function simpleInterval(label) {
+  return label.replace(/9|11|13/, (degree) => String(Number(degree) - 7));
+}
+
+export function simpleFormula(chord) {
+  return chordFormula(chord)
+    .sort((a, b) => FORMULA_TONES[a].pitch - FORMULA_TONES[b].pitch)
+    .map(simpleInterval);
+}
 const pitches = {
   1: 0,
   2: 2,
@@ -30,7 +51,7 @@ const pitches = {
   13: 9,
 };
 export const FORMULA_TONES = Object.fromEntries(
-  DEGREE_COLUMNS.flatMap((column, index) =>
+  FORMULA_GROUPS.flatMap((column, index) =>
     column.choices
       .filter(Boolean)
       .map((label) => [label, { pitch: pitches[label], column: index }]),

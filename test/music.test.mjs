@@ -152,7 +152,7 @@ test("extensions, omissions and inversions keep the harmonic root", () => {
   assert.equal(chordName(seventh), "Am7");
   assert.equal(chordName(extendChord(seventh, "9")), "Am9");
   assert.equal(chordName(extendChord(seventh, "13")), "Am13");
-  assert.equal(chordInterval(extendChord(seventh, "13"), 6), "13");
+  assert.equal(chordInterval(extendChord(seventh, "13"), 6), "6");
   assert.equal(chordName(toggleChordInterval(seventh, 7)), "Am7(no5)");
   const rootless = toggleChordInterval(seventh, 0);
   assert.equal(rootless.root, 9);

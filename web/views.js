@@ -1,5 +1,5 @@
 import { sheetFrame } from "./sheet-renderer.js";
-import { chordFormula } from "./chord-formula.js";
+import { simpleFormula } from "./chord-formula.js";
 import {
   NOTES,
   INTERVALS,
@@ -173,7 +173,7 @@ function chordCard(chord, index, part, guitar, state, display = false) {
   if (frets && !actual)
     diagram =
       '<div class="diagram-placeholder">No automatic fingering found. Open the workshop to place notes manually.</div>';
-  return `<article class="chord-card" data-chord="${chord.id}"><header><span class="chord-order">${String(index + 1).padStart(2, "0")}</span><div><h3><button data-action="edit-chord" data-id="${chord.id}" aria-label="Open ${esc(name)} workshop">${esc(label)}</button></h3><small>${esc(name)} · ${esc(chordQuality(definition).name)}</small><small class="card-formula">${chordFormula(definition).join(" · ")}</small></div>${button("play-chord", "", "play", "icon-button no-print", `data-id="${chord.id}" aria-label="Play ${esc(name)}" ${actual ? "" : "disabled"}`)}</header>${diagram}<div class="fret-values">${frets ? frets.map((f) => (f < 0 ? "×" : f)).join(" ") : "Calculating fingering…"}</div>
+  return `<article class="chord-card" data-chord="${chord.id}"><header><span class="chord-order">${String(index + 1).padStart(2, "0")}</span><div><h3><button data-action="edit-chord" data-id="${chord.id}" aria-label="Open ${esc(name)} workshop">${esc(label)}</button></h3><small>${esc(name)} · ${esc(chordQuality(definition).name)}</small><small class="card-formula">${simpleFormula(definition).join(" · ")}</small></div>${button("play-chord", "", "play", "icon-button no-print", `data-id="${chord.id}" aria-label="Play ${esc(name)}" ${actual ? "" : "disabled"}`)}</header>${diagram}<div class="fret-values">${frets ? frets.map((f) => (f < 0 ? "×" : f)).join(" ") : "Calculating fingering…"}</div>
     <div class="chord-card-actions no-print">${button("cycle-voicing", "", "left", "icon-button", `data-id="${chord.id}" data-direction="-1" aria-label="Previous fingering for ${esc(name)}"`)}${button("edit-chord", "Edit", "edit", "quiet", `data-id="${chord.id}" aria-label="Edit ${esc(name)}"`)}${button("cycle-voicing", "", "right", "icon-button", `data-id="${chord.id}" data-direction="1" aria-label="Next fingering for ${esc(name)}"`)}</div>
     ${display ? "" : `<div class="reorder-actions">${button("move-chord", "←", "", "icon-button", `data-id="${chord.id}" data-direction="-1" aria-label="Move ${esc(name)} earlier" ${index === 0 ? "disabled" : ""}`)}${button("remove-chord", "", "trash", "icon-button", `data-id="${chord.id}" aria-label="Remove ${esc(name)}"`)}${button("move-chord", "→", "", "icon-button", `data-id="${chord.id}" data-direction="1" aria-label="Move ${esc(name)} later" ${index === part.chords.length - 1 ? "disabled" : ""}`)}</div>`}</article>`;
 }

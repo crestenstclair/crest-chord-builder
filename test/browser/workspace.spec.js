@@ -470,10 +470,10 @@ test("interval workshop previews changes, preserves extensions, and sets inversi
     .poll(() => page.evaluate(() => window.previewCount))
     .toBeGreaterThan(0);
   await page
-    .getByRole("button", { name: "Chord interval 9", exact: true })
+    .getByRole("button", { name: "Chord interval 2", exact: true })
     .click();
   await page
-    .getByRole("button", { name: "Chord interval 13", exact: true })
+    .getByRole("button", { name: "Chord interval 6", exact: true })
     .click();
   await page
     .getByRole("button", { name: "Chord interval 5", exact: true })
@@ -502,7 +502,7 @@ test("interval workshop previews changes, preserves extensions, and sets inversi
     .getByRole("button", { name: "Edit Am13(no5)/C", exact: true })
     .click();
   await expect(
-    page.getByRole("button", { name: "Chord interval 13", exact: true }),
+    page.getByRole("button", { name: "Chord interval 6", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
 });
 
@@ -712,18 +712,18 @@ test("interval grid supports reversible alterations and separate bass choices wi
   await expect(page.locator("#editor-title")).toHaveText("A");
   await tone("♭3").click();
   await expect(page.locator("#editor-title")).toHaveText("Am");
-  await tone("9").click();
+  await tone("2").click();
   await expect(tone("♭7")).toHaveAttribute("aria-pressed", "false");
   await expect(tone("7")).toHaveAttribute("aria-pressed", "false");
-  await tone("♭9").click();
-  await expect(tone("9")).toHaveAttribute("aria-pressed", "false");
-  await tone("♭9").click();
+  await tone("♭2").click();
+  await expect(tone("2")).toHaveAttribute("aria-pressed", "false");
+  await tone("♭2").click();
   await expect(page.locator(".workshop-formula")).toHaveText("1 · ♭3 · 5");
   await tone("♭7").click();
   await tone("7").click();
   await expect(tone("♭7")).toHaveAttribute("aria-pressed", "false");
   await tone("♭7").click();
-  await tone("♯11").click();
+  await tone("♯4").click();
   await expect(tone("5")).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "♭3 in bass", exact: true }).click();
   await expect(
@@ -743,7 +743,7 @@ test("interval grid supports reversible alterations and separate bass choices wi
   await page
     .getByRole("button", { name: "Edit Am7(♯11)/C", exact: true })
     .click();
-  await expect(tone("♯11")).toHaveAttribute("aria-pressed", "true");
+  await expect(tone("♯4")).toHaveAttribute("aria-pressed", "true");
   await expect(tone("♭5")).toHaveAttribute("aria-pressed", "false");
   await expect(
     page.getByRole("button", { name: "Any inversion", exact: true }),
@@ -867,8 +867,8 @@ test("interval key hints follow the chord root within the part scale", async ({ 
   await expect(tone("3")).toHaveAccessibleDescription("In key");
   await expect(tone("♭3")).toHaveAccessibleDescription("Out of key");
   await page.getByRole("button", { name: "Root B", exact: true }).click();
-  await expect(tone("♭9")).toHaveAccessibleDescription("In key");
-  await expect(tone("9")).toHaveAccessibleDescription("Out of key");
+  await expect(tone("♭2")).toHaveAccessibleDescription("In key");
+  await expect(tone("2")).toHaveAccessibleDescription("Out of key");
 });
 
 test("a custom scale without triads can start a chord from its intervals", async ({ page }) => {
@@ -883,4 +883,33 @@ test("a custom scale without triads can start a chord from its intervals", async
   await page.getByRole("button", { name: "Chord interval 3", exact: true }).click();
   await page.getByRole("button", { name: "Add to part", exact: true }).click();
   expect((await saved(page)).parts[0].chords[0].intervals).toEqual([0, 4]);
+});
+
+test('simple intervals lead the grid and 2, 4, 6 add independently of the third', async ({ page }, testInfo) => {
+  await page.getByRole('button', { name: 'Open Am chord workshop', exact: true }).click();
+  const tone = (interval) => page.getByRole('button', { name: `Chord interval ${interval}`, exact: true });
+  await expect(page.locator('.interval-matrix thead th')).toHaveText(['Degree', '1', '2', '3', '4', '5', '6', '7']);
+  for (const [interval, alias] of [['2', '9th'], ['4', '11th'], ['6', '13th']]) {
+    await expect(tone(interval)).toContainText(`${interval} / ${alias}`);
+    await tone(interval).click();
+    await expect(tone(interval)).toHaveAttribute('aria-pressed', 'true');
+    await expect(tone('♭3')).toHaveAttribute('aria-pressed', 'true');
+  }
+  await expect(page.locator('.workshop-formula')).toHaveText('1 · 2 · ♭3 · 4 · 5 · 6');
+  // Return to a playable minor sixth, then save and reopen its simple labels.
+  await tone('2').click();
+  await tone('4').click();
+  await expect(page.locator('#editor-title')).toHaveText('Am6');
+  await page.getByRole('button', { name: 'Add to part', exact: true }).click();
+  expect((await saved(page)).parts[0].chords[0].intervals).toEqual([0, 3, 7, 9]);
+  await page.reload();
+  await page.getByRole('button', { name: 'Edit Am6', exact: true }).click();
+  await expect(tone('6')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.workshop-formula')).toHaveText('1 · ♭3 · 5 · 6');
+  await page.screenshot({ path: testInfo.outputPath('simple-interval-grid.png') });
+  await page.getByRole('button', { name: 'Quality Suspended 2nd', exact: true }).click();
+  await expect(tone('2')).toHaveAttribute('aria-pressed', 'true');
+  await tone('2').click();
+  await expect(tone('2')).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('.workshop-formula')).toHaveText('1 · 5');
 });

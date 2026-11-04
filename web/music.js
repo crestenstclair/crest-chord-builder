@@ -2,6 +2,7 @@ import {
   chordFormula,
   FORMULA_TONES,
   withSoundingIntervals,
+  simpleInterval,
 } from "./chord-formula.js";
 export const NOTES = [
   "C",
@@ -368,22 +369,15 @@ export function chordInterval(chord, pc) {
   const spelled = chord.formula?.find(
     (label) => FORMULA_TONES[label].pitch === interval,
   );
-  if (spelled) return spelled;
-  if (interval === 3 && chord.intervals.includes(4)) return "♯9";
-  const seventh = chord.intervals.includes(10) || chord.intervals.includes(11);
+  if (spelled) return simpleInterval(spelled);
+  if (interval === 3 && chord.intervals.includes(4)) return "♯2";
   if (interval === 8 && chord.intervals.includes(4)) return "♯5";
-  if (interval === 2 && seventh) return "9";
-  if (
-    interval === 5 &&
-    seventh &&
-    (chord.intervals.includes(3) || chord.intervals.includes(4))
-  )
-    return "11";
-  if (interval === 9 && seventh) return "13";
   if (
     interval === 9 &&
     chord.intervals.includes(3) &&
-    chord.intervals.includes(6)
+    chord.intervals.includes(6) &&
+    !chord.intervals.includes(10) &&
+    !chord.intervals.includes(11)
   )
     return "♭♭7";
   return INTERVALS[interval];

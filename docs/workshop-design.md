@@ -5,9 +5,10 @@ The workshop opens from a scale triad or a saved chord. Root, quality, interval 
 ## Interaction rules
 
 - A quality button starts a new formula for the selected root. The grid then edits that formula directly.
+- Columns follow simple interval order, 1–7, and include all twelve pitch classes. Labels lead with the simple interval: **2 / 9th**, **4 / 11th**, **6 / 13th**. Formula and fretboard labels use simple intervals; chord names use conventional harmonic spelling.
 - Each column groups variants of one degree. Select 3 to replace ♭3, or ♭5 to replace 5. Selecting the active variant removes it. At least one tone must remain.
-- Extensions are explicit: selecting 9 adds only 9. No sevenths or other extensions are inserted implicitly.
-- Equivalent pitches use one spelling. Choosing ♭5 removes ♯11 if present; choosing ♯11 can retain a separate perfect fifth. JSON preserves the selected spelling.
+- Selecting 2, 4, or 6 adds only that interval and keeps the third. No sevenths or other intervals are implied.
+- Equivalent pitches use one spelling. Choosing ♭5 removes ♯4 if present; choosing ♯4 can retain a separate perfect fifth. JSON preserves the underlying chord spelling, including existing 9/11/13 labels.
 - Inversion has its own filter row. Choose any bass, the root, or another selected interval to constrain suggested grips, including nearby voicings. The **Current** readout separately identifies the displayed voicing's lowest sounding pitch. Drawing, muting, or shifting notes clears the filter and detects the inversion automatically. Removing the filtered tone resets the filter to **Any**. Saved chords retain their actual bass; reopening starts with an unrestricted filter.
 - Inversion and formula changes request a new grip, then audition its exact pitches. Stale search results cannot trigger playback. If no grip is available, the status explains that and manual selection remains available.
 - In **Find voicings**, each clicked chord tone becomes a required string/fret position. Clicking other strings adds constraints; clicking a required note again removes it. Another fret on the same string replaces its constraint. Required-note chips also provide × removal controls. All results must contain every required note. Inversion groups show their counts and six ranked chord boxes per page; group selection and paging do not change the chosen grip.
