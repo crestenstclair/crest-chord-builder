@@ -1168,7 +1168,7 @@ dialog::backdrop {
   color: inherit;
 }
 .interval-choice .interval-alias {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
 }

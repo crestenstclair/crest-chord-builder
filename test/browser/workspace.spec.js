@@ -888,9 +888,9 @@ test("a custom scale without triads can start a chord from its intervals", async
 test('simple intervals lead the grid and 2, 4, 6 add independently of the third', async ({ page }, testInfo) => {
   await page.getByRole('button', { name: 'Open Am chord workshop', exact: true }).click();
   const tone = (interval) => page.getByRole('button', { name: `Chord interval ${interval}`, exact: true });
-  await expect(page.locator('.interval-matrix thead th')).toHaveText(['Degree', '1', '2', '3', '4', '5', '6', '7']);
+  await expect(page.locator('.interval-matrix thead th')).toHaveText(['Degree', '1', '2 (9th)', '3', '4 (11th)', '5', '6 (13th)', '7']);
   for (const [interval, alias] of [['2', '9th'], ['4', '11th'], ['6', '13th']]) {
-    await expect(tone(interval)).toContainText(`${interval} / ${alias}`);
+    await expect(tone(interval)).toContainText(`${interval} (${alias})`);
     await tone(interval).click();
     await expect(tone(interval)).toHaveAttribute('aria-pressed', 'true');
     await expect(tone('♭3')).toHaveAttribute('aria-pressed', 'true');

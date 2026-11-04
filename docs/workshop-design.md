@@ -5,7 +5,7 @@ The workshop opens from a scale triad or a saved chord. Root, quality, interval 
 ## Interaction rules
 
 - A quality button starts a new formula for the selected root. The grid then edits that formula directly.
-- Columns follow simple interval order, 1–7, and include all twelve pitch classes. Labels lead with the simple interval: **2 / 9th**, **4 / 11th**, **6 / 13th**. Formula and fretboard labels use simple intervals; chord names use conventional harmonic spelling.
+- Columns follow simple interval order, 1–7, and include all twelve pitch classes. Labels lead with the simple interval: **2 (9th)**, **4 (11th)**, **6 (13th)**. Formula and fretboard labels use simple intervals; chord names use conventional harmonic spelling.
 - Each column groups variants of one degree. Select 3 to replace ♭3, or ♭5 to replace 5. Selecting the active variant removes it. At least one tone must remain.
 - Selecting 2, 4, or 6 adds only that interval and keeps the third. No sevenths or other intervals are implied.
 - Equivalent pitches use one spelling. Choosing ♭5 removes ♯4 if present; choosing ♯4 can retain a separate perfect fifth. JSON preserves the underlying chord spelling, including existing 9/11/13 labels.

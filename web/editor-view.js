@@ -29,6 +29,10 @@ function voiceRow(open, string, session) {
   return `<div class="voice-row"><span class="voice-string">${number}<small>${esc(pitchName(open))}</small></span><strong>${midi === null ? "×" : chordInterval(session.chord, mod12(midi))}<small>${midi === null ? "Muted" : `Fret ${fret} · ${esc(pitchName(midi))}`}</small></strong><div>${button("octave", "−8ve", "", "octave-button", `data-string="${string}" data-delta="-12" data-focus="down-${string}" ${session.busy || fret < 12 ? "disabled" : ""} aria-label="String ${number} down one octave"`)}${button("octave", "+8ve", "", "octave-button", `data-string="${string}" data-delta="12" data-focus="up-${string}" ${session.busy || fret < 0 || fret > 12 ? "disabled" : ""} aria-label="String ${number} up one octave"`)}${button("mute", "×", "", "icon-button", `data-string="${string}" data-focus="mute-${string}" aria-label="Mute string ${number}" ${session.busy || fret < 0 ? "disabled" : ""}`)}</div></div>`;
 }
 
+function intervalAlias(label) {
+  return simpleInterval(label) !== label ? ` (${label}th)` : "";
+}
+
 function intervalCell(label, session) {
   if (!label)
     return '<td class="interval-unavailable" aria-label="Not applicable">—</td>';
@@ -41,13 +45,13 @@ function intervalCell(label, session) {
     mod12(session.chord.root + FORMULA_TONES[label].pitch),
   );
   const keyStatus = inKey ? "In key" : "Out of key";
-  const extension = primary !== label ? ` / ${label}th` : "";
+  const extension = intervalAlias(label);
   return `<td>${button("interval", `<span>${esc(primary)}${extension ? `<span class="interval-alias">${esc(extension)}</span>` : ""}</span><small id="tone-key-${primary}">${keyStatus}</small>`, "", `interval-choice ${inKey ? "in-key" : "out-of-key"}`, `data-tone="${active ?? label}" data-focus="tone-${primary}" aria-label="Chord interval ${primary}" aria-describedby="tone-key-${primary}" aria-pressed="${selected}" title="${primary}${extension} · ${keyStatus.toLowerCase()} · ${selected ? "click to remove" : "click to select"}"`)}</td>`;
 }
 
 function intervalMatrix(session) {
   const rows = ["Raised", "Natural", "Lowered", "Alternate"];
-  return `<section class="interval-section" aria-labelledby="interval-heading"><div class="interval-heading"><h3 id="interval-heading">Intervals</h3><p>Select a variant. Click it again to remove it.</p></div><div class="interval-scroll"><table class="interval-matrix"><thead><tr><th scope="col">Degree</th>${DEGREE_COLUMNS.map((c) => `<th scope="col">${c.name}</th>`).join("")}</tr></thead><tbody>${rows.map((name, index) => `<tr><th scope="row">${name}</th>${DEGREE_COLUMNS.map((c) => intervalCell(c.choices[index], session)).join("")}</tr>`).join("")}</tbody></table></div></section>`;
+  return `<section class="interval-section" aria-labelledby="interval-heading"><div class="interval-heading"><h3 id="interval-heading">Intervals</h3><p>Select a variant. Click it again to remove it.</p></div><div class="interval-scroll"><table class="interval-matrix"><thead><tr><th scope="col">Degree</th>${DEGREE_COLUMNS.map((c) => `<th scope="col">${c.name}${intervalAlias(c.choices[1])}</th>`).join("")}</tr></thead><tbody>${rows.map((name, index) => `<tr><th scope="row">${name}</th>${DEGREE_COLUMNS.map((c) => intervalCell(c.choices[index], session)).join("")}</tr>`).join("")}</tbody></table></div></section>`;
 }
 
 function chordControls(session, actual) {
