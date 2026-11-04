@@ -19,7 +19,6 @@ import {
 } from "./chord-formula.js";
 import { esc, options, button } from "./ui.js";
 import { fretboard, chordBox } from "./diagrams.js";
-import { selectedNoteFrets } from "./voicings.js";
 
 export const VOICINGS_PER_PAGE = 6;
 
@@ -130,17 +129,19 @@ function neckPanel(session) {
   const hint = session.mode === "draw"
     ? "Click a fret to place a note; click again to remove it. The formula follows the sounding notes."
     : session.anchors.length
-      ? "Click more chord tones to narrow the results. Click a required note again to remove it."
-      : "Click a chord tone to find nearby voicings containing that exact string and fret.";
+      ? "Click a chord tone to add it to this grip; click again to remove it. Suggestions below include your selected notes."
+      : "Click a chord tone to start a grip. Each note updates the fingering and nearby suggestions.";
   return `<section class="editor-neck">${neckControls(session)}<div class="legend workshop-legend"><span><i class="root-key"></i>Root</span><span><i></i>Chord tone</span><span><i class="scale-key"></i>In scale</span><span><i class="outside-key"></i>Outside scale</span><span>Ring = selected voicing${session.anchors.length ? " · Square = required note" : ""}</span></div>${fretboard(tuning, toneSet(chord), chord.root, { start: session.start, frets, anchors: session.anchors, editing: session.mode === "select" || !busy, chordTonesOnly: session.mode === "select", labels: "intervals", keyTones: session.keyTones, chord })}<p class="editor-hint">${esc(hint)}</p></section>`;
 }
 
 function editorStatus(session) {
   if (session.message) return session.message;
-  if (session.busy) return "Finding fingerings…";
+  if (session.busy) return session.anchors.length
+    ? "Selected notes are ready to save. Finding nearby voicings…"
+    : "Finding fingerings…";
   if (session.anchors.length)
     return session.voicingIndex < 0
-      ? "Choose a voicing from the grid to use it in the part."
+      ? "Selected notes are ready to save. Keep adding notes or choose a suggestion below."
       : "Selected voicing ready. Save to use this fingering in the part.";
   return "Four-fret hand span. Open strings remain available; extended grips may omit the fifth.";
 }
@@ -184,10 +185,8 @@ function voicingGrid(session) {
     .map((index) => voicingChoice(voicings[index], index, session)).join("");
   const groups = voicingGroups.map((group, index) => inversionGroup(group, index, session)).join("");
   const notes = anchors.map((position) => requiredNote(position, session)).join("");
-  const complete = selectedNoteFrets(session.tuning, session.chord, anchors);
-  const useSelected = button("use-selected-notes", "Use selected notes", "", "outlined", `data-focus="use-selected-notes" ${complete ? "" : "disabled"} title="${complete ? "Use exactly these notes; leave other strings muted" : "Select every chord interval to use these notes as a complete voicing"}"`);
   const edit = session.showHarmony ? "" : button("harmony", "Edit chord tones", "", "quiet", 'data-focus="harmony" aria-expanded="false"');
-  return `<section class="voicing-results" aria-labelledby="voicing-results-title" aria-busy="${busy}"><div class="voicing-results-heading"><h3 id="voicing-results-title">Nearby voicings</h3><div class="voicing-search-actions">${edit}${button("close-search", "", "close", "icon-button", 'data-focus="close-search" aria-label="Close voicing search" title="Close search and return to chord editing"')}</div></div><div class="required-notes" role="group" aria-label="Required notes"><span>Include</span>${notes}${useSelected}</div><div class="voicing-browse"><div class="voicing-groups" role="group" aria-label="Voicings by inversion">${groups}</div><div class="voicing-pagination">${button("voicing-page", "", "left", "icon-button", `data-direction="-1" data-focus="voicing-page-back" aria-label="Previous voicings" ${busy || first === 0 ? "disabled" : ""}`)}<span>${indices.length ? `${first + 1}–${end} / ${indices.length}` : ""}</span>${button("voicing-page", "", "right", "icon-button", `data-direction="1" data-focus="voicing-page-next" aria-label="Next voicings" ${busy || end >= indices.length ? "disabled" : ""}`)}</div></div>${cards ? `<div class="voicing-grid">${cards}</div>` : emptyVoicings(session)}</section>`;
+  return `<section class="voicing-results" aria-labelledby="voicing-results-title" aria-busy="${busy}"><div class="voicing-results-heading"><h3 id="voicing-results-title">Nearby voicings</h3><div class="voicing-search-actions">${edit}${button("close-search", "", "close", "icon-button", 'data-focus="close-search" aria-label="Close voicing search" title="Close search and return to chord editing"')}</div></div><div class="required-notes" role="group" aria-label="Required notes"><span>Include</span>${notes}</div><div class="voicing-browse"><div class="voicing-groups" role="group" aria-label="Voicings by inversion">${groups}</div><div class="voicing-pagination">${button("voicing-page", "", "left", "icon-button", `data-direction="-1" data-focus="voicing-page-back" aria-label="Previous voicings" ${busy || first === 0 ? "disabled" : ""}`)}<span>${indices.length ? `${first + 1}–${end} / ${indices.length}` : ""}</span>${button("voicing-page", "", "right", "icon-button", `data-direction="1" data-focus="voicing-page-next" aria-label="Next voicings" ${busy || end >= indices.length ? "disabled" : ""}`)}</div></div>${cards ? `<div class="voicing-grid">${cards}</div>` : emptyVoicings(session)}</section>`;
 }
 
 function gripPanel(session, name, actual) {
@@ -199,7 +198,7 @@ function gripPanel(session, name, actual) {
   const sounding = actual?.intervals
     .map((n) => chordInterval(chord, mod12(chord.root + n)))
     .join(" · ");
-  return `<aside class="grip-panel"><div class="grip-heading"><h3>Fingering</h3>${button("audition", "Preview", "play", "outlined", 'data-focus="preview"')}</div><div class="editor-preview">${!frets && !busy ? '<div class="diagram-placeholder">Choose a voicing below.</div>' : chordBox(tuning, frets, chord.root, name, false, "intervals", chord)}<p>${sounding ? `Sounding: ${sounding}` : session.anchors.length ? "Choose a voicing from the grid." : "Place notes on the fretboard."}</p></div><div class="grip-controls">${button("alternative", "", "left", "icon-button", `data-direction="-1" data-focus="previous-grip" aria-label="Previous grip" ${busy || alternatives.length < 2 ? "disabled" : ""}`)}<span>${alternatives.length ? (selected < 0 ? "Choose a voicing" : `Grip ${selected + 1} / ${alternatives.length}`) : "Manual grip"}</span>${button("alternative", "", "right", "icon-button", `data-direction="1" data-focus="next-grip" aria-label="Next grip" ${busy || alternatives.length < 2 ? "disabled" : ""}`)}${button("suggest", "Find a grip", "", "quiet", `data-focus="suggest" ${busy ? "disabled" : ""}`)}</div><div class="voice-list"><div class="eyebrow">STRINGS · TREBLE TO BASS</div>${tuning
+  return `<aside class="grip-panel"><div class="grip-heading"><h3>Fingering</h3>${button("audition", "Preview", "play", "outlined", 'data-focus="preview"')}</div><div class="editor-preview">${!frets && !busy ? '<div class="diagram-placeholder">Choose a voicing below.</div>' : chordBox(tuning, frets, chord.root, name, false, "intervals", chord)}<p>${sounding ? `Sounding: ${sounding}` : session.anchors.length ? "Choose a voicing from the grid." : "Place notes on the fretboard."}</p></div><div class="grip-controls">${button("alternative", "", "left", "icon-button", `data-direction="-1" data-focus="previous-grip" aria-label="Previous grip" ${busy || alternatives.length < 2 ? "disabled" : ""}`)}<span>${alternatives.length ? (selected < 0 ? "Selected notes" : `Grip ${selected + 1} / ${alternatives.length}`) : "Manual grip"}</span>${button("alternative", "", "right", "icon-button", `data-direction="1" data-focus="next-grip" aria-label="Next grip" ${busy || alternatives.length < 2 ? "disabled" : ""}`)}${button("suggest", "Find a grip", "", "quiet", `data-focus="suggest" ${busy ? "disabled" : ""}`)}</div><div class="voice-list"><div class="eyebrow">STRINGS · TREBLE TO BASS</div>${tuning
     .map((open, string) => voiceRow(open, string, session))
     .reverse()
     .join(
@@ -208,11 +207,11 @@ function gripPanel(session, name, actual) {
 }
 
 export function editorView(session) {
-  const { chord, tuning, frets, busy } = session;
+  const { chord, tuning, frets } = session;
   const actual = frets ? describeFingering(tuning, frets, chord.root) : null;
   const name = chordName(
     chord,
     actual?.midis.length ? actual.bass : chord.bass,
   );
-  return `<header class="editor-header"><div><div class="eyebrow">CHORD WORKSHOP · ${esc(session.partName)} · ${tuning.length} STRINGS</div><div class="workshop-title"><h2 id="editor-title">${esc(name)}</h2><span>${esc(chordQuality(chord).name)}</span><strong class="workshop-formula">${simpleFormula(chord).join(" · ")}</strong></div></div><div>${button("theme", document.documentElement.dataset.theme === "light" ? "Dark theme" : "Light theme", "", "outlined", 'data-focus="theme"')}${button("close", "", "close", "icon-button", 'aria-label="Close chord editor"')}</div></header><div class="workshop-layout"><div class="workshop-main">${chordControls(session, actual)}${neckPanel(session)}<div class="editor-status" role="status">${esc(editorStatus(session))}</div>${voicingGrid(session)}</div>${gripPanel(session, name, actual)}</div><footer class="editor-footer"><span>Changes apply when saved.</span><div>${button("close", "Cancel", "", "quiet")}${button("save", session.isNew ? "Add to part" : "Save chord", "plus", "primary", busy || !actual?.midis.length ? "disabled" : "")}</div></footer>`;
+  return `<header class="editor-header"><div><div class="eyebrow">CHORD WORKSHOP · ${esc(session.partName)} · ${tuning.length} STRINGS</div><div class="workshop-title"><h2 id="editor-title">${esc(name)}</h2><span>${esc(chordQuality(chord).name)}</span><strong class="workshop-formula">${simpleFormula(chord).join(" · ")}</strong></div></div><div>${button("theme", document.documentElement.dataset.theme === "light" ? "Dark theme" : "Light theme", "", "outlined", 'data-focus="theme"')}${button("close", "", "close", "icon-button", 'aria-label="Close chord editor"')}</div></header><div class="workshop-layout"><div class="workshop-main">${chordControls(session, actual)}${neckPanel(session)}<div class="editor-status" role="status">${esc(editorStatus(session))}</div>${voicingGrid(session)}</div>${gripPanel(session, name, actual)}</div><footer class="editor-footer"><span>Changes apply when saved.</span><div>${button("close", "Cancel", "", "quiet")}${button("save", session.isNew ? "Add to part" : "Save chord", "plus", "primary", !actual?.midis.length ? "disabled" : "")}</div></footer>`;
 }

@@ -96,7 +96,7 @@ function fretCell({
   const title = `String ${count - string}, fret ${fret}: ${pitchName(midi)}, ${intervalLabels?.[pc] ?? chordInterval(chord, pc)}${keyTones ? (keyTones.includes(pc) ? ", in scale" : ", outside scale") : ""}${selected ? ", selected" : ""}${anchored ? ", required note" : ""}${chordTonesOnly && !relevant ? ", not a chord tone" : ""}`;
   const content = `<span>${relevant || editing || selected ? esc(label) : ""}</span>`;
   return editing
-    ? `<button type="button" class="${cls}" data-fret="${fret}" data-string="${string}" data-focus="fret-${string}-${fret}" aria-label="${esc(title)}" aria-pressed="${chordTonesOnly ? anchored : selected}" title="${esc(title)}" ${chordTonesOnly && !relevant ? "disabled" : ""}>${content}</button>`
+    ? `<button type="button" class="${cls}" data-fret="${fret}" data-string="${string}" data-focus="fret-${string}-${fret}" aria-label="${esc(title)}" aria-pressed="${selected}" title="${esc(title)}" ${chordTonesOnly && !relevant ? "disabled" : ""}>${content}</button>`
     : `<div class="${cls}" title="${esc(title)}">${content}</div>`;
 }
 

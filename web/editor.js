@@ -52,7 +52,6 @@ function clearSuggestions() {
 function endVoicingSearch() {
   session.searchError = "";
   session.anchors = [];
-  session.selectionBackup = null;
   session.showHarmony = true;
   clearSuggestions();
 }
@@ -62,10 +61,6 @@ function closeVoicingSearch() {
   requestVersion++;
   session.busy = false;
   session.message = "";
-  if (!session.frets?.some((fret) => fret >= 0)) {
-    session.frets = session.selectionBackup?.frets ?? null;
-    if (session.selectionBackup) session.start = session.selectionBackup.start;
-  }
   endVoicingSearch();
   session.chord.bass = session.frets
     ? describeFingering(session.tuning, session.frets, session.chord.root).bass
@@ -100,7 +95,8 @@ async function suggestGrip({ preview = false, choose = true } = {}) {
   current.busy = true;
   current.message = "";
   current.searchError = "";
-  current.frets = null;
+  // Background suggestions must never erase the notes the player just placed.
+  if (choose && !current.anchors.length) current.frets = null;
   clearSuggestions();
   renderEditor();
   const bounds =
@@ -124,10 +120,10 @@ async function suggestGrip({ preview = false, choose = true } = {}) {
       showGrip(0);
       if (preview) audition(soundingNotes(current.tuning, current.frets));
     } else if (!voicings.length) {
-      current.frets = current.tuning.map(() => -1);
+      current.frets ??= current.tuning.map(() => -1);
       current.message =
         current.anchors.length
-          ? "No nearby voicing contains all required notes with these filters. Remove a required note, change a filter, or use Draw / remove."
+          ? "No nearby voicing matches these filters. Your selected notes are ready to save."
           : "No complete grip found in this hand position. Choose another position or use Draw / remove.";
     }
   } catch (error) {
@@ -137,7 +133,7 @@ async function suggestGrip({ preview = false, choose = true } = {}) {
       error.message + (current.anchors.length
         ? " Your selected notes are kept."
         : " Use Draw / remove to place notes manually.");
-    current.frets = current.tuning.map(() => -1);
+    current.frets ??= current.tuning.map(() => -1);
   } finally {
     if (session === current && version === requestVersion) {
       current.busy = false;
@@ -146,15 +142,10 @@ async function suggestGrip({ preview = false, choose = true } = {}) {
   }
 }
 
-function useSelectedNotes() {
-  const frets = selectedNoteFrets(session.tuning, session.chord, session.anchors);
-  if (!frets) return;
-  requestVersion++; // A pending search must not replace this explicit choice.
-  session.busy = false;
-  session.message = "";
-  session.frets = frets;
-  updateManualGrip();
-  renderEditor();
+function setSelectedGrip() {
+  session.frets = selectedNoteFrets(session.tuning, session.chord, session.anchors);
+  const actual = describeFingering(session.tuning, session.frets, session.chord.root);
+  session.chord.bass = actual.bass;
 }
 
 function regenerate() {
@@ -165,6 +156,7 @@ function regenerate() {
     session.chord.intervals.includes(mod12(session.tuning[string] + fret - session.chord.root)),
   );
   if (!session.anchors.length) endVoicingSearch();
+  else setSelectedGrip();
   return suggestGrip({ preview: true });
 }
 
@@ -194,17 +186,20 @@ function changeFret(string, fret) {
   if (mode === "select") {
     const interval = mod12(tuning[string] + fret - chord.root);
     if (!chord.intervals.includes(interval)) return;
-    const existing = session.anchors.find((position) => position.string === string);
     if (!session.anchors.length) {
-      session.selectionBackup = { frets: session.frets?.slice() ?? null, start: session.start };
       session.showHarmony = false;
+      session.frets = tuning.map(() => -1);
     }
+    // Keep other notes when editing a suggestion; only clicked notes constrain
+    // the next search. Clicking a sounding note removes it immediately.
+    const remove = session.frets[string] === fret;
+    session.frets[string] = remove ? -1 : fret;
     session.anchors = session.anchors.filter((position) => position.string !== string);
-    if (existing?.fret !== fret) session.anchors.push({ string, fret });
-    if (!session.anchors.length) return closeVoicingSearch();
+    if (!remove) session.anchors.push({ string, fret });
     session.anchors.sort((a, b) => a.string - b.string);
-    session.chord.bass = -1;
-    audition(session.anchors.map((position) => tuning[position.string] + position.fret));
+    session.chord.bass = describeFingering(tuning, session.frets, chord.root).bass;
+    audition(soundingNotes(session.tuning, session.frets));
+    if (!session.anchors.length) return closeVoicingSearch();
     return suggestGrip({ choose: false });
   }
   session.frets[string] = session.frets[string] === fret ? -1 : fret;
@@ -213,10 +208,11 @@ function changeFret(string, fret) {
 }
 
 function saveChord() {
-  if (session.busy) return;
   const { chord, tuning, frets, onSave } = session;
+  if (!frets) return;
   const actual = describeFingering(tuning, frets, chord.root);
   if (!actual.midis.length) return;
+  requestVersion++; // A background search cannot replace a saved selection.
   chord.bass = actual.bass;
   chord.label = chord.label.trim();
   setFingering(chord, tuning, frets);
@@ -229,9 +225,8 @@ function editVoicingResults(action, target) {
     const index = Number(target.dataset.index);
     if (session.voicingIndex === index) {
       session.voicingIndex = -1;
-      session.frets = null;
-      session.chord.bass = -1;
-      audition([]);
+      setSelectedGrip();
+      audition(soundingNotes(session.tuning, session.frets));
     } else {
       showGrip(index);
       audition(soundingNotes(session.tuning, session.frets));
@@ -309,7 +304,6 @@ dialog.addEventListener("click", (event) => {
     const action = target.dataset.action;
     if (action === "close") return dialog.close();
     if (action === "close-search") return closeVoicingSearch();
-    if (action === "use-selected-notes") return useSelectedNotes();
     if (action === "retry-search") return suggestGrip({ choose: !session.anchors.length });
     if (action === "remove-anchor")
       return changeFret(Number(target.dataset.string), Number(target.dataset.position));
@@ -327,7 +321,6 @@ dialog.addEventListener("click", (event) => {
           : previewPitches({ ...session.chord, bass: session.bassFilter }),
       );
     if (action === "interval") {
-      session.selectionBackup = null;
       session.chord = selectChordTone(session.chord, target.dataset.tone);
       if (
         session.bassFilter >= 0 &&
@@ -339,7 +332,6 @@ dialog.addEventListener("click", (event) => {
       return regenerate();
     }
     if (["root", "family", "bass"].includes(action)) {
-      if (action !== "bass") session.selectionBackup = null;
       if (action === "root") {
         const difference = Number(target.dataset.value) - session.chord.root;
         if (session.chord.bass >= 0)
@@ -408,7 +400,6 @@ export function openChordEditor(
     toggleTheme,
     mode: "select",
     anchors: [],
-    selectionBackup: null,
     voicingGroups: [],
     voicingGroup: 0,
     showHarmony: true,

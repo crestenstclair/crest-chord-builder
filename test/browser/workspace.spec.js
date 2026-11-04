@@ -58,7 +58,7 @@ test("a fret anchor lists nearby voicings and the chosen card saves the exact gr
   const cards = page.locator(".voicing-choice");
   await expect(cards).toHaveCount(6);
   await expect(page.locator(".voicing-results")).toHaveAttribute("aria-busy", "false");
-  await expect(page.getByRole("button", { name: "Save chord", exact: true })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Save chord", exact: true })).toBeEnabled();
   await expect(fret(4, 1)).toHaveClass(/anchor/);
   await expect(page.locator(".workshop-formula")).toHaveText("1 · ♭3 · 5 · ♭7");
   await expect(page.getByRole("button", { name: "Edit chord tones", exact: true })).toBeVisible();
@@ -83,7 +83,7 @@ test("a fret anchor lists nearby voicings and the chosen card saves the exact gr
   await expect(chosen).toHaveAttribute("aria-pressed", "true");
   await chosen.click();
   await expect(chosen).toHaveAttribute("aria-pressed", "false");
-  await expect(page.getByRole("button", { name: "Save chord", exact: true })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Save chord", exact: true })).toBeEnabled();
   await chosen.click();
   await expect(page.getByRole("button", { name: "Save chord", exact: true })).toBeEnabled();
   const selectedFrets = await page.locator("#editor .fret.chosen").evaluateAll((nodes) =>
@@ -114,7 +114,7 @@ test("a fret anchor lists nearby voicings and the chosen card saves the exact gr
   await page.locator('.chord-card [data-action="edit-chord"]').first().click();
   await fret(5, 5).click();
   await expect(page.locator(".voicing-results")).toHaveAttribute("aria-busy", "false");
-  await expect(page.getByRole("button", { name: "Save chord", exact: true })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Save chord", exact: true })).toBeEnabled();
   await page.getByRole("button", { name: "Cancel", exact: true }).click();
   expect((await saved(page)).parts[0].chords[0].fingerings["40,45,50,55,59,64"]).toEqual(grip);
 });
@@ -150,10 +150,10 @@ test("eight-string anchors respect inversion filters, hand positions and keyboar
   await expect(page.locator(".voicing-results")).toHaveAttribute("aria-busy", "false");
   await expect(page.locator("#editor .fret.anchor")).toHaveCount(1);
   await expect(fret(6, 1)).toHaveClass(/anchor/);
-  await expect(page.getByRole("button", { name: "Add to part", exact: true })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Add to part", exact: true })).toBeEnabled();
   await page.getByRole("combobox", { name: "Hand position", exact: true }).selectOption("13");
   await expect(page.locator(".voicing-empty")).toContainText("No matching voicings");
-  await expect(page.getByRole("button", { name: "Add to part", exact: true })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Add to part", exact: true })).toBeEnabled();
   await page.getByRole("combobox", { name: "Hand position", exact: true }).selectOption("any");
   await expect(page.locator(".voicing-choice")).toHaveCount(6);
   await page.locator(".voicing-choice").nth(1).press("Enter");
@@ -172,7 +172,6 @@ test("eight-string anchors respect inversion filters, hand positions and keyboar
 
 test("required notes narrow together, toggle, replace and return to chord editing", async ({ page }) => {
   await addAm7(page);
-  const original = (await saved(page)).parts[0].chords[0].fingerings["40,45,50,55,59,64"];
   await page.getByRole("button", { name: "Edit Am7", exact: true }).click();
   const fret = (string, position) => page.locator(`#editor [data-string="${string}"][data-fret="${position}"]`);
   const settled = () => expect(page.locator(".voicing-results")).toHaveAttribute("aria-busy", "false");
@@ -202,8 +201,9 @@ test("required notes narrow together, toggle, replace and return to chord editin
   await expect(page.locator(".interval-matrix")).toBeVisible();
   const current = await page.locator("#editor .fret.chosen").evaluateAll((nodes) =>
     nodes.map((n) => [Number(n.dataset.string), Number(n.dataset.fret)]));
-  expect(current.sort((a, b) => a[0] - b[0])).toEqual(original.flatMap((f, i) => f < 0 ? [] : [[i, f]]));
-  // Closing without picking a card restores the prior grip; chord tones remain editable.
+  expect(current).toEqual([]);
+  await expect(page.getByRole("button", { name: "Save chord", exact: true })).toBeDisabled();
+  // Closing keeps the notes just placed; chord tones remain editable.
   await fret(4, 1).click();
   await settled();
   await page.getByRole("button", { name: "Close voicing search", exact: true }).click();
@@ -914,6 +914,38 @@ test('simple intervals lead the grid and 2, 4, 6 add independently of the third'
   await expect(page.locator('.workshop-formula')).toHaveText('1 · 5');
 });
 
+test('fret clicks add, replace and remove sounding notes without choosing a suggestion', async ({ page }) => {
+  await page.getByRole('button', { name: 'Open Am chord workshop', exact: true }).click();
+  const fret = (string, position) => page.locator(`#editor [data-string="${string}"][data-fret="${position}"]`);
+  const detected = page.getByLabel('Detected inversion', { exact: true });
+  const grip = () => page.locator('#editor .fret.chosen').evaluateAll(nodes =>
+    nodes.map(node => [Number(node.dataset.string), Number(node.dataset.fret)]).sort((a, b) => a[0] - b[0]));
+  await fret(4, 1).click();
+  await expect.poll(grip).toEqual([[4, 1]]);
+  await expect(detected).toHaveText('Current: ♭3 in bass');
+  await expect(page.getByRole('button', { name: 'Add to part', exact: true })).toBeEnabled();
+  await fret(3, 2).click();
+  await expect.poll(grip).toEqual([[3, 2], [4, 1]]);
+  await expect(detected).toHaveText('Current: Root position · 1 in bass');
+  await fret(5, 0).click();
+  await expect.poll(grip).toEqual([[3, 2], [4, 1], [5, 0]]);
+  await expect(page.locator('.editor-preview p')).toHaveText('Sounding: 1 · ♭3 · 5');
+  await fret(5, 5).click();
+  await expect(fret(5, 0)).toHaveAttribute('aria-pressed', 'false');
+  await expect.poll(grip).toEqual([[3, 2], [4, 1], [5, 5]]);
+  await fret(5, 5).click();
+  await expect.poll(grip).toEqual([[3, 2], [4, 1]]);
+  await expect(page.locator('.voicing-results')).toHaveAttribute('aria-busy', 'false');
+  await expect.poll(grip).toEqual([[3, 2], [4, 1]]); // Search completion never replaces the selection.
+  await page.getByRole('button', { name: 'Add to part', exact: true }).click();
+  const chord = (await saved(page)).parts[0].chords[0];
+  expect(chord.fingerings['40,45,50,55,59,64']).toEqual([-1,-1,-1,2,1,-1]);
+  expect(chord.intervals).toEqual([0,3,7]);
+  await page.reload();
+  await page.getByRole('button', { name: 'Edit Am', exact: true }).click();
+  await expect.poll(grip).toEqual([[3, 2], [4, 1]]);
+});
+
 for (const asset of ['**/chords*.wasm', '**/wasm_exec*.js']) test(`complete required notes survive ${asset} failure and Retry recovers`, async ({ page }) => {
   let unavailable = true;
   await page.route(asset, route => unavailable ? route.abort() : route.continue());
@@ -923,13 +955,13 @@ for (const asset of ['**/chords*.wasm', '**/wasm_exec*.js']) test(`complete requ
     await page.locator(`#editor [data-string="${string}"][data-fret="${fret}"]`).click();
     await expect(page.locator('.voicing-results')).toHaveAttribute('aria-busy', 'false');
   }
-  await expect(page.getByRole('button', { name: 'Use selected notes', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Add to part', exact: true })).toBeEnabled();
   await page.locator('#editor [data-string="5"][data-fret="0"]').click();
   await expect(page.locator('.voicing-results')).toHaveAttribute('aria-busy', 'false');
   await expect(page.locator('.voicing-empty')).toContainText('Voicing search unavailable');
   await expect(page.locator('.voicing-empty')).not.toContainText('No matching voicings');
   await expect(page.locator('.required-note')).toHaveCount(4);
-  await expect(page.getByRole('button', { name: 'Use selected notes', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Add to part', exact: true })).toBeEnabled();
   unavailable = false;
   await page.getByRole('button', { name: 'Retry search', exact: true }).click();
   await expect(page.locator('.voicing-results')).toHaveAttribute('aria-busy', 'false');
@@ -938,13 +970,12 @@ for (const asset of ['**/chords*.wasm', '**/wasm_exec*.js']) test(`complete requ
   // The real engine also offers the exact four-note grip, in the F-bass group.
   await page.locator('.voicing-groups [data-bass="5"]').click();
   await expect(page.locator('.voicing-choice[data-frets="-1,-1,3,2,1,0"]')).toBeVisible();
-  await page.getByRole('button', { name: 'Use selected notes', exact: true }).click();
   await expect(page.getByLabel('Detected inversion', { exact: true })).toHaveText('Current: ♭6 in bass');
   await page.getByRole('button', { name: 'Add to part', exact: true }).click();
   expect((await saved(page)).parts[0].chords[0].fingerings['40,45,50,55,59,64']).toEqual([-1,-1,3,2,1,0]);
 });
 
-test('using selected notes cancels a pending search and saves with the engine offline', async ({ page }) => {
+test('clicked notes save while search is pending and survive a late engine failure', async ({ page }) => {
   let download;
   await page.route('**/chords*.wasm', route => { download = route; });
   await page.getByRole('button', { name: 'Open Am chord workshop', exact: true }).click();
@@ -954,14 +985,12 @@ test('using selected notes cancels a pending search and saves with the engine of
     await page.locator(`#editor [data-string="${string}"][data-fret="${fret}"]`).click();
   }
   await expect(page.locator('.voicing-results')).toHaveAttribute('aria-busy', 'true');
-  await page.getByRole('button', { name: 'Use selected notes', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Add to part', exact: true })).toBeEnabled();
+  await expect(page.locator('#editor .fret.chosen')).toHaveCount(4);
+  await page.getByRole('button', { name: 'Add to part', exact: true }).click();
   const stopped = new Promise(resolve => page.workers()[0].on('close', resolve));
   await download.abort();
   await stopped;
-  await expect(page.locator('.voicing-results')).toHaveCount(0);
-  await expect(page.locator('.editor-status')).not.toContainText('failed');
-  await expect(page.getByRole('button', { name: 'Add to part', exact: true })).toBeEnabled();
-  await page.getByRole('button', { name: 'Add to part', exact: true }).click();
   const chord = (await saved(page)).parts[0].chords[0];
   expect(chord.fingerings['40,45,50,55,59,64']).toEqual([-1,-1,3,2,1,0]);
   expect(chord.intervals).toEqual([0,3,7,8]);

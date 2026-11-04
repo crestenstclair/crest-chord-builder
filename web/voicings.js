@@ -62,10 +62,9 @@ export function findVoicings(
   return cache.get(key);
 }
 
-// An explicit grip needs no search. It must contain every requested chord tone;
-// strings the player did not select stay muted. Suggestion filters do not apply.
+// Selected chord tones form the current grip, even before every interval is
+// present. Unselected strings stay muted; invalid positions return null.
 export function selectedNoteFrets(tuning, chord, positions) {
-  if (!positions.length) return null;
   const frets = tuning.map(() => -1);
   for (const { string, fret } of positions) {
     if (!Number.isInteger(string) || string < 0 || string >= tuning.length ||
@@ -73,8 +72,7 @@ export function selectedNoteFrets(tuning, chord, positions) {
         !chord.intervals.includes(mod12(tuning[string] + fret - chord.root))) return null;
     frets[string] = fret;
   }
-  const actual = describeFingering(tuning, frets, chord.root);
-  return chord.intervals.every((interval) => actual.intervals.includes(interval)) ? frets : null;
+  return frets;
 }
 // Keep engine ranking inside each group; use sounding pitch for re-entrant tunings.
 export function groupVoicings(tuning, root, voicings) {
