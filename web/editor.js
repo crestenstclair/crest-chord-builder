@@ -8,7 +8,7 @@ import {
   voicedChord,
 } from "./music.js";
 import { getFingering, setFingering } from "./project.js";
-import { findVoicings, groupVoicings } from "./voicings.js";
+import { findVoicings, groupVoicings, selectedNoteFrets } from "./voicings.js";
 import { playNotes } from "./ui.js";
 import { editorView, VOICINGS_PER_PAGE } from "./editor-view.js";
 
@@ -50,6 +50,7 @@ function clearSuggestions() {
 }
 
 function endVoicingSearch() {
+  session.searchError = "";
   session.anchors = [];
   session.selectionBackup = null;
   session.showHarmony = true;
@@ -98,6 +99,7 @@ async function suggestGrip({ preview = false, choose = true } = {}) {
   const version = ++requestVersion;
   current.busy = true;
   current.message = "";
+  current.searchError = "";
   current.frets = null;
   clearSuggestions();
   renderEditor();
@@ -130,8 +132,11 @@ async function suggestGrip({ preview = false, choose = true } = {}) {
     }
   } catch (error) {
     if (session !== current || version !== requestVersion) return;
+    current.searchError = error.message;
     current.message =
-      error.message + " Use Draw / remove to place notes manually.";
+      error.message + (current.anchors.length
+        ? " Your selected notes are kept."
+        : " Use Draw / remove to place notes manually.");
     current.frets = current.tuning.map(() => -1);
   } finally {
     if (session === current && version === requestVersion) {
@@ -139,6 +144,17 @@ async function suggestGrip({ preview = false, choose = true } = {}) {
       renderEditor();
     }
   }
+}
+
+function useSelectedNotes() {
+  const frets = selectedNoteFrets(session.tuning, session.chord, session.anchors);
+  if (!frets) return;
+  requestVersion++; // A pending search must not replace this explicit choice.
+  session.busy = false;
+  session.message = "";
+  session.frets = frets;
+  updateManualGrip();
+  renderEditor();
 }
 
 function regenerate() {
@@ -293,6 +309,8 @@ dialog.addEventListener("click", (event) => {
     const action = target.dataset.action;
     if (action === "close") return dialog.close();
     if (action === "close-search") return closeVoicingSearch();
+    if (action === "use-selected-notes") return useSelectedNotes();
+    if (action === "retry-search") return suggestGrip({ choose: !session.anchors.length });
     if (action === "remove-anchor")
       return changeFret(Number(target.dataset.string), Number(target.dataset.position));
     if (action === "save") return saveChord();
@@ -400,6 +418,7 @@ export function openChordEditor(
     position: "any",
     busy: false,
     message: "",
+    searchError: "",
     voicings: [],
     voicingIndex: 0,
   };

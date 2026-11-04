@@ -913,3 +913,61 @@ test('simple intervals lead the grid and 2, 4, 6 add independently of the third'
   await expect(tone('2')).toHaveAttribute('aria-pressed', 'false');
   await expect(page.locator('.workshop-formula')).toHaveText('1 · 5');
 });
+
+for (const asset of ['**/chords*.wasm', '**/wasm_exec*.js']) test(`complete required notes survive ${asset} failure and Retry recovers`, async ({ page }) => {
+  let unavailable = true;
+  await page.route(asset, route => unavailable ? route.abort() : route.continue());
+  await page.getByRole('button', { name: 'Open Am chord workshop', exact: true }).click();
+  await page.getByRole('button', { name: 'Chord interval ♭6', exact: true }).click();
+  for (const [string, fret] of [[2,3], [3,2], [4,1]]) {
+    await page.locator(`#editor [data-string="${string}"][data-fret="${fret}"]`).click();
+    await expect(page.locator('.voicing-results')).toHaveAttribute('aria-busy', 'false');
+  }
+  await expect(page.getByRole('button', { name: 'Use selected notes', exact: true })).toBeDisabled();
+  await page.locator('#editor [data-string="5"][data-fret="0"]').click();
+  await expect(page.locator('.voicing-results')).toHaveAttribute('aria-busy', 'false');
+  await expect(page.locator('.voicing-empty')).toContainText('Voicing search unavailable');
+  await expect(page.locator('.voicing-empty')).not.toContainText('No matching voicings');
+  await expect(page.locator('.required-note')).toHaveCount(4);
+  await expect(page.getByRole('button', { name: 'Use selected notes', exact: true })).toBeEnabled();
+  unavailable = false;
+  await page.getByRole('button', { name: 'Retry search', exact: true }).click();
+  await expect(page.locator('.voicing-results')).toHaveAttribute('aria-busy', 'false');
+  await expect(page.locator('.voicing-choice')).not.toHaveCount(0);
+  await expect(page.locator('.required-note')).toHaveCount(4);
+  // The real engine also offers the exact four-note grip, in the F-bass group.
+  await page.locator('.voicing-groups [data-bass="5"]').click();
+  await expect(page.locator('.voicing-choice[data-frets="-1,-1,3,2,1,0"]')).toBeVisible();
+  await page.getByRole('button', { name: 'Use selected notes', exact: true }).click();
+  await expect(page.getByLabel('Detected inversion', { exact: true })).toHaveText('Current: ♭6 in bass');
+  await page.getByRole('button', { name: 'Add to part', exact: true }).click();
+  expect((await saved(page)).parts[0].chords[0].fingerings['40,45,50,55,59,64']).toEqual([-1,-1,3,2,1,0]);
+});
+
+test('using selected notes cancels a pending search and saves with the engine offline', async ({ page }) => {
+  let download;
+  await page.route('**/chords*.wasm', route => { download = route; });
+  await page.getByRole('button', { name: 'Open Am chord workshop', exact: true }).click();
+  await expect.poll(() => Boolean(download)).toBe(true);
+  await page.getByRole('button', { name: 'Chord interval ♭6', exact: true }).click();
+  for (const [string, fret] of [[2,3], [3,2], [4,1], [5,0]]) {
+    await page.locator(`#editor [data-string="${string}"][data-fret="${fret}"]`).click();
+  }
+  await expect(page.locator('.voicing-results')).toHaveAttribute('aria-busy', 'true');
+  await page.getByRole('button', { name: 'Use selected notes', exact: true }).click();
+  const stopped = new Promise(resolve => page.workers()[0].on('close', resolve));
+  await download.abort();
+  await stopped;
+  await expect(page.locator('.voicing-results')).toHaveCount(0);
+  await expect(page.locator('.editor-status')).not.toContainText('failed');
+  await expect(page.getByRole('button', { name: 'Add to part', exact: true })).toBeEnabled();
+  await page.getByRole('button', { name: 'Add to part', exact: true }).click();
+  const chord = (await saved(page)).parts[0].chords[0];
+  expect(chord.fingerings['40,45,50,55,59,64']).toEqual([-1,-1,3,2,1,0]);
+  expect(chord.intervals).toEqual([0,3,7,8]);
+  expect(chord.bass).toBe(5);
+  await page.reload();
+  await page.getByRole('button', { name: 'Edit Am(♭13)/F', exact: true }).click();
+  await expect(page.getByLabel('Detected inversion', { exact: true })).toHaveText('Current: ♭6 in bass');
+  await expect(page.locator('.editor-status')).not.toContainText('failed');
+});

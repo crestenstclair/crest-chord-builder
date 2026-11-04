@@ -19,6 +19,7 @@ import {
 } from "./chord-formula.js";
 import { esc, options, button } from "./ui.js";
 import { fretboard, chordBox } from "./diagrams.js";
+import { selectedNoteFrets } from "./voicings.js";
 
 export const VOICINGS_PER_PAGE = 6;
 
@@ -166,6 +167,13 @@ function inversionGroup(group, index, session) {
   return button("voicing-group", `${esc(label)} <span>${group.indices.length}</span>`, "", "choice-button", `data-index="${index}" data-bass="${group.bass}" data-focus="group-${group.bass}" aria-label="${esc(label)}: ${group.indices.length} voicings" aria-pressed="${session.voicingGroup === index}"`);
 }
 
+function emptyVoicings(session) {
+  if (session.busy) return '<p class="voicing-empty">Finding nearby voicings…</p>';
+  if (session.searchError)
+    return `<div class="voicing-empty"><p>Voicing search unavailable. Your selected notes are kept.</p>${button("retry-search", "Retry search", "", "outlined", 'data-focus="retry-search"')}</div>`;
+  return '<p class="voicing-empty">No matching voicings. Remove a required note or change the filters.</p>';
+}
+
 function voicingGrid(session) {
   if (!session.anchors.length) return "";
   const { anchors, voicings, busy, voicingPage, voicingGroups, voicingGroup } = session;
@@ -176,8 +184,10 @@ function voicingGrid(session) {
     .map((index) => voicingChoice(voicings[index], index, session)).join("");
   const groups = voicingGroups.map((group, index) => inversionGroup(group, index, session)).join("");
   const notes = anchors.map((position) => requiredNote(position, session)).join("");
+  const complete = selectedNoteFrets(session.tuning, session.chord, anchors);
+  const useSelected = button("use-selected-notes", "Use selected notes", "", "outlined", `data-focus="use-selected-notes" ${complete ? "" : "disabled"} title="${complete ? "Use exactly these notes; leave other strings muted" : "Select every chord interval to use these notes as a complete voicing"}"`);
   const edit = session.showHarmony ? "" : button("harmony", "Edit chord tones", "", "quiet", 'data-focus="harmony" aria-expanded="false"');
-  return `<section class="voicing-results" aria-labelledby="voicing-results-title" aria-busy="${busy}"><div class="voicing-results-heading"><h3 id="voicing-results-title">Nearby voicings</h3><div class="voicing-search-actions">${edit}${button("close-search", "", "close", "icon-button", 'data-focus="close-search" aria-label="Close voicing search" title="Close search and return to chord editing"')}</div></div><div class="required-notes" role="group" aria-label="Required notes"><span>Include</span>${notes}</div><div class="voicing-browse"><div class="voicing-groups" role="group" aria-label="Voicings by inversion">${groups}</div><div class="voicing-pagination">${button("voicing-page", "", "left", "icon-button", `data-direction="-1" data-focus="voicing-page-back" aria-label="Previous voicings" ${busy || first === 0 ? "disabled" : ""}`)}<span>${indices.length ? `${first + 1}–${end} / ${indices.length}` : ""}</span>${button("voicing-page", "", "right", "icon-button", `data-direction="1" data-focus="voicing-page-next" aria-label="Next voicings" ${busy || end >= indices.length ? "disabled" : ""}`)}</div></div>${cards ? `<div class="voicing-grid">${cards}</div>` : `<p class="voicing-empty">${busy ? "Finding nearby voicings…" : "No matching voicings. Remove a required note or change the filters."}</p>`}</section>`;
+  return `<section class="voicing-results" aria-labelledby="voicing-results-title" aria-busy="${busy}"><div class="voicing-results-heading"><h3 id="voicing-results-title">Nearby voicings</h3><div class="voicing-search-actions">${edit}${button("close-search", "", "close", "icon-button", 'data-focus="close-search" aria-label="Close voicing search" title="Close search and return to chord editing"')}</div></div><div class="required-notes" role="group" aria-label="Required notes"><span>Include</span>${notes}${useSelected}</div><div class="voicing-browse"><div class="voicing-groups" role="group" aria-label="Voicings by inversion">${groups}</div><div class="voicing-pagination">${button("voicing-page", "", "left", "icon-button", `data-direction="-1" data-focus="voicing-page-back" aria-label="Previous voicings" ${busy || first === 0 ? "disabled" : ""}`)}<span>${indices.length ? `${first + 1}–${end} / ${indices.length}` : ""}</span>${button("voicing-page", "", "right", "icon-button", `data-direction="1" data-focus="voicing-page-next" aria-label="Next voicings" ${busy || end >= indices.length ? "disabled" : ""}`)}</div></div>${cards ? `<div class="voicing-grid">${cards}</div>` : emptyVoicings(session)}</section>`;
 }
 
 function gripPanel(session, name, actual) {

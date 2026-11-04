@@ -9,22 +9,26 @@ const cache = new Map();
 
 function getWorker() {
   if (worker) return worker;
-  worker = new Worker(new URL("./engine/worker.js", import.meta.url));
-  worker.onmessage = ({ data }) => {
+  const current = new Worker(new URL("./engine/worker.js", import.meta.url));
+  worker = current;
+  const fail = (message) => {
+    if (worker !== current) return;
+    for (const job of pending.values()) job.reject(new Error(message));
+    pending.clear();
+    cache.clear();
+    current.terminate();
+    worker = null;
+  };
+  current.onmessage = ({ data }) => {
+    if (worker !== current) return;
+    if (data.engineFailed) return fail(data.error);
     const job = pending.get(data.id);
     if (!job) return;
     pending.delete(data.id);
     if (data.error) job.reject(new Error(data.error));
     else job.resolve(data.voicings);
   };
-  worker.onerror = () => {
-    for (const job of pending.values())
-      job.reject(new Error("Voicing engine failed. Reload the page to retry."));
-    pending.clear();
-    cache.clear();
-    worker.terminate();
-    worker = null;
-  };
+  current.onerror = () => fail("Voicing engine failed. Retry the search.");
   return worker;
 }
 
@@ -46,15 +50,31 @@ export function findVoicings(
   const key = JSON.stringify(request);
   if (!cache.has(key)) {
     const job = new Promise((resolve, reject) => {
+      const current = getWorker();
       const id = ++sequence;
       pending.set(id, { resolve, reject });
-      getWorker().postMessage({ id, request });
+      current.postMessage({ id, request });
     });
     cache.set(key, job);
-    job.catch(() => cache.delete(key));
+    job.catch(() => { if (cache.get(key) === job) cache.delete(key); });
     if (cache.size > 256) cache.delete(cache.keys().next().value);
   }
   return cache.get(key);
+}
+
+// An explicit grip needs no search. It must contain every requested chord tone;
+// strings the player did not select stay muted. Suggestion filters do not apply.
+export function selectedNoteFrets(tuning, chord, positions) {
+  if (!positions.length) return null;
+  const frets = tuning.map(() => -1);
+  for (const { string, fret } of positions) {
+    if (!Number.isInteger(string) || string < 0 || string >= tuning.length ||
+        !Number.isInteger(fret) || fret < 0 || fret > 24 || frets[string] >= 0 ||
+        !chord.intervals.includes(mod12(tuning[string] + fret - chord.root))) return null;
+    frets[string] = fret;
+  }
+  const actual = describeFingering(tuning, frets, chord.root);
+  return chord.intervals.every((interval) => actual.intervals.includes(interval)) ? frets : null;
 }
 // Keep engine ranking inside each group; use sounding pitch for re-entrant tunings.
 export function groupVoicings(tuning, root, voicings) {

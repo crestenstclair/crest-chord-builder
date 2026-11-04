@@ -1,5 +1,6 @@
 importScripts("./wasm_exec.js");
-const ready = (async () => {
+let ready;
+async function startEngine() {
   const go = new Go();
   const response = await fetch("./chords.wasm");
   if (!response.ok)
@@ -10,16 +11,20 @@ const ready = (async () => {
     await response.arrayBuffer(),
     go.importObject,
   );
-  go.run(instance);
-})();
+  go.run(instance).then(
+    () => self.postMessage({ engineFailed: true, error: "Voicing engine stopped. Retry the search." }),
+    (error) => self.postMessage({ engineFailed: true, error: error.message }),
+  );
+}
 self.onmessage = async ({ data: { id, request } }) => {
   try {
+    ready ??= startEngine();
     await ready;
     self.postMessage({
       id,
       ...JSON.parse(self.crestGenerate(JSON.stringify(request))),
     });
   } catch (error) {
-    self.postMessage({ id, error: error.message });
+    self.postMessage({ id, error: error.message, engineFailed: true });
   }
 };
