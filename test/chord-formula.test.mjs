@@ -27,10 +27,10 @@ test("grid variants replace their degree in both directions and toggle off", () 
   assert.deepEqual(chord.intervals, [0, 3, 7]);
   for (const label of ["♯5", "♭5", "5"]) chord = selectChordTone(chord, label);
   assert.deepEqual(chord.intervals, [0, 3, 7]);
-  assert.throws(
-    () => selectChordTone({ root: 0, intervals: [0], bass: 0 }, "1"),
-    /at least one/,
-  );
+  const empty = selectChordTone({ root: 0, intervals: [0], bass: 0 }, "1");
+  assert.deepEqual(empty.intervals, []);
+  assert.equal(empty.bass, -1);
+  assert.deepEqual(selectChordTone(empty, "1").intervals, [0]);
 });
 
 test("enharmonic choices retain spelling and correct altered chord names", () => {

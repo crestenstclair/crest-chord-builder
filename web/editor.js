@@ -1,6 +1,7 @@
 import { selectChordTone, withSoundingIntervals } from "./chord-formula.js";
 import {
   FAMILIES,
+  NOTES,
   mod12,
   describeFingering,
   soundingNotes,
@@ -8,7 +9,7 @@ import {
   voicedChord,
 } from "./music.js";
 import { getFingering, setFingering } from "./project.js";
-import { findVoicings, groupVoicings, selectedNoteFrets } from "./voicings.js";
+import { findVoicings, groupVoicings } from "./voicings.js";
 import { playNotes } from "./ui.js";
 import { editorView, VOICINGS_PER_PAGE } from "./editor-view.js";
 
@@ -52,7 +53,7 @@ function clearSuggestions() {
 function endVoicingSearch() {
   session.searchError = "";
   session.anchors = [];
-  session.showHarmony = true;
+  session.searchOpen = false;
   clearSuggestions();
 }
 
@@ -66,9 +67,8 @@ function closeVoicingSearch() {
     ? describeFingering(session.tuning, session.frets, session.chord.root).bass
     : -1;
   audition([]);
-  if (!session.frets) suggestGrip();
-  else renderEditor();
-  dialog.querySelector('[data-focus="select-mode"]')?.focus({ preventScroll: true });
+  renderEditor();
+  dialog.querySelector(`[data-focus="view-${session.view}"]`)?.focus({ preventScroll: true });
 }
 
 function showGrip(index) {
@@ -96,7 +96,7 @@ async function suggestGrip({ preview = false, choose = true } = {}) {
   current.message = "";
   current.searchError = "";
   // Background suggestions must never erase the notes the player just placed.
-  if (choose && !current.anchors.length) current.frets = null;
+  current.selectionFrets = current.frets?.slice() ?? current.tuning.map(() => -1);
   clearSuggestions();
   renderEditor();
   const bounds =
@@ -124,7 +124,7 @@ async function suggestGrip({ preview = false, choose = true } = {}) {
       current.message =
         current.anchors.length
           ? "No nearby voicing matches these filters. Your selected notes are ready to save."
-          : "No complete grip found in this hand position. Choose another position or use Draw / remove.";
+          : "No complete grip found in this hand position. Keep editing notes or change the filters.";
     }
   } catch (error) {
     if (session !== current || version !== requestVersion) return;
@@ -132,7 +132,7 @@ async function suggestGrip({ preview = false, choose = true } = {}) {
     current.message =
       error.message + (current.anchors.length
         ? " Your selected notes are kept."
-        : " Use Draw / remove to place notes manually.");
+        : " You can still add or remove notes on the fretboard.");
     current.frets ??= current.tuning.map(() => -1);
   } finally {
     if (session === current && version === requestVersion) {
@@ -143,68 +143,60 @@ async function suggestGrip({ preview = false, choose = true } = {}) {
 }
 
 function setSelectedGrip() {
-  session.frets = selectedNoteFrets(session.tuning, session.chord, session.anchors);
+  session.frets = [...session.selectionFrets];
   const actual = describeFingering(session.tuning, session.frets, session.chord.root);
   session.chord.bass = actual.bass;
 }
 
 function regenerate() {
-  // Unlock audio in the click handler and stop the previous audition. Play
-  // only the returned grip once the latest search has completed.
   audition([]);
-  session.anchors = session.anchors.filter(({ string, fret }) =>
-    session.chord.intervals.includes(mod12(session.tuning[string] + fret - session.chord.root)),
+  // Keep compatible notes visible while the engine places the edited formula.
+  session.frets = (session.frets ?? session.tuning.map(() => -1)).map((fret, string) =>
+    fret >= 0 && session.chord.intervals.includes(mod12(session.tuning[string] + fret - session.chord.root))
+      ? fret : -1,
   );
-  if (!session.anchors.length) endVoicingSearch();
-  else setSelectedGrip();
+  session.anchors = session.anchors.filter(({ string, fret }) => session.frets[string] === fret);
+  if (!session.chord.intervals.length) {
+    requestVersion++;
+    session.busy = false;
+    session.chord.bass = -1;
+    session.message = "";
+    endVoicingSearch();
+    renderEditor();
+    return;
+  }
   return suggestGrip({ preview: true });
 }
 
-// Manual drawing changes harmony; choosing a suggested grip preserves it.
-function updateManualGrip() {
-  const actual = describeFingering(
-    session.tuning,
-    session.frets,
-    session.chord.root,
-  );
-  if (actual.midis.length) {
-    if (session.mode === "draw")
-      session.chord = withSoundingIntervals(session.chord, actual.intervals);
-    session.chord.bass = actual.bass;
-  } else {
-    session.chord.bass = -1;
-  }
-  endVoicingSearch();
+// Every direct fingering edit has the same meaning: the sounding notes define
+// the chord. A search may suggest alternatives but cannot replace this edit.
+function updateFingering() {
+  requestVersion++;
+  session.busy = false;
+  session.message = "";
+  session.searchError = "";
+  const actual = describeFingering(session.tuning, session.frets, session.chord.root);
+  session.chord = { ...withSoundingIntervals(session.chord, actual.intervals), bass: actual.bass };
   session.bassFilter = -1;
+  session.anchors = session.anchors.filter(({ string, fret }) => session.frets[string] === fret);
+  clearSuggestions();
   audition(actual.midis);
+  if (!actual.midis.length) {
+    endVoicingSearch();
+    renderEditor();
+    return;
+  }
+  session.searchOpen = true;
+  suggestGrip({ choose: false });
 }
 
 function changeFret(string, fret) {
-  if (session.busy && session.mode === "draw") return;
-  const { tuning, chord, mode } = session;
-  session.message = "";
-  if (mode === "select") {
-    const interval = mod12(tuning[string] + fret - chord.root);
-    if (!chord.intervals.includes(interval)) return;
-    if (!session.anchors.length) {
-      session.showHarmony = false;
-      session.frets = tuning.map(() => -1);
-    }
-    // Keep other notes when editing a suggestion; only clicked notes constrain
-    // the next search. Clicking a sounding note removes it immediately.
-    const remove = session.frets[string] === fret;
-    session.frets[string] = remove ? -1 : fret;
-    session.anchors = session.anchors.filter((position) => position.string !== string);
-    if (!remove) session.anchors.push({ string, fret });
-    session.anchors.sort((a, b) => a.string - b.string);
-    session.chord.bass = describeFingering(tuning, session.frets, chord.root).bass;
-    audition(soundingNotes(session.tuning, session.frets));
-    if (!session.anchors.length) return closeVoicingSearch();
-    return suggestGrip({ choose: false });
-  }
+  session.frets ??= session.tuning.map(() => -1);
   session.frets[string] = session.frets[string] === fret ? -1 : fret;
-  updateManualGrip();
-  renderEditor();
+  session.anchors = session.anchors.filter((position) => position.string !== string);
+  if (session.frets[string] >= 0) session.anchors.push({ string, fret });
+  session.anchors.sort((a, b) => a.string - b.string);
+  updateFingering();
 }
 
 function saveChord() {
@@ -254,39 +246,31 @@ function editVoicingResults(action, target) {
 }
 
 function editGrip(action, target) {
-  if (session.busy) return;
-  if (action === "mode" && session.mode !== target.dataset.value) {
-    session.mode = target.dataset.value;
-    endVoicingSearch();
-    session.frets ??= session.tuning.map(() => -1);
+  if (action === "view") {
+    session.view = target.dataset.value;
+    renderEditor();
+    return;
   }
-  if (action === "harmony") session.showHarmony = !session.showHarmony;
   if (action === "clear") {
     session.frets = session.tuning.map(() => -1);
-    session.chord.bass = -1;
-    session.bassFilter = -1;
-    endVoicingSearch();
-    audition([]);
+    updateFingering();
+    return;
   }
   if (action === "mute") {
     session.frets[Number(target.dataset.string)] = -1;
-    updateManualGrip();
+    updateFingering();
+    return;
   }
   if (action === "octave") {
     const string = Number(target.dataset.string);
     const next = session.frets[string] + Number(target.dataset.delta);
     if (session.frets[string] >= 0 && next >= 0 && next <= 24) {
       session.frets[string] = next;
-      session.chord.bass = describeFingering(
-        session.tuning,
-        session.frets,
-        session.chord.root,
-      ).bass;
-      endVoicingSearch();
-      session.bassFilter = -1;
-      audition(soundingNotes(session.tuning, session.frets));
+      updateFingering();
     }
+    return;
   }
+  if (session.busy) return;
   editVoicingResults(action, target);
   renderEditor();
 }
@@ -304,7 +288,7 @@ dialog.addEventListener("click", (event) => {
     const action = target.dataset.action;
     if (action === "close") return dialog.close();
     if (action === "close-search") return closeVoicingSearch();
-    if (action === "retry-search") return suggestGrip({ choose: !session.anchors.length });
+    if (action === "retry-search") return suggestGrip({ choose: false });
     if (action === "remove-anchor")
       return changeFret(Number(target.dataset.string), Number(target.dataset.position));
     if (action === "save") return saveChord();
@@ -313,7 +297,10 @@ dialog.addEventListener("click", (event) => {
       renderEditor();
       return;
     }
-    if (action === "suggest") return regenerate();
+    if (action === "suggest") {
+      session.searchOpen = true;
+      return regenerate();
+    }
     if (action === "audition")
       return audition(
         session.frets?.some((n) => n >= 0)
@@ -356,6 +343,16 @@ dialog.addEventListener("click", (event) => {
   }
 });
 
+dialog.addEventListener("keydown", (event) => {
+  if (!session || !event.target.matches('[role="tab"]')) return;
+  if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+  event.preventDefault();
+  session.view = event.key === "Home" ? "fretboard" : event.key === "End" ? "scale"
+    : session.view === "fretboard" ? "scale" : "fretboard";
+  renderEditor();
+  dialog.querySelector(`[data-focus="view-${session.view}"]`).focus();
+});
+
 dialog.addEventListener("input", (event) => {
   if (session && event.target.dataset.editor === "label")
     session.chord.label = event.target.value;
@@ -382,7 +379,7 @@ export function openChordEditor(
   chord,
   tuning,
   onSave,
-  { keyTones, partName, isNew, toggleTheme },
+  { keyNotes, scaleName, partName, isNew, toggleTheme },
 ) {
   const frets = getFingering(chord, tuning);
   chord = voicedChord(
@@ -394,15 +391,18 @@ export function openChordEditor(
     tuning: [...tuning],
     frets,
     onSave,
-    keyTones,
+    keyTones: keyNotes.map((note) => note.pc),
+    spelling: Object.assign([...NOTES], Object.fromEntries(keyNotes.map((note) => [note.pc, note.name]))),
+    scaleName,
     partName,
     isNew,
     toggleTheme,
-    mode: "select",
+    view: "fretboard",
+    searchOpen: false,
+    selectionFrets: frets?.slice() ?? tuning.map(() => -1),
     anchors: [],
     voicingGroups: [],
     voicingGroup: 0,
-    showHarmony: true,
     voicingPage: 0,
     bassFilter: -1,
     start: 0,

@@ -62,18 +62,6 @@ export function findVoicings(
   return cache.get(key);
 }
 
-// Selected chord tones form the current grip, even before every interval is
-// present. Unselected strings stay muted; invalid positions return null.
-export function selectedNoteFrets(tuning, chord, positions) {
-  const frets = tuning.map(() => -1);
-  for (const { string, fret } of positions) {
-    if (!Number.isInteger(string) || string < 0 || string >= tuning.length ||
-        !Number.isInteger(fret) || fret < 0 || fret > 24 || frets[string] >= 0 ||
-        !chord.intervals.includes(mod12(tuning[string] + fret - chord.root))) return null;
-    frets[string] = fret;
-  }
-  return frets;
-}
 // Keep engine ranking inside each group; use sounding pitch for re-entrant tunings.
 export function groupVoicings(tuning, root, voicings) {
   const groups = new Map();

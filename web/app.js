@@ -289,9 +289,12 @@ async function cycleVoicing(chordId, direction, frame = null) {
 }
 
 function editChord(chord, isNew = false) {
-  const partId = currentPart().id;
+  const current = currentPart();
+  const partId = current.id;
+  const scale = partScale(current);
+  const keyNotes = scaleNotes(current.root, scale);
   const tuning = [...guitarForPart().strings];
-  if (isNew && currentPart().chords.length >= 64)
+  if (isNew && current.chords.length >= 64)
     throw new Error("A part can hold up to 64 chords.");
   openChordEditor(
     chord,
@@ -307,10 +310,9 @@ function editChord(chord, isNew = false) {
       notify("Chord saved.");
     },
     {
-      keyTones: scaleNotes(currentPart().root, partScale(currentPart())).map(
-        (n) => n.pc,
-      ),
-      partName: currentPart().name,
+      keyNotes,
+      scaleName: `${keyNotes[0].name} ${scale.name}`,
+      partName: current.name,
       isNew,
       toggleTheme,
     },

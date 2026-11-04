@@ -1058,6 +1058,23 @@ dialog::backdrop {
   min-width: 0;
   padding-top: 10px;
 }
+#editor [hidden] { display: none !important; }
+.editor-views {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.editor-views [aria-selected="true"] {
+  color: var(--accent-ink);
+  background: var(--accent);
+}
+.editor-scale-context {
+  color: var(--muted);
+  font-size: 12px;
+}
 .workshop-row {
   display: flex;
   gap: 14px;

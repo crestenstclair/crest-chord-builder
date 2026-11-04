@@ -123,8 +123,7 @@ export function selectChordTone(chord, label) {
         ),
         label,
       ];
-  if (!formula.length)
-    throw new Error("Keep at least one chord interval selected.");
+  // An empty draft is editable; project validation still rejects empty saved chords.
   return withFormula(chord, sortFormula(formula));
 }
 
