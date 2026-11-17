@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
+    "build:plugin": "node scripts/build-plugin.mjs",
+    "install:plugin": "node scripts/install-plugin.mjs",
     "start": "node scripts/serve.mjs",
     "test": "node --test test/*.test.mjs && go test ./...",
     "test:browser": "playwright test"

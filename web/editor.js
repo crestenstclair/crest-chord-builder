@@ -13,6 +13,7 @@ import { getFingering, setFingering } from "./project.js";
 import { findVoicings, groupVoicings } from "./voicings.js";
 import { playNotes } from "./ui.js";
 import { editorView, VOICINGS_PER_PAGE } from "./editor-view.js";
+import { lastFret, fingeringOptions, fingeringMatchesSettings, relativeFret, relativePosition } from "./fingering-settings.js";
 
 const dialog = document.querySelector("#editor");
 let session = null;
@@ -87,7 +88,7 @@ function showGrip(index) {
   const fretted = session.frets.filter((n) => n > 0);
   session.start =
     fretted.length && Math.max(...fretted) > 12
-      ? Math.min(12, Math.max(0, Math.min(...fretted) - 2))
+      ? Math.min(lastFret(session) - 12, Math.max(0, Math.min(...fretted) - 2))
       : 0;
 }
 
@@ -101,14 +102,7 @@ async function suggestGrip({ preview = false, choose = true } = {}) {
   current.selectionFrets = current.frets?.slice() ?? current.tuning.map(() => -1);
   clearSuggestions();
   renderEditor();
-  const bounds =
-    current.position === "any"
-      ? {}
-      : {
-          minFret: Number(current.position),
-          maxFret:
-            Number(current.position) === 0 ? 4 : Number(current.position) + 3,
-        };
+  const bounds = fingeringOptions(current);
   try {
     const voicings = await findVoicings(
       current.tuning,
@@ -194,7 +188,9 @@ function updateFingering() {
   suggestGrip({ choose: false });
 }
 
-function changeFret(string, fret) {
+function changeFret(string, physicalFret) {
+  const fret = relativeFret(physicalFret, session.capo);
+  if (fret < 0 || fret > lastFret(session)) return;
   session.frets ??= session.tuning.map(() => -1);
   session.frets[string] = session.frets[string] === fret ? -1 : fret;
   session.anchors = session.anchors.filter((position) => position.string !== string);
@@ -206,6 +202,7 @@ function changeFret(string, fret) {
 function saveChord() {
   const { chord, tuning, frets, onSave } = session;
   if (!frets) return;
+  if (!fingeringMatchesSettings(frets, session)) return;
   if (session.nameFromNotes && session.namedRoot === null) return;
   const actual = describeFingering(tuning, frets, chord.root);
   if (!actual.midis.length) return;
@@ -213,7 +210,7 @@ function saveChord() {
   chord.bass = actual.bass;
   chord.label = chord.label.trim();
   setFingering(chord, tuning, frets);
-  onSave(chord);
+  onSave(chord, { position: session.position === "any" ? "any" : Number(session.position), allowOpen: session.allowOpen });
   dialog.close();
 }
 
@@ -285,7 +282,7 @@ function editGrip(action, target) {
   if (action === "octave") {
     const string = Number(target.dataset.string);
     const next = session.frets[string] + Number(target.dataset.delta);
-    if (session.frets[string] >= 0 && next >= 0 && next <= 24) {
+    if (session.frets[string] >= 0 && next >= 0 && next <= lastFret(session)) {
       session.frets[string] = next;
       updateFingering();
     }
@@ -384,12 +381,14 @@ dialog.addEventListener("change", (event) => {
   const field = event.target.dataset.editor;
   const value = event.target.value;
   if (field === "start") {
-    session.start = Number(value);
+    session.start = relativeFret(value, session.capo);
     renderEditor();
     return;
   }
   if (field === "label") return;
-  if (field === "position") session.position = value;
+  if (field === "position") session.position = relativePosition(value, session.capo);
+  if (field === "allow-open") session.allowOpen = event.target.checked;
+  session.searchOpen = true;
   regenerate();
 });
 dialog.addEventListener("close", () => {
@@ -401,9 +400,11 @@ export function openChordEditor(
   chord,
   tuning,
   onSave,
-  { keyNotes, scaleName, partName, isNew, toggleTheme, nameFromNotes = false },
+  { keyNotes, scaleName, partName, isNew, toggleTheme, nameFromNotes = false, capo = 0, position = "any", allowOpen = true },
 ) {
-  const frets = nameFromNotes ? tuning.map(() => -1) : getFingering(chord, tuning);
+  const saved = getFingering(chord, tuning);
+  const frets = nameFromNotes ? tuning.map(() => -1)
+    : saved?.every((fret) => fret <= lastFret({ capo })) ? saved : null;
   chord = voicedChord(
     chord,
     frets ? describeFingering(tuning, frets, chord.root) : null,
@@ -421,6 +422,8 @@ export function openChordEditor(
     nameFromNotes,
     namedRoot: null,
     toggleTheme,
+    capo,
+    allowOpen,
     view: "fretboard",
     searchOpen: false,
     selectionFrets: frets?.slice() ?? tuning.map(() => -1),
@@ -430,7 +433,7 @@ export function openChordEditor(
     voicingPage: 0,
     bassFilter: -1,
     start: 0,
-    position: "any",
+    position,
     busy: false,
     message: "",
     searchError: "",
@@ -439,8 +442,8 @@ export function openChordEditor(
   };
   const fretted = session.frets?.filter((f) => f > 0) ?? [];
   if (fretted.length && Math.max(...fretted) > 12)
-    session.start = Math.min(12, Math.max(0, Math.min(...fretted) - 2));
+    session.start = Math.min(lastFret(session) - 12, Math.max(0, Math.min(...fretted) - 2));
   renderEditor();
   dialog.showModal();
-  if (!session.frets) suggestGrip();
+  if (!nameFromNotes && (!session.frets || !fingeringMatchesSettings(session.frets, session))) suggestGrip();
 }

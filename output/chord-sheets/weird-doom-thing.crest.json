@@ -1,0 +1,602 @@
+{
+  "format": "crest-chord-builder",
+  "version": 3,
+  "title": "weird doom thing - chord sheet",
+  "guitars": [
+    {
+      "id": "standard-six",
+      "name": "Standard 6-string (assumed)",
+      "strings": [
+        40,
+        45,
+        50,
+        55,
+        59,
+        64
+      ]
+    }
+  ],
+  "parts": [
+    {
+      "id": "current-strings",
+      "name": "Slurred strings",
+      "guitarId": "standard-six",
+      "root": 2,
+      "scale": "minor",
+      "chords": [
+        {
+          "id": "d-minor7",
+          "root": 2,
+          "intervals": [
+            0,
+            3,
+            7,
+            10
+          ],
+          "bass": 2,
+          "label": "Dm7",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              -1,
+              -1,
+              0,
+              2,
+              1,
+              1
+            ]
+          }
+        },
+        {
+          "id": "a-minor7",
+          "root": 9,
+          "intervals": [
+            0,
+            3,
+            7,
+            10
+          ],
+          "bass": 9,
+          "label": "Am7",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              -1,
+              0,
+              2,
+              0,
+              1,
+              0
+            ]
+          }
+        },
+        {
+          "id": "c-shell",
+          "root": 0,
+          "intervals": [
+            0,
+            7,
+            10
+          ],
+          "bass": 0,
+          "label": "C7(no3)",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              8,
+              -1,
+              8,
+              0,
+              -1,
+              -1
+            ]
+          }
+        },
+        {
+          "id": "g-sus",
+          "root": 7,
+          "intervals": [
+            0,
+            5,
+            7,
+            10
+          ],
+          "bass": 7,
+          "label": "G7sus4",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              3,
+              -1,
+              0,
+              0,
+              1,
+              1
+            ]
+          }
+        },
+        {
+          "id": "d-minor11-f",
+          "root": 2,
+          "intervals": [
+            0,
+            3,
+            5,
+            7
+          ],
+          "bass": 5,
+          "label": "Dm(add11)/F",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              1,
+              0,
+              0,
+              0,
+              -1,
+              -1
+            ]
+          }
+        }
+      ],
+      "sheet": {
+        "format": "markdown",
+        "layout": "replace",
+        "source": "# weird doom thing — Slurred strings\n\n**91 BPM · 4/4 · concert pitch · verified against Producer Pal on 6 November 2026**\n\nSource: **slurring high strings**, clips **2418** and **2515**, track **08 HIGH STRINGS / FUGUE** (ID **2385**, current path **t13**). Arrangement bars **33–48** and **65–80**.\n\n## D minor fretboard\n\n**D · E · F · G · A · B♭ · C** — natural minor. Standard tuning **E A D G B E**; treble string at the top. D roots are highlighted.\n\n<scale-map start=\"0\" labels=\"notes\"></scale-map>\n\nIntervals: **1 · 2 · ♭3 · 4 · 5 · ♭6 · ♭7**. Frets 0–12; the pattern repeats 12 frets higher.\n\n## Chord shapes\n\nStandard tuning **E2 A2 D3 G3 B3 E4**. Guitar voicings preserve every chord tone and the indicated bass pitch class; octaves are revoiced for guitar. No transposition.\n\n<chord-sheet></chord-sheet>\n\n## Progression\n\nOne chord per bar. Play this eight-bar phrase twice in each 16-bar section.\n\n**Dm7 | Am7 | Dm7 | C7(no3) | Dm7 | Am7 | G7sus4 | Dm(add11)/F**\n\n| Bars (first / repeat) | Chord |\n| --- | --- |\n| 33 / 65 | **Dm7** |\n| 34 / 66 | **Am7** |\n| 35 / 67 | **Dm7** |\n| 36 / 68 | **C7(no3)** |\n| 37 / 69 | **Dm7** |\n| 38 / 70 | **Am7** |\n| 39 / 71 | **G7sus4** |\n| 40 / 72 | **Dm(add11)/F** |\n| 41 / 73 | **Dm7** |\n| 42 / 74 | **Am7** |\n| 43 / 75 | **Dm7** |\n| 44 / 76 | **C7(no3)** |\n| 45 / 77 | **Dm7** |\n| 46 / 78 | **Am7** |\n| 47 / 79 | **G7sus4** |\n| 48 / 80 | **Dm(add11)/F** |\n\n## Notes in each chord\n\n| Chord | Pitch classes |\n| --- | --- |\n| Dm7 | D · F · A · C |\n| Am7 | A · C · E · G |\n| C7(no3) | C · G · B♭ |\n| G7sus4 | G · C · D · F |\n| Dm(add11)/F | F · A · D · G |\n\n**G7sus4:** F is a velocity-1 note; C carries over from the preceding Am7. The stronger sounding notes form **Gsus4**. **C7(no3)** has no E.\n\nThis is a bar-level harmonic reduction of humanized MIDI; brief approach notes, gaps and overlaps are not literal strumming instructions. Dm7 anticipates bars 37, 45, 69 and 77 by about 0.15 beats. Both clips start at source **5|1**, mapping source bars **5–20** to the arrangement ranges above. The differently named **High String Slurs** clips have their own part in this project.\n",
+        "files": []
+      }
+    },
+    {
+      "id": "high-string-slurs",
+      "name": "High String Slurs",
+      "guitarId": "standard-six",
+      "root": 2,
+      "scale": "minor",
+      "chords": [
+        {
+          "id": "d-minor-a",
+          "root": 2,
+          "intervals": [
+            0,
+            3,
+            7
+          ],
+          "bass": 9,
+          "label": "Dm/A",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              -1,
+              0,
+              3,
+              -1,
+              3,
+              -1
+            ]
+          }
+        },
+        {
+          "id": "eb-major7-bb",
+          "root": 3,
+          "intervals": [
+            0,
+            4,
+            7,
+            11
+          ],
+          "bass": 10,
+          "label": "Ebmaj7/Bb",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              6,
+              6,
+              0,
+              0,
+              -1,
+              -1
+            ]
+          }
+        },
+        {
+          "id": "f-major7-e",
+          "root": 5,
+          "intervals": [
+            0,
+            4,
+            11
+          ],
+          "bass": 4,
+          "label": "Fmaj7(no5)/E",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              0,
+              0,
+              3,
+              -1,
+              -1,
+              -1
+            ]
+          }
+        },
+        {
+          "id": "f-major7",
+          "root": 5,
+          "intervals": [
+            0,
+            4,
+            11
+          ],
+          "bass": 5,
+          "label": "Fmaj7(no5)",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              1,
+              0,
+              2,
+              -1,
+              -1,
+              -1
+            ]
+          }
+        },
+        {
+          "id": "bb-major-f",
+          "root": 10,
+          "intervals": [
+            0,
+            4,
+            7
+          ],
+          "bass": 5,
+          "label": "Bb/F",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              1,
+              1,
+              0,
+              -1,
+              -1,
+              -1
+            ]
+          }
+        },
+        {
+          "id": "eb-major7",
+          "root": 3,
+          "intervals": [
+            0,
+            4,
+            7,
+            11
+          ],
+          "bass": 3,
+          "label": "Ebmaj7",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              -1,
+              6,
+              8,
+              7,
+              8,
+              -1
+            ]
+          }
+        }
+      ],
+      "sheet": {
+        "format": "markdown",
+        "layout": "replace",
+        "source": "# weird doom thing — High String Slurs\n\n**91 BPM · 4/4 · concert pitch · verified against Producer Pal on 6 November 2026**\n\nSource: **High String Slurs**, clips **2419** and **2516**, track **08 HIGH STRINGS / FUGUE** (ID **2385**, current path **t13**). Arrangement bars **49–64** and **81–96**.\n\n## D minor fretboard\n\n**D · E · F · G · A · B♭ · C** — natural minor. Standard tuning **E A D G B E**; treble string at the top. D roots are highlighted.\n\n<scale-map start=\"0\" labels=\"notes\"></scale-map>\n\nIntervals: **1 · 2 · ♭3 · 4 · 5 · ♭6 · ♭7**. Frets 0–12; the pattern repeats 12 frets higher.\n\n## Chord shapes\n\nStandard tuning **E2 A2 D3 G3 B3 E4**. Guitar voicings preserve every chord tone and the indicated bass pitch class; octaves are revoiced for guitar. No transposition.\n\n<chord-sheet></chord-sheet>\n\n## Progression\n\nEach chord lasts **two bars**. Slash notes are the lowest MIDI pitch classes of the source string voicings.\n\n| Bars (first / repeat) | Chord |\n| --- | --- |\n| 49–50 / 81–82 | **Dm/A** |\n| 51–52 / 83–84 | **Ebmaj7/Bb** |\n| 53–54 / 85–86 | **Fmaj7(no5)/E** |\n| 55–56 / 87–88 | **Ebmaj7/Bb** |\n| 57–58 / 89–90 | **Fmaj7(no5)** |\n| 59–60 / 91–92 | **Bb/F** |\n| 61–62 / 93–94 | **Fmaj7(no5)** |\n| 63–64 / 95–96 | **Ebmaj7** |\n\nBoth clips start at source **1|1** and use their 16-bar loop once. These are different clips from **slurring high strings**, which appear in the **Slurred strings** part. The E♭maj7 chords use E♭ outside the displayed D natural minor scale.\n",
+        "files": []
+      }
+    },
+    {
+      "id": "reference",
+      "name": "Chord-reference roadmap",
+      "guitarId": "standard-six",
+      "root": 2,
+      "scale": "minor",
+      "chords": [
+        {
+          "id": "d-shell",
+          "root": 2,
+          "intervals": [
+            0,
+            7,
+            10
+          ],
+          "bass": 2,
+          "label": "Dm7(no3)",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              -1,
+              -1,
+              0,
+              2,
+              1,
+              -1
+            ]
+          }
+        },
+        {
+          "id": "g-shell",
+          "root": 7,
+          "intervals": [
+            0,
+            7,
+            10
+          ],
+          "bass": 7,
+          "label": "Gm7(no3)",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              -1,
+              -1,
+              -1,
+              0,
+              3,
+              1
+            ]
+          }
+        },
+        {
+          "id": "bb-shell",
+          "root": 10,
+          "intervals": [
+            0,
+            7,
+            11
+          ],
+          "bass": 10,
+          "label": "Bbmaj7(no3)",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              -1,
+              1,
+              3,
+              2,
+              -1,
+              -1
+            ]
+          }
+        },
+        {
+          "id": "a-shell",
+          "root": 9,
+          "intervals": [
+            0,
+            7,
+            10
+          ],
+          "bass": 9,
+          "label": "Am7(no3)",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              -1,
+              0,
+              2,
+              0,
+              -1,
+              -1
+            ]
+          }
+        },
+        {
+          "id": "c-shell",
+          "root": 0,
+          "intervals": [
+            0,
+            7,
+            10
+          ],
+          "bass": 0,
+          "label": "C7(no3)",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              8,
+              -1,
+              8,
+              0,
+              -1,
+              -1
+            ]
+          }
+        },
+        {
+          "id": "f-major7",
+          "root": 5,
+          "intervals": [
+            0,
+            4,
+            11
+          ],
+          "bass": 5,
+          "label": "Fmaj7(no5)",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              1,
+              0,
+              2,
+              -1,
+              -1,
+              -1
+            ]
+          }
+        },
+        {
+          "id": "eb-major7",
+          "root": 3,
+          "intervals": [
+            0,
+            4,
+            7,
+            11
+          ],
+          "bass": 3,
+          "label": "Ebmaj7",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              -1,
+              6,
+              8,
+              7,
+              8,
+              -1
+            ]
+          }
+        },
+        {
+          "id": "d-minor9",
+          "root": 2,
+          "intervals": [
+            0,
+            2,
+            3,
+            7,
+            10
+          ],
+          "bass": 2,
+          "label": "Dm9",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              -1,
+              5,
+              7,
+              5,
+              6,
+              0
+            ]
+          }
+        },
+        {
+          "id": "d-cluster",
+          "root": 2,
+          "intervals": [
+            0,
+            1,
+            7
+          ],
+          "bass": 2,
+          "label": "D5(addb9)",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              -1,
+              -1,
+              0,
+              2,
+              4,
+              -1
+            ]
+          }
+        }
+      ],
+      "sheet": {
+        "format": "markdown",
+        "layout": "replace",
+        "source": "# weird doom thing\n\n## Chord-reference roadmap\n\n**91 BPM · 4/4 · D minor · concert pitch · snapshot: 6 November 2026**\n\n## D minor fretboard\n\n**D · E · F · G · A · B♭ · C** — natural minor. Standard tuning **E A D G B E**; treble string at the top. D roots are highlighted.\n\n<scale-map start=\"0\" labels=\"notes\"></scale-map>\n\nIntervals: **1 · 2 · ♭3 · 4 · 5 · ♭6 · ♭7**. Frets 0–12; the pattern repeats 12 frets higher.\n\nSource: muted **chord progressions** track (t1, ID 2305), arrangement clips only. This is the dedicated harmonic reference; current instrumental parts differ (see Current strings and Pad accents). Holds below are reference MIDI durations, not the articulation of the recorded performance.\n\n### Bars 1-16 - ICY\n\n| Bars | Chord |\n| --- | --- |\n| 1-2 | **Dm7(no3)** |\n| 3-4 | **Gm7(no3)** |\n| 5-6 | **Bbmaj7(no3)** |\n| 7-8 | **Am7(no3)** |\n| 9-10 | **Dm7(no3)** |\n| 11-12 | **Gm7(no3)** |\n| 13-14 | **Bbmaj7(no3)** |\n| 15-16 | **C7(no3)** |\n\n### Bars 17-32 - HIGH STRINGS reference\n\n| Bars | Chord |\n| --- | --- |\n| 17-18 | **Fmaj7(no5)** |\n| 19-20 | **Ebmaj7** |\n| 21-22 | **Fmaj7(no5)** |\n| 23-24 | **Ebmaj7** |\n| 25-26 | **Fmaj7(no5)** |\n| 27-28 | **Ebmaj7** |\n| 29-30 | **Fmaj7(no5)** |\n| 31-32 | **Ebmaj7** |\n\n### Bars 33-120\n\n| Bars | Chord / instruction |\n| --- | --- |\n| 33-36 | **Dm9** - hold four bars |\n| 37-61 | No chord-reference notes; see Current strings |\n| 62-77 | **Fmaj7(no5)** for two bars, **Ebmaj7** for two bars; repeat four times |\n| 78-114 | No chord-reference notes; see Current strings through bar 96 |\n| 115-116 | **Dm9** - hold two bars |\n| 117 | Rest in this reference track |\n| 118 | **D5(addb9)** - D, Eb, A; hold one bar |\n| 119-120 | Rest in this reference track |\n\n“No chord-reference notes” is not a whole-band rest. The outro cluster has no third; its clip title is Dm(addb9,no3). The minor labels on the opening shells preserve the project's intended D-minor context, but the notes alone do not establish major or minor quality.\n\n## Guitar voicings\n\nStandard six-string tuning **E2 A2 D3 G3 B3 E4**, bass to treble. These are playable guitar reductions: original pitch classes retained, octave placement changed, no transposition. Every written tone is present.\n\n<chord-sheet></chord-sheet>\n\n## Source and limits\n\nReference clips: **2350** at 1|1, **2351** at 17|1, **2319** at 33|1, **2320** at 62|1, **2321** at 115|1. All start at clip 1|1 and are non-looping. Session clips are alternate sketches and are not added to this timeline. Producer Pal reports 91 BPM; the saved project description's 80 BPM/form is older and was not used to place sections. Audio prints were not transcribed or pitch-verified. Bass/guitar guide reads returned no note data; no chords were invented for those spans. Bar numbering assumes the reported constant 4/4 meter.\n",
+        "files": []
+      }
+    },
+    {
+      "id": "pad-accents",
+      "name": "Pad accents",
+      "guitarId": "standard-six",
+      "root": 2,
+      "scale": "minor",
+      "chords": [
+        {
+          "id": "d-minor9",
+          "root": 2,
+          "intervals": [
+            0,
+            2,
+            3,
+            7,
+            10
+          ],
+          "bass": 2,
+          "label": "Dm9",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              -1,
+              5,
+              7,
+              5,
+              6,
+              0
+            ]
+          }
+        },
+        {
+          "id": "d-minor9-a",
+          "root": 2,
+          "intervals": [
+            0,
+            2,
+            3,
+            7,
+            10
+          ],
+          "bass": 9,
+          "label": "Dm9/A",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              -1,
+              0,
+              3,
+              5,
+              3,
+              0
+            ]
+          }
+        },
+        {
+          "id": "g-minor9-d",
+          "root": 7,
+          "intervals": [
+            0,
+            2,
+            3,
+            7,
+            10
+          ],
+          "bass": 2,
+          "label": "Gm9/D",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              -1,
+              5,
+              7,
+              0,
+              6,
+              6
+            ]
+          }
+        },
+        {
+          "id": "e-halfdim11",
+          "root": 4,
+          "intervals": [
+            0,
+            3,
+            5,
+            6,
+            10
+          ],
+          "bass": 4,
+          "label": "Em7b5(add11)",
+          "fingerings": {
+            "40,45,50,55,59,64": [
+              0,
+              0,
+              0,
+              3,
+              -1,
+              3
+            ]
+          }
+        }
+      ],
+      "sheet": {
+        "format": "markdown",
+        "layout": "replace",
+        "source": "# weird doom thing - Pad accents\n\n**91 BPM · 4/4 · D minor · concert pitch · snapshot: 6 November 2026**\n\n## D minor fretboard\n\n**D · E · F · G · A · B♭ · C** — natural minor. Standard tuning **E A D G B E**; treble string at the top. D roots are highlighted.\n\n<scale-map start=\"0\" labels=\"notes\"></scale-map>\n\nIntervals: **1 · 2 · ♭3 · 4 · 5 · ♭6 · ♭7**. Frets 0–12; the pattern repeats 12 frets higher.\n\nSource: muted **04 LO-FI PAD** (t9, ID 2455), clip **2498**, starting at arrangement 9|1. Its 16-bar loop fills 24 arrangement bars (9-32). The audio print on t11 spans the same 24 bars but was not pitch-verified.\n\n| Attack bars | Chord | MIDI duration |\n| --- | --- | --- |\n| 9; 25 | **Dm9** | One bar |\n| 13; 29 | **Dm9/A** | One bar |\n| 17 | **Gm9/D** | One bar |\n| 21 | **Em7b5(add11)** | One bar |\n\nEach attack is followed by three bars without new held MIDI notes; effects can ring longer. At bars 25 and 29, the first two attacks repeat. Gm9/D = D, F, A, Bb, G. Em7b5(add11) = E, G, A, Bb, D. These are source-layer harmonies, not proof of the composite harmony under the simultaneous icy layer.\n\nStandard tuning **E2 A2 D3 G3 B3 E4**. Guitar reductions retain every pitch class and the indicated bass, without transposition.\n\n<chord-sheet></chord-sheet>\n",
+        "files": []
+      }
+    }
+  ]
+}

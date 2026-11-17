@@ -1,0 +1,48 @@
+{
+  "Name": "Crest Chord Reference",
+  "Version": "1.0.0",
+  "Factory Info": {
+    "Vendor": "Crest",
+    "URL": "",
+    "E-Mail": "",
+    "Flags": {
+      "Unicode": true,
+      "Classes Discardable": false,
+      "Component Non Discardable": false,
+    },
+  },
+  "Classes": [
+    {
+      "CID": "ABCDEF019182FAEB4372737443635266",
+      "Category": "Audio Module Class",
+      "Name": "Crest Chord Reference",
+      "Vendor": "Crest",
+      "Version": "1.0.0",
+      "SDKVersion": "VST 3.8.0",
+      "Sub Categories": [
+        "Fx",
+        "Tools",
+      ],
+      "Class Flags": 0,
+      "Cardinality": 2147483647,
+      "Snapshots": [
+      ],
+    },
+    {
+      "CID": "ABCDEF011234ABCD4372737443635266",
+      "Category": "Component Controller Class",
+      "Name": "Crest Chord Reference",
+      "Vendor": "Crest",
+      "Version": "1.0.0",
+      "SDKVersion": "VST 3.8.0",
+      "Sub Categories": [
+        "Fx",
+        "Tools",
+      ],
+      "Class Flags": 0,
+      "Cardinality": 2147483647,
+      "Snapshots": [
+      ],
+    },
+  ],
+}

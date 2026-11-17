@@ -14,11 +14,12 @@ type chordSpec struct {
 }
 
 type genConfig struct {
-	MinFret   int        // first permitted fretted position; open strings are allowed
-	MaxFret   int        // highest fret the search will use
-	SpanFrets int        // width of the fretting-hand window, in frets
-	Results   int        // how many voicings to return
-	Anchors   []Position // no anchors searches the whole allowed neck
+	MinFret     int        // first permitted fretted position; open strings are allowed
+	MaxFret     int        // highest fret the search will use
+	SpanFrets   int        // width of the fretting-hand window, in frets
+	Results     int        // how many voicings to return
+	Anchors     []Position // no anchors searches the whole allowed neck
+	ExcludeOpen bool       // disallow open strings, including open-at-capo strings
 }
 
 type candidate struct {
@@ -33,6 +34,11 @@ type candidate struct {
 // comfortable first, filtered so the results are meaningfully different shapes.
 func generateVoicings(openMidi []int, spec chordSpec, cfg genConfig) []candidate {
 	best := map[string]candidate{}
+	for _, anchor := range cfg.Anchors {
+		if cfg.ExcludeOpen && anchor.Fret == 0 {
+			return nil
+		}
+	}
 
 	lastPos := cfg.MaxFret - cfg.SpanFrets + 1
 	if lastPos < 1 {
@@ -99,7 +105,7 @@ func candidateFrets(openMidi []int, spec chordSpec, pos int, cfg genConfig) [][]
 	options := make([][]int, len(openMidi))
 	for s, open := range openMidi {
 		opts := []int{-1}
-		if inChord[open%12] {
+		if !cfg.ExcludeOpen && inChord[open%12] {
 			opts = append(opts, 0)
 		}
 		for f := pos; f < pos+cfg.SpanFrets && f <= cfg.MaxFret; f++ {

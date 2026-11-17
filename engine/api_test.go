@@ -63,6 +63,27 @@ func TestRootlessAndHandPosition(t *testing.T) {
 	}
 }
 
+func TestExcludeOpenStringsWithCapoAndPosition(t *testing.T) {
+	// Standard tuning with a capo at fret 2; all returned frets are capo-relative.
+	r := Request{OpenMidi: []int{42, 47, 52, 57, 61, 66}, Tones: []int{9, 0, 4, 7}, Root: 9, Bass: -1, MinFret: 3, MaxFret: 6, ExcludeOpen: true}
+	shapes, err := Generate(r)
+	if err != nil || len(shapes) == 0 {
+		t.Fatalf("expected capo-relative Am7 shapes without open strings: %v", err)
+	}
+	for _, shape := range shapes {
+		for _, fret := range shape.Frets {
+			if fret != -1 && (fret < 3 || fret > 6) {
+				t.Fatalf("fret escaped strict position filter: %v", shape.Frets)
+			}
+		}
+	}
+	r.Anchor = &Position{String: 2, Fret: 0} // Open E is a chord tone, but excluded.
+	shapes, err = Generate(r)
+	if err != nil || len(shapes) != 0 {
+		t.Fatalf("an open anchor must not bypass the filter: %v, %v", shapes, err)
+	}
+}
+
 func TestAnchoredVoicings(t *testing.T) {
 	for _, tuning := range [][]int{
 		{40, 45, 50, 55, 59, 64},

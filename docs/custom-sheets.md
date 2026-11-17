@@ -25,11 +25,13 @@ Count **1 · 2 · 3** and sustain through each written duration.
 | Component | Behavior |
 | --- | --- |
 | `guitar-tab` | Loads an attached `crest-tab` JSON file. `bars-per-row` is 1–8 (default 4). Optional `from-bar` and `bars` select an absolute bar range. Always shows every string, treble first; the legacy `strings` attribute is ignored. |
-| `scale-map` | Uses the current part's scale and guitar tuning. `start` is fret 0–12. `labels` is `intervals` (default) or `notes`. |
-| `chord-sheet` | Displays all saved chord fingerings in the current part, using the selected guitar. Use the previous/next arrows to browse voicings. Each choice saves to the current tuning and supports Undo. Editor previews show disabled arrows; save the sheet to change fingerings. |
+| `scale-map` | Uses the current part's scale and sounding guitar tuning, including its capo. `start` is an absolute fret from 0–12; starts behind the capo move up to the capo. The Play & Print Frets control overrides it. Windows stop at physical fret 24. The workspace **Intervals / Notes** toggle overrides the component's `labels` attribute; intervals are the default. |
+| `chord-sheet` | Displays matching fingerings for the current part and guitar, respecting its capo, hand position and open-string filter. Previous/next arrows use those same restrictions. Each choice saves to the sounding tuning and supports Undo. Editor previews show disabled arrows; save the sheet to change fingerings. |
 | `file-content` | Includes an attached Markdown, HTML, image, or text file. JSON and other text are shown as code. Includes can nest four levels. |
 
 Tab notation is engraved with bundled VexFlow (MIT), including its music glyphs. It works without a font CDN or external notation service.
+
+**Capo and position:** use the controls above the sheet. Chord names remain at concert pitch, and all component fret numbers are absolute, counted from the nut. With capo 2, an open-at-capo note is fret 2; hand position 5–8 means physical frets 5–8. A printed setup line identifies the current restrictions. Attached tablature keeps its original tuning, frets, and playback; it is never silently transposed or retabbed. Static instructions in your Markdown/HTML also remain unchanged.
 
 ### Tab playback
 

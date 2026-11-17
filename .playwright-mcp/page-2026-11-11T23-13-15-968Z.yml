@@ -1,0 +1,355 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e148]:
+      - link "Crest Chord Builder" [ref=e149] [cursor=pointer]:
+        - /url: ./
+        - strong [ref=e150]: Crest
+      - textbox "Project title" [ref=e152]: weird doom thing - chord sheet
+      - generic [ref=e153]:
+        - button "Toggle light or dark theme" [ref=e154] [cursor=pointer]: Light theme
+        - button "Undo last change" [ref=e155] [cursor=pointer]
+        - button "Open JSON" [active] [ref=e158] [cursor=pointer]
+        - button "Save JSON" [ref=e161] [cursor=pointer]
+    - generic [ref=e164]:
+      - complementary [ref=e165]:
+        - navigation "Workflow" [ref=e166]:
+          - button "Guitars" [ref=e167] [cursor=pointer]
+          - button "Parts" [ref=e172] [cursor=pointer]
+          - button "Play & Print" [ref=e178] [cursor=pointer]
+        - generic [ref=e182]:
+          - generic [ref=e183]:
+            - text: PARTS
+            - button "Add Part" [ref=e184] [cursor=pointer]
+          - navigation "Parts" [ref=e187]:
+            - generic [ref=e188]:
+              - button "01 Slurred strings D Natural minor 5" [expanded] [ref=e189] [cursor=pointer]:
+                - generic [ref=e190]: "01"
+                - generic [ref=e191]:
+                  - text: Slurred strings
+                  - generic [ref=e192]: D Natural minor
+                - generic [ref=e193]: "5"
+              - list [ref=e194]:
+                - listitem [ref=e195]:
+                  - button "Open Dm7 in Slurred strings" [ref=e196] [cursor=pointer]:
+                    - generic [ref=e197]: "1"
+                    - text: Dm7
+                    - generic [ref=e198]: Dm7
+                - listitem [ref=e199]:
+                  - button "Open Am7 in Slurred strings" [ref=e200] [cursor=pointer]:
+                    - generic [ref=e201]: "2"
+                    - text: Am7
+                    - generic [ref=e202]: Am7
+                - listitem [ref=e203]:
+                  - button "Open C [1·5·♭7] in Slurred strings" [ref=e204] [cursor=pointer]:
+                    - generic [ref=e205]: "3"
+                    - text: C7(no3)
+                    - generic [ref=e206]: C [1·5·♭7]
+                - listitem [ref=e207]:
+                  - button "Open G7sus4 in Slurred strings" [ref=e208] [cursor=pointer]:
+                    - generic [ref=e209]: "4"
+                    - text: G7sus4
+                    - generic [ref=e210]: G7sus4
+                - listitem [ref=e211]:
+                  - button "Open Dm(add11)/F in Slurred strings" [ref=e212] [cursor=pointer]:
+                    - generic [ref=e213]: "5"
+                    - text: Dm(add11)/F
+                    - generic [ref=e214]: Dm(add11)/F
+            - button "02 High String Slurs D Natural minor 6" [ref=e216] [cursor=pointer]:
+              - generic [ref=e217]: "02"
+              - generic [ref=e218]:
+                - text: High String Slurs
+                - generic [ref=e219]: D Natural minor
+              - generic [ref=e220]: "6"
+            - button "03 Chord-reference roadmap D Natural minor 9" [ref=e222] [cursor=pointer]:
+              - generic [ref=e223]: "03"
+              - generic [ref=e224]:
+                - text: Chord-reference roadmap
+                - generic [ref=e225]: D Natural minor
+              - generic [ref=e226]: "9"
+            - button "04 Pad accents D Natural minor 4" [ref=e228] [cursor=pointer]:
+              - generic [ref=e229]: "04"
+              - generic [ref=e230]:
+                - text: Pad accents
+                - generic [ref=e231]: D Natural minor
+              - generic [ref=e232]: "4"
+          - button "Add Part" [ref=e233] [cursor=pointer]
+        - generic [ref=e236]:
+          - text: Data stays in this browser.
+          - link "Documentation & source ↗" [ref=e237] [cursor=pointer]:
+            - /url: https://github.com/crestenstclair/crest-chord-builder
+      - main [ref=e238]:
+        - generic [ref=e239]:
+          - generic [ref=e240]:
+            - heading "Parts" [level=1] [ref=e241]
+            - paragraph [ref=e242]: Each part has a name, guitar, scale, and ordered chord progression.
+          - button "Play & Print" [ref=e243] [cursor=pointer]
+        - generic [ref=e246]:
+          - generic [ref=e247]:
+            - generic [ref=e248]:
+              - text: Current part
+              - combobox "Current part" [ref=e249]:
+                - option "Slurred strings" [selected]
+                - option "High String Slurs"
+                - option "Chord-reference roadmap"
+                - option "Pad accents"
+            - button "Add Part" [ref=e250] [cursor=pointer]
+          - generic [ref=e253]:
+            - generic [ref=e254]:
+              - text: Part name
+              - textbox "Part name" [ref=e255]: Slurred strings
+            - generic [ref=e256]:
+              - text: Guitar
+              - combobox "Guitar" [ref=e257]:
+                - option "Standard 6-string (assumed)" [selected]
+            - generic [ref=e258]:
+              - generic [ref=e259]:
+                - text: Root
+                - combobox "Scale root" [ref=e260]:
+                  - option "C"
+                  - option "D♭"
+                  - option "D" [selected]
+                  - option "E♭"
+                  - option "E"
+                  - option "F"
+                  - option "F♯"
+                  - option "G"
+                  - option "A♭"
+                  - option "A"
+                  - option "B♭"
+                  - option "B"
+              - generic [ref=e261]:
+                - text: Scale
+                - combobox "Scale" [ref=e262]:
+                  - option "Natural minor" [selected]
+                  - option "Major"
+                  - option "Dorian"
+                  - option "Phrygian"
+                  - option "Lydian"
+                  - option "Mixolydian"
+                  - option "Locrian"
+                  - option "Harmonic minor"
+                  - option "Melodic minor"
+                  - option "Major pentatonic"
+                  - option "Minor pentatonic"
+                  - option "Minor blues"
+                  - option "Major blues"
+                  - option "Harmonic major"
+                  - option "Phrygian dominant"
+                  - option "Lydian dominant"
+                  - option "Altered dominant"
+                  - option "Double harmonic major"
+                  - option "Hungarian minor"
+                  - option "Whole tone"
+                  - option "Diminished (whole–half)"
+                  - option "Diminished (half–whole)"
+                  - option "Chromatic"
+                  - option "Custom scale"
+            - button "Delete this part" [ref=e263] [cursor=pointer]
+          - generic [ref=e266]:
+            - strong [ref=e267]: D Natural minor
+            - generic [ref=e268]:
+              - generic [ref=e269]:
+                - generic [ref=e270]: "1"
+                - generic [ref=e271]: D
+              - generic [ref=e272]:
+                - generic [ref=e273]: "2"
+                - generic [ref=e274]: E
+              - generic [ref=e275]:
+                - generic [ref=e276]: ♭3
+                - generic [ref=e277]: F
+              - generic [ref=e278]:
+                - generic [ref=e279]: "4"
+                - generic [ref=e280]: G
+              - generic [ref=e281]:
+                - generic [ref=e282]: "5"
+                - generic [ref=e283]: A
+              - generic [ref=e284]:
+                - generic [ref=e285]: ♭6
+                - generic [ref=e286]: B♭
+              - generic [ref=e287]:
+                - generic [ref=e288]: ♭7
+                - generic [ref=e289]: C
+          - generic [ref=e290]:
+            - heading "Triads in scale" [level=2] [ref=e291]
+            - generic [ref=e292]: Select an interval to open its chord workshop.
+            - button "Name from fretboard" [ref=e293] [cursor=pointer]
+          - generic [ref=e294]:
+            - button "Open Dm chord workshop" [ref=e295] [cursor=pointer]:
+              - strong [ref=e296]: 1 · Minor
+              - generic [ref=e297]:
+                - text: Dm
+                - generic [ref=e298]: i
+            - button "Open Edim chord workshop" [ref=e299] [cursor=pointer]:
+              - strong [ref=e300]: 2 · Diminished
+              - generic [ref=e301]:
+                - text: Edim
+                - generic [ref=e302]: ii°
+            - button "Open F chord workshop" [ref=e303] [cursor=pointer]:
+              - strong [ref=e304]: ♭3 · Major
+              - generic [ref=e305]:
+                - text: F
+                - generic [ref=e306]: III
+            - button "Open Gm chord workshop" [ref=e307] [cursor=pointer]:
+              - strong [ref=e308]: 4 · Minor
+              - generic [ref=e309]:
+                - text: Gm
+                - generic [ref=e310]: iv
+            - button "Open Am chord workshop" [ref=e311] [cursor=pointer]:
+              - strong [ref=e312]: 5 · Minor
+              - generic [ref=e313]:
+                - text: Am
+                - generic [ref=e314]: v
+            - button "Open B♭ chord workshop" [ref=e315] [cursor=pointer]:
+              - strong [ref=e316]: ♭6 · Major
+              - generic [ref=e317]:
+                - text: B♭
+                - generic [ref=e318]: VI
+            - button "Open C chord workshop" [ref=e319] [cursor=pointer]:
+              - strong [ref=e320]: ♭7 · Major
+              - generic [ref=e321]:
+                - text: C
+                - generic [ref=e322]: VII
+        - generic [ref=e323]:
+          - generic [ref=e325]:
+            - heading "Slurred strings — progression 5" [level=2] [ref=e326]:
+              - text: Slurred strings — progression
+              - generic [ref=e327]: "5"
+            - paragraph [ref=e328]: Chord numbers are relative to the scale root. Diagram intervals are relative to each chord root.
+          - generic [ref=e329]:
+            - article [ref=e330]:
+              - generic [ref=e331]:
+                - generic [ref=e332]: "01"
+                - generic [ref=e333]:
+                  - heading [level=3] [ref=e334]:
+                    - button "Open Dm7 workshop" [ref=e335] [cursor=pointer]: Dm7
+                  - generic [ref=e336]: Dm7 · Minor 7th
+                  - generic [ref=e337]: 1 · ♭3 · 5 · ♭7
+                - button "Play Dm7" [ref=e338] [cursor=pointer]
+              - img "Dm7, frets muted, muted, 0, 2, 1, 1. Bass-side string on left." [ref=e341]:
+                - generic [ref=e343]: ×
+                - generic [ref=e344]: ×
+                - generic [ref=e345]: ○
+                - generic [ref=e346]: "1"
+                - generic [ref=e348]: "5"
+                - generic [ref=e350]: ♭7
+                - generic [ref=e352]: ♭3
+              - generic [ref=e353]: × × 0 2 1 1
+              - generic [ref=e354]:
+                - button "Previous fingering for Dm7" [ref=e355] [cursor=pointer]
+                - button "Edit Dm7" [ref=e358] [cursor=pointer]: Edit
+                - button "Next fingering for Dm7" [ref=e361] [cursor=pointer]
+              - generic [ref=e364]:
+                - button "Move Dm7 earlier" [disabled] [ref=e365]: ←
+                - button "Remove Dm7" [ref=e366] [cursor=pointer]
+                - button "Move Dm7 later" [ref=e369] [cursor=pointer]: →
+            - article [ref=e370]:
+              - generic [ref=e371]:
+                - generic [ref=e372]: "02"
+                - generic [ref=e373]:
+                  - heading [level=3] [ref=e374]:
+                    - button "Open Am7 workshop" [ref=e375] [cursor=pointer]: Am7
+                  - generic [ref=e376]: Am7 · Minor 7th
+                  - generic [ref=e377]: 1 · ♭3 · 5 · ♭7
+                - button "Play Am7" [ref=e378] [cursor=pointer]
+              - img "Am7, frets muted, 0, 2, 0, 1, 0. Bass-side string on left." [ref=e381]:
+                - generic [ref=e383]: ×
+                - generic [ref=e384]: ○
+                - generic [ref=e385]: "1"
+                - generic [ref=e387]: "5"
+                - generic [ref=e388]: ○
+                - generic [ref=e389]: ♭7
+                - generic [ref=e391]: ♭3
+                - generic [ref=e392]: ○
+                - generic [ref=e393]: "5"
+              - generic [ref=e394]: × 0 2 0 1 0
+              - generic [ref=e395]:
+                - button "Previous fingering for Am7" [ref=e396] [cursor=pointer]
+                - button "Edit Am7" [ref=e399] [cursor=pointer]: Edit
+                - button "Next fingering for Am7" [ref=e402] [cursor=pointer]
+              - generic [ref=e405]:
+                - button "Move Am7 earlier" [ref=e406] [cursor=pointer]: ←
+                - button "Remove Am7" [ref=e407] [cursor=pointer]
+                - button "Move Am7 later" [ref=e410] [cursor=pointer]: →
+            - article [ref=e411]:
+              - generic [ref=e412]:
+                - generic [ref=e413]: "03"
+                - generic [ref=e414]:
+                  - heading [level=3] [ref=e415]:
+                    - button "Open C [1·5·♭7] workshop" [ref=e416] [cursor=pointer]: C7(no3)
+                  - generic [ref=e417]: C [1·5·♭7] · Custom chord
+                  - generic [ref=e418]: 1 · 5 · ♭7
+                - button "Play C [1·5·♭7]" [ref=e419] [cursor=pointer]
+              - img "C [1·5·♭7], frets 8, muted, 8, 0, muted, muted. Bass-side string on left." [ref=e422]:
+                - generic [ref=e424]: "8"
+                - generic [ref=e426]: "1"
+                - generic [ref=e427]: ×
+                - generic [ref=e429]: ♭7
+                - generic [ref=e430]: ○
+                - generic [ref=e431]: "5"
+                - generic [ref=e432]: ×
+                - generic [ref=e433]: ×
+              - generic [ref=e434]: 8 × 8 0 × ×
+              - generic [ref=e435]:
+                - button "Previous fingering for C [1·5·♭7]" [ref=e436] [cursor=pointer]
+                - button "Edit C [1·5·♭7]" [ref=e439] [cursor=pointer]: Edit
+                - button "Next fingering for C [1·5·♭7]" [ref=e442] [cursor=pointer]
+              - generic [ref=e445]:
+                - button "Move C [1·5·♭7] earlier" [ref=e446] [cursor=pointer]: ←
+                - button "Remove C [1·5·♭7]" [ref=e447] [cursor=pointer]
+                - button "Move C [1·5·♭7] later" [ref=e450] [cursor=pointer]: →
+            - article [ref=e451]:
+              - generic [ref=e452]:
+                - generic [ref=e453]: "04"
+                - generic [ref=e454]:
+                  - heading [level=3] [ref=e455]:
+                    - button "Open G7sus4 workshop" [ref=e456] [cursor=pointer]: G7sus4
+                  - generic [ref=e457]: G7sus4 · Suspended 4th 7th
+                  - generic [ref=e458]: 1 · 4 · 5 · ♭7
+                - button "Play G7sus4" [ref=e459] [cursor=pointer]
+              - img "G7sus4, frets 3, muted, 0, 0, 1, 1. Bass-side string on left." [ref=e462]:
+                - generic [ref=e465]: "1"
+                - generic [ref=e466]: ×
+                - generic [ref=e467]: ○
+                - generic [ref=e468]: "5"
+                - generic [ref=e469]: ○
+                - generic [ref=e470]: "1"
+                - generic [ref=e472]: "4"
+                - generic [ref=e474]: ♭7
+              - generic [ref=e475]: 3 × 0 0 1 1
+              - generic [ref=e476]:
+                - button "Previous fingering for G7sus4" [ref=e477] [cursor=pointer]
+                - button "Edit G7sus4" [ref=e480] [cursor=pointer]: Edit
+                - button "Next fingering for G7sus4" [ref=e483] [cursor=pointer]
+              - generic [ref=e486]:
+                - button "Move G7sus4 earlier" [ref=e487] [cursor=pointer]: ←
+                - button "Remove G7sus4" [ref=e488] [cursor=pointer]
+                - button "Move G7sus4 later" [ref=e491] [cursor=pointer]: →
+            - article [ref=e492]:
+              - generic [ref=e493]:
+                - generic [ref=e494]: "05"
+                - generic [ref=e495]:
+                  - heading [level=3] [ref=e496]:
+                    - button "Open Dm(add11)/F workshop" [ref=e497] [cursor=pointer]: Dm(add11)/F
+                  - generic [ref=e498]: Dm(add11)/F · Minor
+                  - generic [ref=e499]: 1 · ♭3 · 4 · 5
+                - button "Play Dm(add11)/F" [ref=e500] [cursor=pointer]
+              - img "Dm(add11)/F, frets 1, 0, 0, 0, muted, muted. Bass-side string on left." [ref=e503]:
+                - generic [ref=e506]: ♭3
+                - generic [ref=e507]: ○
+                - generic [ref=e508]: "5"
+                - generic [ref=e509]: ○
+                - generic [ref=e510]: "1"
+                - generic [ref=e511]: ○
+                - generic [ref=e512]: "4"
+                - generic [ref=e513]: ×
+                - generic [ref=e514]: ×
+              - generic [ref=e515]: 1 0 0 0 × ×
+              - generic [ref=e516]:
+                - button "Previous fingering for Dm(add11)/F" [ref=e517] [cursor=pointer]
+                - button "Edit Dm(add11)/F" [ref=e520] [cursor=pointer]: Edit
+                - button "Next fingering for Dm(add11)/F" [ref=e523] [cursor=pointer]
+              - generic [ref=e526]:
+                - button "Move Dm(add11)/F earlier" [ref=e527] [cursor=pointer]: ←
+                - button "Remove Dm(add11)/F" [ref=e528] [cursor=pointer]
+                - button "Move Dm(add11)/F later" [disabled] [ref=e531]: →
+  - status: Project opened. Undo restores the previous session.

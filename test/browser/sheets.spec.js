@@ -7,6 +7,44 @@ const phrase = { format: "crest-tab", version: 1, title: "A minor phrase", tunin
   { beat: 13.75, duration: 1.25, string: 1, fret: 7, midi: 71 },
 ] };
 const upload = (name, content, mimeType = "text/plain") => ({ name, mimeType, buffer: Buffer.from(content) });
+
+test("the workspace label toggle overrides custom scale-map labels, including capo, preview, print and reload", async ({ page }) => {
+  await page.goto("./");
+  await page.evaluate((key) => {
+    const project = JSON.parse(localStorage.getItem(key));
+    project.guitars[0].capo = 5;
+    project.parts[0].root = 2;
+    project.parts[0].chords = [{ id: "dm7", root: 2, intervals: [0, 3, 7, 10], bass: 2, label: "", fingerings: { "45,50,55,60,64,69": [-1, 0, 2, 0, 1, 0] } }];
+    project.parts[0].sheet = { format: "markdown", layout: "replace", source: '<scale-map labels="notes"></scale-map>\n\n<chord-sheet></chord-sheet>', files: [] };
+    localStorage.setItem(key, JSON.stringify(project));
+  }, key);
+  await page.reload();
+  await page.locator('.nav-item[data-view="display"]').click();
+  const frame = page.frameLocator("main iframe");
+  const scaleLabel = frame.locator('.scale-map .fret[title^="String 1, fret 5:"] span');
+  await expect(page.getByRole("button", { name: "Intervals", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(scaleLabel).toHaveText("5");
+  await expect(frame.locator(".scale-map .fret.is-root span").first()).toHaveText("1");
+  expect((await frame.locator(".scale-map .fret.is-root span").allTextContents()).every((label) => label === "1")).toBe(true);
+  await expect(frame.locator(".chord-box .string-note")).toHaveText(["", "1", "5", "♭7", "♭3", "5"]);
+  await page.getByRole("button", { name: "Notes", exact: true }).click();
+  await expect(scaleLabel).toHaveText("A");
+  await expect(frame.locator(".chord-box .string-note")).toHaveText(["", "D", "A", "C", "F", "A"]);
+  await page.getByRole("button", { name: "Intervals", exact: true }).click();
+  await expect(scaleLabel).toHaveText("5");
+  await page.getByRole("button", { name: "Edit sheet", exact: true }).click();
+  await expect(page.frameLocator("#sheet-editor iframe").locator('.scale-map .fret[title^="String 1, fret 5:"] span')).toHaveText("5");
+  await page.getByRole("button", { name: "Cancel", exact: true }).click();
+  await page.emulateMedia({ media: "print" });
+  await expect(scaleLabel).toHaveText("5");
+  await page.emulateMedia({ media: "screen" });
+  await page.reload();
+  await page.locator('.nav-item[data-view="display"]').click();
+  await expect(scaleLabel).toHaveText("5");
+  const project = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), key);
+  expect(project.parts[0].sheet.source).toContain('labels="notes"'); // The display preference does not rewrite the song.
+});
+
 async function openEditor(page) {
   await page.goto("./");
   await page.locator('.nav-item[data-view="display"]').click();

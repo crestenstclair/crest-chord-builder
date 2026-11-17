@@ -17,7 +17,9 @@ import {
   mod12,
 } from "./music.js";
 import { PRESETS, presetsForCount } from "./tunings.js";
-import { getFingering } from "./project.js";
+import { getPlayableFingering } from "./project.js";
+import { capoFret, playingTuning, fretWindows, lastFret, playingSetupLabel, hasFingeringFilters, absoluteFret, fretValues } from "./fingering-settings.js";
+import { fingeringControls } from "./fingering-controls.js";
 import { esc, icon, options, button } from "./ui.js";
 import { chordBox, fretboard } from "./diagrams.js";
 
@@ -105,7 +107,7 @@ export function guitarsView(project, state) {
     )
     .join("");
   return `<div class="page-heading"><div><h1>Guitar tuning</h1><p>Choose a preset, then edit its strings below.</p></div>${button("new-guitar", "Add guitar", "plus", "outlined", project.guitars.length >= 16 ? "disabled" : "")}</div>
-    <section class="panel preset-picker"><label>Tuning preset<select data-field="preset" aria-label="Tuning preset"><option value="" ${preset ? "" : "selected"} disabled>Custom tuning · ${count} strings</option>${groups}</select></label><span>The preset sets the string count.</span></section>
+    <section class="panel preset-picker"><label>Tuning preset<select data-field="preset" aria-label="Tuning preset"><option value="" ${preset ? "" : "selected"} disabled>Custom tuning · ${count} strings</option>${groups}</select></label><span>The preset sets the string count.</span></section>${fingeringControls(guitar)}
     <div class="guitar-layout"><section class="panel tuning-panel"><div class="tuning-editor-heading"><h2>Tuning editor</h2><span>${count} strings · treble to bass</span>
     </div><div class="string-list">${guitar.strings
       .map((n, i) => guitarString(n, i, guitar, part))
@@ -146,9 +148,10 @@ function triadPalette(part) {
 }
 
 function chordCard(chord, index, part, guitar, state, display = false) {
-  const frets = getFingering(chord, guitar.strings);
+  const tuning = playingTuning(guitar);
+  const frets = getPlayableFingering(chord, guitar);
   const actual = frets?.some((f) => f >= 0)
-    ? describeFingering(guitar.strings, frets, chord.root)
+    ? describeFingering(tuning, frets, chord.root)
     : null;
   const definition = {
     ...voicedChord(chord, actual),
@@ -159,21 +162,25 @@ function chordCard(chord, index, part, guitar, state, display = false) {
     chord.label ||
     (state.labels === "intervals" ? numberName(definition, part) : name);
   let diagram = chordBox(
-    guitar.strings,
+    tuning,
     frets,
     chord.root,
     name,
     display,
     state.labels,
     definition,
+    capoFret(guitar),
   );
   if (state.errors[chord.id] && !frets)
     diagram =
-      '<div class="diagram-placeholder">Search unavailable. Open the workshop to place notes manually.</div>';
+      `<div class="diagram-placeholder">${esc(state.errors[chord.id])}</div>`;
   if (frets && !actual)
     diagram =
       '<div class="diagram-placeholder">No automatic fingering found. Open the workshop to place notes manually.</div>';
-  return `<article class="chord-card" data-chord="${chord.id}"><header><span class="chord-order">${String(index + 1).padStart(2, "0")}</span><div><h3><button data-action="edit-chord" data-id="${chord.id}" aria-label="Open ${esc(name)} workshop">${esc(label)}</button></h3><small>${esc(name)} · ${esc(chordQuality(definition).name)}</small><small class="card-formula">${simpleFormula(definition).join(" · ")}</small></div>${button("play-chord", "", "play", "icon-button no-print", `data-id="${chord.id}" aria-label="Play ${esc(name)}" ${actual ? "" : "disabled"}`)}</header>${diagram}<div class="fret-values">${frets ? frets.map((f) => (f < 0 ? "×" : f)).join(" ") : "Calculating fingering…"}</div>
+  const order = String(index + 1).padStart(2, "0");
+  const handle = display ? `<span class="chord-order">${order}</span>`
+    : `<button type="button" class="chord-order chord-drag-handle" data-reorder-handle="${chord.id}" aria-label="Reorder ${esc(chord.label || name)}, chord ${index + 1} of ${part.chords.length}" aria-describedby="chord-reorder-help" aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home End" title="Drag to reorder. Arrow keys move this chord; Home/End move to first/last."><span>${order}</span>${icon("grip", 12)}</button>`;
+  return `<article class="chord-card" data-chord="${chord.id}" ${display ? "" : `draggable="true" data-reorder-chord="${chord.id}"`}><header>${handle}<div><h3><button data-action="edit-chord" data-id="${chord.id}" aria-label="Open ${esc(name)} workshop">${esc(label)}</button></h3><small>${esc(name)} · ${esc(chordQuality(definition).name)}</small><small class="card-formula">${simpleFormula(definition).join(" · ")}</small></div>${button("play-chord", "", "play", "icon-button no-print", `data-id="${chord.id}" aria-label="Play ${esc(name)}" ${actual ? "" : "disabled"}`)}</header>${diagram}<div class="fret-values">${frets ? fretValues(frets, capoFret(guitar)) : state.errors[chord.id] ? "No matching fingering" : "Calculating fingering…"}</div>
     <div class="chord-card-actions no-print">${button("cycle-voicing", "", "left", "icon-button", `data-id="${chord.id}" data-direction="-1" aria-label="Previous fingering for ${esc(name)}"`)}${button("edit-chord", "Edit", "edit", "quiet", `data-id="${chord.id}" aria-label="Edit ${esc(name)}"`)}${button("cycle-voicing", "", "right", "icon-button", `data-id="${chord.id}" data-direction="1" aria-label="Next fingering for ${esc(name)}"`)}</div>
     ${display ? "" : `<div class="reorder-actions">${button("move-chord", "←", "", "icon-button", `data-id="${chord.id}" data-direction="-1" aria-label="Move ${esc(name)} earlier" ${index === 0 ? "disabled" : ""}`)}${button("remove-chord", "", "trash", "icon-button", `data-id="${chord.id}" aria-label="Remove ${esc(name)}"`)}${button("move-chord", "→", "", "icon-button", `data-id="${chord.id}" data-direction="1" aria-label="Move ${esc(name)} later" ${index === part.chords.length - 1 ? "disabled" : ""}`)}</div>`}</article>`;
 }
@@ -193,8 +200,8 @@ export function partsView(project, state) {
       part.guitarId,
     )}</select></label><div class="scale-select"><label>Root<select data-field="part-root" aria-label="Scale root">${noteOptions(part.root)}</select></label><label>Scale<select data-field="part-scale" aria-label="Scale">${options([...Object.entries(SCALES).map(([key, s]) => [key, s.name]), ["custom", "Custom scale"]], part.scale)}</select></label></div>${button("remove-part", "", "trash", "icon-button", `aria-label="Delete this part" ${project.parts.length <= 1 ? "disabled" : ""}`)}</div>
     ${customScaleControls(part)}<div class="scale-summary"><strong>${esc(scaleName(part))}</strong><div class="scale-tones">${notes.map((n) => `<span><b>${esc(n.interval)}</b><small>${esc(n.name)}</small></span>`).join("")}</div></div>${triadPalette(part)}</section>
-    <section class="progression"><div class="section-heading"><div><h2>${esc(part.name)} — progression <span class="count-badge">${part.chords.length}</span></h2><p>Chord numbers are relative to the scale root. Diagram intervals are relative to each chord root.</p></div></div>
-    ${part.chords.length ? `<div class="chord-cards">${part.chords.map((c, i) => chordCard(c, i, part, guitar, state)).join("")}</div>` : `<div class="empty-progression"><h3>No chords in this part</h3><p>Select an interval above, edit the chord tones and fingering, then save it to ${esc(part.name)}.</p></div>`}</section>`;
+    <section class="progression"><div class="section-heading"><div><h2>${esc(part.name)} — progression <span class="count-badge">${part.chords.length}</span></h2><p>Chord numbers are relative to the scale root. Diagram intervals are relative to each chord root.</p><p id="chord-reorder-help">Drag cards to reorder. Keyboard: focus a numbered handle and use the arrow keys, Home or End.</p></div></div>${fingeringControls(guitar)}
+    ${part.chords.length ? `<div class="chord-cards" data-chord-list="${part.id}">${part.chords.map((c, i) => chordCard(c, i, part, guitar, state)).join("")}</div>` : `<div class="empty-progression"><h3>No chords in this part</h3><p>Select an interval above, edit the chord tones and fingering, then save it to ${esc(part.name)}.</p></div>`}</section>`;
 }
 
 export function displayView(project, state) {
@@ -213,20 +220,17 @@ export function displayView(project, state) {
     project.parts.map((p) => [p.id, p.name]),
     part.id,
   )}</select></label><div class="display-tools"><div class="segmented"><button data-action="labels" data-value="intervals" aria-pressed="${state.labels === "intervals"}">Intervals</button><button data-action="labels" data-value="notes" aria-pressed="${state.labels === "notes"}">Notes</button></div><label class="inline-label">Frets<select data-field="display-start">${options(
-    [
-      [0, "0–12"],
-      [5, "5–17"],
-      [12, "12–24"],
-    ],
-    state.start,
+    fretWindows(guitar),
+    absoluteFret(state.start, capoFret(guitar)),
   )}</select></label><label class="inline-label size-control">Size<input type="range" min="90" max="150" step="10" value="${state.zoom}" data-field="zoom" aria-label="Display size"></label>${button("theme", state.theme === "light" ? "Dark theme" : "Light theme", "", "outlined")}${button("fullscreen", state.focus ? "Exit focus" : "Fullscreen", "expand", "outlined")}${button("edit-sheet", "Edit sheet", "edit", "outlined")}${button("print", "Print sheet", "print", "primary")}</div></div>
-    ${part.sheet ? `<div class="sheet custom-sheet">${sheetFrame()}</div>` : `<div class="sheet" style="--display-zoom:${state.zoom / 100}"><div class="sheet-heading"><div><div class="eyebrow">${esc(project.title)} / PART ${project.parts.indexOf(part) + 1}</div><h1>${esc(part.name)}</h1></div><div class="sheet-meta"><strong>${esc(scaleName(part))}</strong><span>${esc(guitar.name)} · ${guitar.strings.length} strings</span><small>Treble to bass: ${esc([...guitar.strings].reverse().map(pitchName).join(" · "))}</small></div></div>
+    ${fingeringControls(guitar)}${part.sheet ? `<div class="sheet custom-sheet">${sheetFrame()}</div>` : `<div class="sheet" style="--display-zoom:${state.zoom / 100}"><div class="sheet-heading"><div><div class="eyebrow">${esc(project.title)} / PART ${project.parts.indexOf(part) + 1}</div><h1>${esc(part.name)}</h1></div><div class="sheet-meta"><strong>${esc(scaleName(part))}</strong><span>${esc(guitar.name)} · ${guitar.strings.length} strings</span><small>Treble to bass: ${esc([...playingTuning(guitar)].reverse().map(pitchName).join(" · "))}</small></div></div>${hasFingeringFilters(guitar) ? `<p class="playing-setup">${esc(playingSetupLabel(guitar))}</p>` : ""}
     <section class="scale-map"><div class="map-heading"><h2>Scale fretboard</h2><div class="legend"><span><i class="root-key"></i>Root</span><span><i></i>Scale interval</span><span>Treble string at top</span></div></div>${fretboard(
-      guitar.strings,
+      playingTuning(guitar),
       notes.map((n) => n.pc),
       part.root,
       {
-        start: state.start,
+        start: Math.min(state.start, lastFret(guitar) - 12),
+        capo: capoFret(guitar),
         labels: state.labels,
         spelling: spellings,
         intervalLabels: Object.fromEntries(

@@ -1,0 +1,1970 @@
+{
+  "source": "/Users/crestenstclair/Desktop/2026-10-31 Project/2026-10-31 - both strings varied MPE.als",
+  "sha256": "f65b4053ba1c6b186541b00f9235e455346dd616f32e4d7705fe1aae74e92e72",
+  "savedAt": "2026-11-16T19:58:55.016813-08:00",
+  "tempo": 90,
+  "meter": [
+    3,
+    4
+  ],
+  "title": "2026-10-31 - both strings varied MPE",
+  "tracks": [
+    {
+      "id": "12",
+      "name": "chord progs",
+      "enabled": false,
+      "clips": [
+        {
+          "id": "4",
+          "name": "Fmaj7",
+          "start": 0.0,
+          "end": 6.0,
+          "offset": 0.0,
+          "notes": [
+            {
+              "midi": 41,
+              "time": 0.0,
+              "duration": 6.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 57,
+              "time": 0.0,
+              "duration": 6.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 60,
+              "time": 0.0,
+              "duration": 6.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 64,
+              "time": 0.0,
+              "duration": 6.0,
+              "velocity": 78.0
+            }
+          ]
+        },
+        {
+          "id": "5",
+          "name": "E7/G#",
+          "start": 6.0,
+          "end": 12.0,
+          "offset": 0.0,
+          "notes": [
+            {
+              "midi": 44,
+              "time": 6.0,
+              "duration": 6.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 59,
+              "time": 6.0,
+              "duration": 6.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 62,
+              "time": 6.0,
+              "duration": 6.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 64,
+              "time": 6.0,
+              "duration": 6.0,
+              "velocity": 78.0
+            }
+          ]
+        },
+        {
+          "id": "6",
+          "name": "Am9/C",
+          "start": 12.0,
+          "end": 18.0,
+          "offset": 0.0,
+          "notes": [
+            {
+              "midi": 48,
+              "time": 12.0,
+              "duration": 6.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 52,
+              "time": 12.0,
+              "duration": 6.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 55,
+              "time": 12.0,
+              "duration": 6.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 57,
+              "time": 12.0,
+              "duration": 6.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 59,
+              "time": 12.0,
+              "duration": 6.0,
+              "velocity": 78.0
+            }
+          ]
+        },
+        {
+          "id": "7",
+          "name": "Dm9",
+          "start": 18.0,
+          "end": 24.0,
+          "offset": 0.0,
+          "notes": [
+            {
+              "midi": 50,
+              "time": 18.0,
+              "duration": 6.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 53,
+              "time": 18.0,
+              "duration": 6.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 57,
+              "time": 18.0,
+              "duration": 6.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 60,
+              "time": 18.0,
+              "duration": 6.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 64,
+              "time": 18.0,
+              "duration": 6.0,
+              "velocity": 78.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "19",
+      "name": "high string",
+      "enabled": true,
+      "clips": [
+        {
+          "id": "0",
+          "name": "Am9/C",
+          "start": 0.0,
+          "end": 48.0,
+          "offset": 0.0,
+          "notes": [
+            {
+              "midi": 71,
+              "time": 12.0,
+              "duration": 6.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 74,
+              "time": 18.0,
+              "duration": 6.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 71,
+              "time": 24.0,
+              "duration": 9.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 67,
+              "time": 33.0,
+              "duration": 9.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 71,
+              "time": 42.0,
+              "duration": 6.0,
+              "velocity": 78.0
+            }
+          ]
+        },
+        {
+          "id": "6",
+          "name": "Am9/C",
+          "start": 48.0,
+          "end": 72.0,
+          "offset": 24.0,
+          "notes": [
+            {
+              "midi": 71,
+              "time": 48.0,
+              "duration": 6.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 69,
+              "time": 54.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 71,
+              "time": 57.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 67,
+              "time": 60.0,
+              "duration": 6.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 65,
+              "time": 66.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 69,
+              "time": 69.0,
+              "duration": 3.0,
+              "velocity": 100.0
+            },
+            {
+              "midi": 74,
+              "time": 69.0,
+              "duration": 3.0,
+              "velocity": 100.0
+            }
+          ]
+        },
+        {
+          "id": "5",
+          "name": "Dm9",
+          "start": 72.0,
+          "end": 120.0,
+          "offset": 0.0,
+          "notes": [
+            {
+              "midi": 69,
+              "time": 72.0,
+              "duration": 3.0,
+              "velocity": 100.0
+            },
+            {
+              "midi": 74,
+              "time": 72.0,
+              "duration": 3.0,
+              "velocity": 100.0
+            },
+            {
+              "midi": 65,
+              "time": 75.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 69,
+              "time": 78.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 72,
+              "time": 81.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 74,
+              "time": 84.0,
+              "duration": 1.75,
+              "velocity": 78.0
+            },
+            {
+              "midi": 71,
+              "time": 85.75,
+              "duration": 1.25,
+              "velocity": 78.0
+            },
+            {
+              "midi": 69,
+              "time": 87.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 67,
+              "time": 90.0,
+              "duration": 3.0,
+              "velocity": 100.0
+            },
+            {
+              "midi": 65,
+              "time": 96.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 67,
+              "time": 99.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 74,
+              "time": 102.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 76,
+              "time": 105.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 67,
+              "time": 108.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 71,
+              "time": 111.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 69,
+              "time": 114.0,
+              "duration": 6.0,
+              "velocity": 78.0
+            }
+          ]
+        },
+        {
+          "id": "10",
+          "name": "Am9/C",
+          "start": 120.0,
+          "end": 126.0,
+          "offset": 0.0,
+          "notes": [
+            {
+              "midi": 43,
+              "time": 120.0,
+              "duration": 0.6,
+              "velocity": 83.0
+            },
+            {
+              "midi": 57,
+              "time": 120.75,
+              "duration": 0.4375,
+              "velocity": 78.0
+            },
+            {
+              "midi": 43,
+              "time": 121.2,
+              "duration": 0.5999999999999999,
+              "velocity": 83.0
+            },
+            {
+              "midi": 60,
+              "time": 121.8125,
+              "duration": 0.5625,
+              "velocity": 78.0
+            },
+            {
+              "midi": 64,
+              "time": 122.375,
+              "duration": 0.625,
+              "velocity": 78.0
+            },
+            {
+              "midi": 40,
+              "time": 123.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 60,
+              "time": 123.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 69,
+              "time": 123.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            }
+          ]
+        },
+        {
+          "id": "9",
+          "name": "Dm9",
+          "start": 126.0,
+          "end": 132.0,
+          "offset": 0.0,
+          "notes": [
+            {
+              "midi": 41,
+              "time": 126.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 50,
+              "time": 126.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 57,
+              "time": 126.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 60,
+              "time": 126.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 38,
+              "time": 129.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 53,
+              "time": 129.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 57,
+              "time": 129.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 60,
+              "time": 129.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            }
+          ]
+        },
+        {
+          "id": "8",
+          "name": "Fmaj7",
+          "start": 132.0,
+          "end": 141.0,
+          "offset": 0.0,
+          "notes": [
+            {
+              "midi": 41,
+              "time": 132.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 52,
+              "time": 132.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 57,
+              "time": 132.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 60,
+              "time": 132.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 41,
+              "time": 135.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 48,
+              "time": 135.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 52,
+              "time": 135.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 57,
+              "time": 135.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 35,
+              "time": 138.0,
+              "duration": 3.0,
+              "velocity": 100.0
+            },
+            {
+              "midi": 52,
+              "time": 138.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 57,
+              "time": 138.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 60,
+              "time": 138.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 65,
+              "time": 138.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            }
+          ]
+        },
+        {
+          "id": "7",
+          "name": "E7/G#",
+          "start": 141.0,
+          "end": 144.0,
+          "offset": 21.0,
+          "notes": [
+            {
+              "midi": 47,
+              "time": 141.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 56,
+              "time": 141.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 62,
+              "time": 141.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 64,
+              "time": 141.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "22",
+      "name": "low string",
+      "enabled": true,
+      "clips": [
+        {
+          "id": "0",
+          "name": "Am9/C",
+          "start": 0.0,
+          "end": 15.0,
+          "offset": 0.0,
+          "notes": [
+            {
+              "midi": 43,
+              "time": 0.0,
+              "duration": 3.0,
+              "velocity": 83.0
+            },
+            {
+              "midi": 57,
+              "time": 0.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 60,
+              "time": 0.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 64,
+              "time": 0.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 40,
+              "time": 3.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 60,
+              "time": 3.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 69,
+              "time": 3.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 43,
+              "time": 6.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 57,
+              "time": 6.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 60,
+              "time": 6.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 64,
+              "time": 6.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 52,
+              "time": 9.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 55,
+              "time": 9.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 60,
+              "time": 9.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 45,
+              "time": 9.074380047036296,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 52,
+              "time": 12.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 57,
+              "time": 12.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 60,
+              "time": 12.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 67,
+              "time": 12.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            }
+          ]
+        },
+        {
+          "id": "1",
+          "name": "Am9/C",
+          "start": 15.0,
+          "end": 30.0,
+          "offset": 0.0,
+          "notes": [
+            {
+              "midi": 43,
+              "time": 15.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 57,
+              "time": 15.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 60,
+              "time": 15.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 64,
+              "time": 15.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 40,
+              "time": 18.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 60,
+              "time": 18.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 69,
+              "time": 18.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 43,
+              "time": 21.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 57,
+              "time": 21.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 60,
+              "time": 21.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 64,
+              "time": 21.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 52,
+              "time": 24.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 55,
+              "time": 24.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 60,
+              "time": 24.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 45,
+              "time": 24.074380047036296,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 52,
+              "time": 27.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 57,
+              "time": 27.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 60,
+              "time": 27.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 67,
+              "time": 27.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            }
+          ]
+        },
+        {
+          "id": "2",
+          "name": "Dm9",
+          "start": 36.0,
+          "end": 48.0,
+          "offset": 0.0,
+          "notes": [
+            {
+              "midi": 41,
+              "time": 36.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 50,
+              "time": 36.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 57,
+              "time": 36.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 60,
+              "time": 36.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 38,
+              "time": 39.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 53,
+              "time": 39.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 57,
+              "time": 39.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 60,
+              "time": 39.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 36,
+              "time": 42.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 53,
+              "time": 42.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 57,
+              "time": 42.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 62,
+              "time": 42.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 45,
+              "time": 45.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 53,
+              "time": 45.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 60,
+              "time": 45.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 62,
+              "time": 45.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            }
+          ]
+        },
+        {
+          "id": "3",
+          "name": "Dm9",
+          "start": 48.0,
+          "end": 60.0,
+          "offset": 0.0,
+          "notes": [
+            {
+              "midi": 41,
+              "time": 48.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 50,
+              "time": 48.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 57,
+              "time": 48.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 60,
+              "time": 48.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 38,
+              "time": 51.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 53,
+              "time": 51.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 57,
+              "time": 51.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 60,
+              "time": 51.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 36,
+              "time": 54.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 53,
+              "time": 54.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 57,
+              "time": 54.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 62,
+              "time": 54.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 45,
+              "time": 57.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 53,
+              "time": 57.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 60,
+              "time": 57.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 62,
+              "time": 57.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            }
+          ]
+        },
+        {
+          "id": "4",
+          "name": "Fmaj7",
+          "start": 60.0,
+          "end": 72.0,
+          "offset": 0.0,
+          "notes": [
+            {
+              "midi": 41,
+              "time": 60.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 52,
+              "time": 60.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 57,
+              "time": 60.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 60,
+              "time": 60.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 41,
+              "time": 63.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 48,
+              "time": 63.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 52,
+              "time": 63.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 57,
+              "time": 63.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 41,
+              "time": 66.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 48,
+              "time": 66.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 52,
+              "time": 66.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 57,
+              "time": 66.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 41,
+              "time": 69.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 52,
+              "time": 69.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 57,
+              "time": 69.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 60,
+              "time": 69.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            }
+          ]
+        },
+        {
+          "id": "5",
+          "name": "Fmaj7",
+          "start": 72.0,
+          "end": 82.0,
+          "offset": 0.0,
+          "notes": [
+            {
+              "midi": 52,
+              "time": 72.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 57,
+              "time": 72.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 60,
+              "time": 72.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 65,
+              "time": 72.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 52,
+              "time": 75.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 57,
+              "time": 75.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 65,
+              "time": 75.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 72,
+              "time": 75.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 52,
+              "time": 78.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 57,
+              "time": 78.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 65,
+              "time": 78.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 72,
+              "time": 78.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 48,
+              "time": 81.0,
+              "duration": 1.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 52,
+              "time": 81.0,
+              "duration": 1.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 57,
+              "time": 81.0,
+              "duration": 1.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 65,
+              "time": 81.0,
+              "duration": 1.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 74,
+              "time": 81.0,
+              "duration": 1.0,
+              "velocity": 78.0
+            }
+          ]
+        },
+        {
+          "id": "6",
+          "name": "E7/G#",
+          "start": 82.0,
+          "end": 96.0,
+          "offset": 19.0,
+          "notes": [
+            {
+              "midi": 38,
+              "time": 82.0,
+              "duration": 2.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 56,
+              "time": 82.0,
+              "duration": 2.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 59,
+              "time": 82.0,
+              "duration": 2.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 64,
+              "time": 82.0,
+              "duration": 2.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 47,
+              "time": 84.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 56,
+              "time": 84.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 62,
+              "time": 84.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 64,
+              "time": 84.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 44,
+              "time": 87.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 50,
+              "time": 87.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 59,
+              "time": 87.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 64,
+              "time": 87.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 40,
+              "time": 90.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 47,
+              "time": 90.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 56,
+              "time": 90.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 62,
+              "time": 90.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 38,
+              "time": 93.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 47,
+              "time": 93.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 56,
+              "time": 93.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 64,
+              "time": 93.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            }
+          ]
+        },
+        {
+          "id": "7",
+          "name": "E7/G#",
+          "start": 96.0,
+          "end": 108.0,
+          "offset": 21.0,
+          "notes": [
+            {
+              "midi": 47,
+              "time": 96.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 56,
+              "time": 96.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 62,
+              "time": 96.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 64,
+              "time": 96.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 44,
+              "time": 99.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 50,
+              "time": 99.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 59,
+              "time": 99.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 64,
+              "time": 99.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 40,
+              "time": 102.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 47,
+              "time": 102.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 56,
+              "time": 102.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 62,
+              "time": 102.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 38,
+              "time": 105.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 47,
+              "time": 105.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 56,
+              "time": 105.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 64,
+              "time": 105.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            }
+          ]
+        },
+        {
+          "id": "20",
+          "name": "Am9/C",
+          "start": 120.0,
+          "end": 126.0,
+          "offset": 0.0,
+          "notes": [
+            {
+              "midi": 43,
+              "time": 120.0,
+              "duration": 3.0,
+              "velocity": 83.0
+            },
+            {
+              "midi": 57,
+              "time": 120.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 60,
+              "time": 120.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 64,
+              "time": 120.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 40,
+              "time": 123.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 60,
+              "time": 123.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            },
+            {
+              "midi": 69,
+              "time": 123.0,
+              "duration": 3.0,
+              "velocity": 78.0
+            }
+          ]
+        },
+        {
+          "id": "21",
+          "name": "Dm9",
+          "start": 126.0,
+          "end": 132.0,
+          "offset": 0.0,
+          "notes": [
+            {
+              "midi": 41,
+              "time": 126.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 50,
+              "time": 126.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 57,
+              "time": 126.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 60,
+              "time": 126.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 38,
+              "time": 129.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 53,
+              "time": 129.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 57,
+              "time": 129.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 60,
+              "time": 129.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            }
+          ]
+        },
+        {
+          "id": "22",
+          "name": "Fmaj7",
+          "start": 132.0,
+          "end": 141.0,
+          "offset": 0.0,
+          "notes": [
+            {
+              "midi": 41,
+              "time": 132.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 52,
+              "time": 132.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 57,
+              "time": 132.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 60,
+              "time": 132.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 41,
+              "time": 135.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 48,
+              "time": 135.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 52,
+              "time": 135.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 57,
+              "time": 135.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 35,
+              "time": 138.0,
+              "duration": 3.0,
+              "velocity": 100.0
+            },
+            {
+              "midi": 52,
+              "time": 138.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 57,
+              "time": 138.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 60,
+              "time": 138.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 65,
+              "time": 138.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            }
+          ]
+        },
+        {
+          "id": "23",
+          "name": "E7/G#",
+          "start": 141.0,
+          "end": 144.0,
+          "offset": 21.0,
+          "notes": [
+            {
+              "midi": 47,
+              "time": 141.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 56,
+              "time": 141.0,
+              "duration": 3.0,
+              "velocity": 64.0
+            },
+            {
+              "midi": 62,
+              "time": 141.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            },
+            {
+              "midi": 64,
+              "time": 141.0,
+              "duration": 3.0,
+              "velocity": 72.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "18",
+      "name": "7-Ample Metal R",
+      "enabled": true,
+      "clips": [
+        {
+          "id": "0",
+          "name": "Am9/C",
+          "start": 0.0,
+          "end": 36.0,
+          "offset": 0.0,
+          "notes": [
+            {
+              "midi": 59,
+              "time": 0.0,
+              "duration": 6.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 59,
+              "time": 6.0,
+              "duration": 6.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 57,
+              "time": 12.0,
+              "duration": 6.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 55,
+              "time": 18.0,
+              "duration": 6.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 59,
+              "time": 24.0,
+              "duration": 6.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 57,
+              "time": 30.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 59,
+              "time": 33.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            }
+          ]
+        },
+        {
+          "id": "22",
+          "name": "Dm9",
+          "start": 36.0,
+          "end": 60.0,
+          "offset": 0.0,
+          "notes": [
+            {
+              "midi": 60,
+              "time": 36.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 57,
+              "time": 39.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 53,
+              "time": 42.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 50,
+              "time": 45.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 52,
+              "time": 48.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 53,
+              "time": 51.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 57,
+              "time": 54.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 60,
+              "time": 57.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            }
+          ]
+        },
+        {
+          "id": "23",
+          "name": "Fmaj7",
+          "start": 60.0,
+          "end": 84.0,
+          "offset": 0.0,
+          "notes": [
+            {
+              "midi": 53,
+              "time": 60.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 52,
+              "time": 63.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 48,
+              "time": 66.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 45,
+              "time": 69.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 48,
+              "time": 72.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 52,
+              "time": 75.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 53,
+              "time": 78.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 57,
+              "time": 81.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            }
+          ]
+        },
+        {
+          "id": "24",
+          "name": "E7/G#",
+          "start": 84.0,
+          "end": 108.0,
+          "offset": 0.0,
+          "notes": [
+            {
+              "midi": 56,
+              "time": 84.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 52,
+              "time": 87.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 50,
+              "time": 90.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 47,
+              "time": 93.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 50,
+              "time": 96.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 52,
+              "time": 99.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 56,
+              "time": 102.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            },
+            {
+              "midi": 59,
+              "time": 105.0,
+              "duration": 3.0,
+              "velocity": 58.0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

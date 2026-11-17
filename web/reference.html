@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' juce:; script-src 'self' juce: 'unsafe-inline'; style-src 'self' juce: 'unsafe-inline'; img-src 'self' juce: data:; frame-src 'self' about:; connect-src 'self' juce:; object-src 'none'; base-uri 'none'">
+    <title>Crest Chord Reference</title>
+    <link rel="icon" href="./favicon.svg">
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./sheets.css">
+    <link rel="stylesheet" href="./reference.css">
+    <script type="module" src="./reference-app.js"></script>
+  </head>
+  <body class="reference-app">
+    <div id="reference-root"><p class="startup">Loading the project saved in this plug-in…</p></div>
+    <dialog id="reference-config" aria-labelledby="reference-config-title">
+      <h2 id="reference-config-title">Project JSON</h2>
+      <p>Paste a Crest Chord Builder project. Its parts, sheets and attachments are stored inside this plug-in instance and saved with your Live set. No external file or browser session is needed afterwards.</p>
+      <label for="reference-json">Project JSON blob</label>
+      <textarea id="reference-json" spellcheck="false" placeholder="Paste your Crest Chord Builder JSON here"></textarea>
+      <p id="reference-config-error" role="alert"></p>
+      <footer><button id="reference-open" class="outlined">Open JSON file…</button><span></span><button id="reference-cancel" class="quiet">Cancel</button><button id="reference-apply" class="primary">Apply JSON</button></footer>
+      <input id="reference-file" type="file" accept=".json,application/json" hidden>
+    </dialog>
+  </body>
+</html>

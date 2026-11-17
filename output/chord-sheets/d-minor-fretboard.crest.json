@@ -1,0 +1,35 @@
+{
+  "format": "crest-chord-builder",
+  "version": 3,
+  "title": "D minor fretboard",
+  "guitars": [
+    {
+      "id": "standard-six",
+      "name": "Standard 6-string",
+      "strings": [
+        40,
+        45,
+        50,
+        55,
+        59,
+        64
+      ]
+    }
+  ],
+  "parts": [
+    {
+      "id": "d-minor",
+      "name": "D natural minor",
+      "guitarId": "standard-six",
+      "root": 2,
+      "scale": "minor",
+      "chords": [],
+      "sheet": {
+        "format": "markdown",
+        "layout": "replace",
+        "source": "# D natural minor\n\n**D · E · F · G · A · B♭ · C**\n\nStandard tuning: **E A D G B E**. Treble string at the top. Highlighted roots are D.\n\n<scale-map start=\"0\" labels=\"notes\"></scale-map>\n\nIntervals: **1 · 2 · ♭3 · 4 · 5 · ♭6 · ♭7**. The pattern repeats 12 frets higher.\n",
+        "files": []
+      }
+    }
+  ]
+}

@@ -564,6 +564,36 @@ main {
   color: var(--muted);
   padding-top: 7px;
 }
+.chord-card[draggable="true"] {
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.chord-order.chord-drag-handle {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 24px;
+  min-height: 32px;
+  padding: 3px 2px;
+  cursor: grab;
+}
+.chord-drag-handle:hover,
+.chord-drag-handle:focus-visible {
+  color: var(--accent);
+}
+.chord-card.is-dragging {
+  opacity: 0.45;
+  cursor: grabbing;
+}
+.chord-card[data-drop-side="before"] {
+  box-shadow: inset 4px 0 var(--accent);
+  border-color: var(--accent);
+}
+.chord-card[data-drop-side="after"] {
+  box-shadow: inset -4px 0 var(--accent);
+  border-color: var(--accent);
+}
 .chord-box {
   display: block;
   width: 100%;
@@ -1245,6 +1275,48 @@ dialog::backdrop {
 }
 .neck-toolbar .inline-label {
   font-size: 11px;
+}
+.fingering-settings {
+  padding: 12px 16px;
+  margin: 12px 0 18px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+}
+.fingering-filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px 24px;
+  flex-wrap: wrap;
+}
+.fingering-settings p,
+.playing-setup,
+.capo-caption {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.fingering-settings p {
+  margin: 8px 0 0;
+}
+.open-strings-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.open-strings-control input {
+  width: 16px;
+  height: 16px;
+  min-height: 0;
+  margin: 0;
+  accent-color: var(--accent);
+}
+.capo-caption {
+  display: block;
+}
+.in-focus .fingering-settings {
+  display: none;
 }
 .neck-toolbar select {
   min-height: 35px;

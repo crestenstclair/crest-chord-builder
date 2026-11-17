@@ -13,14 +13,15 @@ type Position struct {
 // Request describes a chord in concert pitch. OpenMidi follows physical string
 // order (bass side to treble side), which need not be ascending in pitch.
 type Request struct {
-	OpenMidi []int      `json:"openMidi"`
-	Tones    []int      `json:"tones"`
-	Root     int        `json:"root"`
-	Bass     int        `json:"bass"`    // -1 allows any inversion
-	MinFret  int        `json:"minFret"` // open strings remain available
-	MaxFret  int        `json:"maxFret"`
-	Anchor   *Position  `json:"anchor,omitempty"`
-	Anchors  []Position `json:"anchors,omitempty"`
+	OpenMidi    []int      `json:"openMidi"`
+	Tones       []int      `json:"tones"`
+	Root        int        `json:"root"`
+	Bass        int        `json:"bass"`    // -1 allows any inversion
+	MinFret     int        `json:"minFret"` // open strings remain available unless ExcludeOpen
+	MaxFret     int        `json:"maxFret"`
+	ExcludeOpen bool       `json:"excludeOpen,omitempty"`
+	Anchor      *Position  `json:"anchor,omitempty"`
+	Anchors     []Position `json:"anchors,omitempty"`
 }
 
 type Voicing struct {
@@ -43,7 +44,7 @@ func Generate(r Request) ([]Voicing, error) {
 		}
 	}
 	spec := chordSpec{required: required, all: r.Tones, rootPC: r.Root, bassPC: r.Bass}
-	candidates := generateVoicings(r.OpenMidi, spec, genConfig{MinFret: r.MinFret, MaxFret: r.MaxFret, SpanFrets: 4, Results: 12, Anchors: r.positions()})
+	candidates := generateVoicings(r.OpenMidi, spec, genConfig{MinFret: r.MinFret, MaxFret: r.MaxFret, ExcludeOpen: r.ExcludeOpen, SpanFrets: 4, Results: 12, Anchors: r.positions()})
 	result := make([]Voicing, 0, len(candidates))
 	for _, c := range candidates {
 		result = append(result, Voicing{c.frets, c.fingers, c.score})

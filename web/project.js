@@ -1,6 +1,7 @@
 import { parseSheet } from "./sheet-data.js";
 import { parseFormula } from "./chord-formula.js";
 import { PRESETS, SCALES, QUALITIES, mod12, toneSet } from "./music.js";
+import { parseGuitarSettings, playingTuning, fingeringMatchesSettings } from "./fingering-settings.js";
 
 export const LEGACY_STORAGE_KEY = "crest-chord-builder.project.v1";
 export const PREVIOUS_STORAGE_KEY = "crest-chord-builder.project.v2";
@@ -73,10 +74,12 @@ function parseTuning(value) {
 
 function parseGuitar(value) {
   record(value, "Guitar");
+  const strings = parseTuning(value.strings);
   return {
     id: identifier(value.id),
     name: text(value.name, "Guitar name"),
-    strings: parseTuning(value.strings),
+    strings,
+    ...parseGuitarSettings(value, strings),
   };
 }
 
@@ -194,11 +197,17 @@ export function parseProject(input) {
   return project;
 }
 
-// Fingerings are snapshots indexed by their exact physical tuning. Retuning
-// selects another snapshot; returning to an earlier tuning restores its grip.
+// Snapshots use sounding open pitches (base tuning plus capo), with relative frets.
+// Returning to an earlier tuning/capo restores its original grip.
 export function getFingering(chord, tuning) {
   const frets = chord.fingerings[tuningKey(tuning)];
   return frets ? [...frets] : null;
+}
+
+// A filter never exposes a saved grip outside its region or behind the capo.
+export function getPlayableFingering(chord, guitar) {
+  const frets = getFingering(chord, playingTuning(guitar));
+  return fingeringMatchesSettings(frets, guitar) ? frets : null;
 }
 
 export function setFingering(chord, tuning, frets) {

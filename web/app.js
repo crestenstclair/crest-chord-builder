@@ -17,6 +17,7 @@ import {
   makePart,
   parseProject,
   getFingering,
+  getPlayableFingering,
   setFingering,
 } from "./project.js";
 import { shell, renderView } from "./views.js";
@@ -24,8 +25,12 @@ import { downloadJSON, playNotes } from "./ui.js";
 import { findVoicings } from "./voicings.js";
 import { openChordEditor } from "./editor.js";
 import { readPreferences, savePreferences } from "./preferences.js";
+import { reorderChords } from "./chord-order.js";
+import { ChordReorder } from "./chord-reorder.js";
+import { capoFret, lastFret, playingTuning, fingeringOptions, absoluteFret, relativeFret, absolutePosition, relativePosition } from "./fingering-settings.js";
 
 const app = document.querySelector("#app");
+const chordReorder = new ChordReorder(app, reorderChord);
 const history = [];
 const generating = new Set();
 const failed = new Set();
@@ -96,6 +101,8 @@ function persist() {
 }
 
 function render(preserveInput = false) {
+  chordReorder.cancel();
+  state.start = Math.min(state.start, lastFret(guitarForPart()) - 12);
   const active = app.contains(document.activeElement)
     ? document.activeElement
     : null;
@@ -147,7 +154,8 @@ function commit(update, { undo = true, preserveInput = false, redraw = true } = 
 }
 
 function sheetContext(part = currentPart()) {
-  return { part, guitar: guitarForPart(part), projectTitle: project.title, theme: state.theme, zoom: state.zoom / 100 };
+  const guitar = guitarForPart(part);
+  return { part, guitar, projectTitle: project.title, theme: state.theme, labels: state.labels, zoom: state.zoom / 100, errors: state.errors, start: absoluteFret(state.start, capoFret(guitar)) };
 }
 
 function hydrateCustomSheet() {
@@ -183,10 +191,11 @@ function printSheet() {
   frame.contentWindow.postMessage({ type: "crest-sheet-print" }, "*");
 }
 
-function chordSignature(chord, tuning) {
+function chordSignature(chord, guitar) {
   return JSON.stringify([
     chord.id,
-    tuning,
+    playingTuning(guitar),
+    fingeringOptions(guitar),
     chord.root,
     chord.intervals,
     chord.bass,
@@ -196,30 +205,37 @@ function chordSignature(chord, tuning) {
 function hydrateFingerings() {
   if (state.view === "guitars") return;
   const part = currentPart();
-  const tuning = guitarForPart(part).strings;
+  const guitar = guitarForPart(part);
   for (const chord of part.chords) {
-    const key = chordSignature(chord, tuning);
+    const key = chordSignature(chord, guitar);
     if (
-      !getFingering(chord, tuning) &&
+      !getPlayableFingering(chord, guitar) &&
       !generating.has(key) &&
       !failed.has(key)
     )
-      generateFingering(part.id, chord, tuning, key);
+      generateFingering(part.id, chord, guitar, key);
   }
 }
 
-async function generateFingering(partId, chord, tuning, key) {
+async function generateFingering(partId, chord, guitar, key) {
+  const tuning = playingTuning(guitar);
   generating.add(key);
   try {
-    const voicings = await findVoicings(tuning, chord);
+    const voicings = await findVoicings(tuning, chord, fingeringOptions(guitar));
     const part = project.parts.find((p) => p.id === partId);
     const current = part?.chords.find((c) => c.id === chord.id);
     if (
       !current ||
-      chordSignature(current, guitarForPart(part).strings) !== key ||
-      getFingering(current, tuning)
+      chordSignature(current, guitarForPart(part)) !== key ||
+      getPlayableFingering(current, guitarForPart(part))
     )
       return;
+    if (!voicings.length) {
+      failed.add(key);
+      state.errors[chord.id] = "No fingering matches this capo and hand position. Change the filters or edit the chord.";
+      render(true);
+      return;
+    }
     delete state.errors[chord.id];
     commit(
       (doc) => {
@@ -229,16 +245,15 @@ async function generateFingering(partId, chord, tuning, key) {
         setFingering(
           target,
           tuning,
-          voicings[0]?.frets ?? tuning.map(() => -1),
+          voicings[0].frets,
         );
       },
       { undo: false, preserveInput: true },
     );
-    if (!voicings.length)
-      notify(
-        "No complete automatic grip for this chord and tuning. Use Edit to draw a fingering.",
-      );
   } catch (error) {
+    const part = project.parts.find((entry) => entry.id === partId);
+    const current = part?.chords.find((entry) => entry.id === chord.id);
+    if (!current || chordSignature(current, guitarForPart(part)) !== key) return;
     failed.add(key);
     state.errors[chord.id] = error.message;
     render(true);
@@ -252,19 +267,20 @@ async function cycleVoicing(chordId, direction, frame = null) {
   const partId = currentPart().id;
   const chord = chordById(chordId);
   if (!chord) throw new Error("Chord is no longer in this part.");
-  const tuning = [...guitarForPart().strings];
-  const signature = chordSignature(chord, tuning);
-  const voicings = await findVoicings(tuning, chord);
+  const guitar = guitarForPart();
+  const tuning = playingTuning(guitar);
+  const signature = chordSignature(chord, guitar);
+  const voicings = await findVoicings(tuning, chord, fingeringOptions(guitar));
   const part = project.parts.find((p) => p.id === partId);
   const current = part?.chords.find((c) => c.id === chordId);
   if (
     !current ||
     (frame && (!frame.isConnected || currentPart().id !== partId)) ||
-    chordSignature(current, guitarForPart(part).strings) !== signature
+    chordSignature(current, guitarForPart(part)) !== signature
   )
     return;
   if (!voicings.length) {
-    throw new Error("No automatic grip found. Use Edit to craft one.");
+    throw new Error("No fingering matches these filters. Change the hand position or allow open strings.");
   }
   const selected = getFingering(current, tuning)?.join(",");
   const index = voicings.findIndex((v) => v.frets.join(",") === selected);
@@ -293,19 +309,21 @@ function editChord(chord, { isNew = false, nameFromNotes = false } = {}) {
   const partId = current.id;
   const scale = partScale(current);
   const keyNotes = scaleNotes(current.root, scale);
-  const tuning = [...guitarForPart().strings];
+  const guitar = guitarForPart();
+  const tuning = playingTuning(guitar);
   if (isNew && current.chords.length >= 64)
     throw new Error("A part can hold up to 64 chords.");
   openChordEditor(
     chord,
     tuning,
-    (edited) => {
+    (edited, settings) => {
       commit((doc) => {
         const part = doc.parts.find((p) => p.id === partId);
         if (isNew) part.chords.push(edited);
         else
           part.chords[part.chords.findIndex((c) => c.id === edited.id)] =
             edited;
+        Object.assign(doc.guitars.find((entry) => entry.id === current.guitarId), settings);
       });
       notify("Chord saved.");
     },
@@ -316,6 +334,9 @@ function editChord(chord, { isNew = false, nameFromNotes = false } = {}) {
       isNew,
       nameFromNotes,
       toggleTheme,
+      capo: capoFret(guitar),
+      position: guitar.position ?? "any",
+      allowOpen: guitar.allowOpen !== false,
     },
   );
 }
@@ -325,6 +346,17 @@ function selectPart(partId) {
   state.guitarId = currentPart().guitarId;
   state.sheetPage = 0;
   render();
+}
+
+function reorderChord({ partId, chordId, destination }) {
+  const part = currentPart();
+  if (state.view !== "parts" || part.id !== partId || reorderChords(part.chords, chordId, destination) === part.chords) return false;
+  commit((doc) => {
+    const target = doc.parts.find((entry) => entry.id === partId);
+    target.chords = reorderChords(target.chords, chordId, destination);
+  });
+  notify(`Chord moved to position ${destination + 1} of ${part.chords.length}. Undo restores the previous order.`);
+  return true;
 }
 
 async function toggleFullscreen() {
@@ -438,18 +470,15 @@ const actions = {
       const part = currentPart(doc);
       part.chords = part.chords.filter((c) => c.id !== target.dataset.id);
     }),
-  "move-chord": (target) =>
-    commit((doc) => {
-      const chords = currentPart(doc).chords;
-      const from = chords.findIndex((c) => c.id === target.dataset.id);
-      const to = from + Number(target.dataset.direction);
-      if (from >= 0 && to >= 0 && to < chords.length)
-        [chords[from], chords[to]] = [chords[to], chords[from]];
-    }),
+  "move-chord": (target) => reorderChord({
+    partId: currentPart().id,
+    chordId: target.dataset.id,
+    destination: currentPart().chords.findIndex((chord) => chord.id === target.dataset.id) + Number(target.dataset.direction),
+  }),
   "play-chord": (target) => {
     const chord = chordById(target.dataset.id);
-    const tuning = guitarForPart().strings;
-    return playNotes(soundingNotes(tuning, getFingering(chord, tuning) ?? []));
+    const guitar = guitarForPart();
+    return playNotes(soundingNotes(playingTuning(guitar), getPlayableFingering(chord, guitar) ?? []));
   },
   labels: (target) => {
     state.labels = target.dataset.value;
@@ -487,9 +516,29 @@ const actions = {
   },
 };
 
+function changeFingeringFilter(target) {
+  const field = target.dataset.field;
+  failed.clear();
+  state.errors = Object.create(null);
+  commit((doc) => {
+    const guitar = doc.guitars.find((entry) => entry.id === target.dataset.guitarId);
+    if (field === "capo") {
+      const position = absolutePosition(guitar.position, capoFret(guitar));
+      const start = absoluteFret(state.start, capoFret(guitar));
+      guitar.capo = Number(target.value);
+      const nextPosition = relativePosition(position, guitar.capo);
+      guitar.position = nextPosition === "any" || (nextPosition >= 0 && nextPosition <= lastFret(guitar) - 3) ? nextPosition : "any";
+      state.start = Math.max(0, Math.min(relativeFret(start, guitar.capo), lastFret(guitar) - 12));
+    }
+    if (field === "hand-position") guitar.position = relativePosition(target.value, capoFret(guitar));
+    if (field === "allow-open") guitar.allowOpen = target.checked;
+  });
+}
+
 function changeField(target) {
   const field = target.dataset.field;
   const value = target.value;
+  if (["capo", "hand-position", "allow-open"].includes(field)) return changeFingeringFilter(target);
   if (field === "active-guitar") {
     state.guitarId = value;
     render();
@@ -504,7 +553,7 @@ function changeField(target) {
     return;
   }
   if (field === "display-start" || field === "zoom") {
-    state[field === "zoom" ? "zoom" : "start"] = Number(value);
+    state[field === "zoom" ? "zoom" : "start"] = field === "zoom" ? Number(value) : relativeFret(value, capoFret(guitarForPart()));
     render();
     return;
   }

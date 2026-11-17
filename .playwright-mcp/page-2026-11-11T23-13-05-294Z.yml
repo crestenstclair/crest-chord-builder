@@ -1,0 +1,175 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - link "Crest Chord Builder" [ref=e4] [cursor=pointer]:
+        - /url: ./
+        - strong [ref=e5]: Crest
+      - textbox "Project title" [ref=e7]: Untitled session
+      - generic [ref=e8]:
+        - button "Toggle light or dark theme" [ref=e9] [cursor=pointer]: Light theme
+        - button "Undo last change" [disabled] [ref=e10]
+        - button "Open JSON" [ref=e13] [cursor=pointer]
+        - button "Save JSON" [ref=e16] [cursor=pointer]
+    - generic [ref=e19]:
+      - complementary [ref=e20]:
+        - navigation "Workflow" [ref=e21]:
+          - button "Guitars" [ref=e22] [cursor=pointer]
+          - button "Parts" [ref=e27] [cursor=pointer]
+          - button "Play & Print" [ref=e33] [cursor=pointer]
+        - generic [ref=e37]:
+          - generic [ref=e38]:
+            - text: PARTS
+            - button "Add Part" [ref=e39] [cursor=pointer]
+          - navigation "Parts" [ref=e42]:
+            - generic [ref=e43]:
+              - button "01 Part 1 A Natural minor 0" [expanded] [ref=e44] [cursor=pointer]:
+                - generic [ref=e45]: "01"
+                - generic [ref=e46]:
+                  - text: Part 1
+                  - generic [ref=e47]: A Natural minor
+                - generic [ref=e48]: "0"
+              - list
+          - button "Add Part" [ref=e49] [cursor=pointer]
+        - generic [ref=e52]:
+          - text: Data stays in this browser.
+          - link "Documentation & source ↗" [ref=e53] [cursor=pointer]:
+            - /url: https://github.com/crestenstclair/crest-chord-builder
+      - main [ref=e54]:
+        - generic [ref=e55]:
+          - generic [ref=e56]:
+            - heading "Parts" [level=1] [ref=e57]
+            - paragraph [ref=e58]: Each part has a name, guitar, scale, and ordered chord progression.
+          - button "Play & Print" [ref=e59] [cursor=pointer]
+        - generic [ref=e62]:
+          - generic [ref=e63]:
+            - generic [ref=e64]:
+              - text: Current part
+              - combobox "Current part" [ref=e65]:
+                - option "Part 1" [selected]
+            - button "Add Part" [ref=e66] [cursor=pointer]
+          - generic [ref=e69]:
+            - generic [ref=e70]:
+              - text: Part name
+              - textbox "Part name" [ref=e71]: Part 1
+            - generic [ref=e72]:
+              - text: Guitar
+              - combobox "Guitar" [ref=e73]:
+                - option "Guitar 1" [selected]
+            - generic [ref=e74]:
+              - generic [ref=e75]:
+                - text: Root
+                - combobox "Scale root" [ref=e76]:
+                  - option "C"
+                  - option "D♭"
+                  - option "D"
+                  - option "E♭"
+                  - option "E"
+                  - option "F"
+                  - option "F♯"
+                  - option "G"
+                  - option "A♭"
+                  - option "A" [selected]
+                  - option "B♭"
+                  - option "B"
+              - generic [ref=e77]:
+                - text: Scale
+                - combobox "Scale" [ref=e78]:
+                  - option "Natural minor" [selected]
+                  - option "Major"
+                  - option "Dorian"
+                  - option "Phrygian"
+                  - option "Lydian"
+                  - option "Mixolydian"
+                  - option "Locrian"
+                  - option "Harmonic minor"
+                  - option "Melodic minor"
+                  - option "Major pentatonic"
+                  - option "Minor pentatonic"
+                  - option "Minor blues"
+                  - option "Major blues"
+                  - option "Harmonic major"
+                  - option "Phrygian dominant"
+                  - option "Lydian dominant"
+                  - option "Altered dominant"
+                  - option "Double harmonic major"
+                  - option "Hungarian minor"
+                  - option "Whole tone"
+                  - option "Diminished (whole–half)"
+                  - option "Diminished (half–whole)"
+                  - option "Chromatic"
+                  - option "Custom scale"
+            - button "Delete this part" [disabled] [ref=e79]
+          - generic [ref=e82]:
+            - strong [ref=e83]: A Natural minor
+            - generic [ref=e84]:
+              - generic [ref=e85]:
+                - generic [ref=e86]: "1"
+                - generic [ref=e87]: A
+              - generic [ref=e88]:
+                - generic [ref=e89]: "2"
+                - generic [ref=e90]: B
+              - generic [ref=e91]:
+                - generic [ref=e92]: ♭3
+                - generic [ref=e93]: C
+              - generic [ref=e94]:
+                - generic [ref=e95]: "4"
+                - generic [ref=e96]: D
+              - generic [ref=e97]:
+                - generic [ref=e98]: "5"
+                - generic [ref=e99]: E
+              - generic [ref=e100]:
+                - generic [ref=e101]: ♭6
+                - generic [ref=e102]: F
+              - generic [ref=e103]:
+                - generic [ref=e104]: ♭7
+                - generic [ref=e105]: G
+          - generic [ref=e106]:
+            - heading "Triads in scale" [level=2] [ref=e107]
+            - generic [ref=e108]: Select an interval to open its chord workshop.
+            - button "Name from fretboard" [ref=e109] [cursor=pointer]
+          - generic [ref=e110]:
+            - button "Open Am chord workshop" [ref=e111] [cursor=pointer]:
+              - strong [ref=e112]: 1 · Minor
+              - generic [ref=e113]:
+                - text: Am
+                - generic [ref=e114]: i
+            - button "Open Bdim chord workshop" [ref=e115] [cursor=pointer]:
+              - strong [ref=e116]: 2 · Diminished
+              - generic [ref=e117]:
+                - text: Bdim
+                - generic [ref=e118]: ii°
+            - button "Open C chord workshop" [ref=e119] [cursor=pointer]:
+              - strong [ref=e120]: ♭3 · Major
+              - generic [ref=e121]:
+                - text: C
+                - generic [ref=e122]: III
+            - button "Open Dm chord workshop" [ref=e123] [cursor=pointer]:
+              - strong [ref=e124]: 4 · Minor
+              - generic [ref=e125]:
+                - text: Dm
+                - generic [ref=e126]: iv
+            - button "Open Em chord workshop" [ref=e127] [cursor=pointer]:
+              - strong [ref=e128]: 5 · Minor
+              - generic [ref=e129]:
+                - text: Em
+                - generic [ref=e130]: v
+            - button "Open F chord workshop" [ref=e131] [cursor=pointer]:
+              - strong [ref=e132]: ♭6 · Major
+              - generic [ref=e133]:
+                - text: F
+                - generic [ref=e134]: VI
+            - button "Open G chord workshop" [ref=e135] [cursor=pointer]:
+              - strong [ref=e136]: ♭7 · Major
+              - generic [ref=e137]:
+                - text: G
+                - generic [ref=e138]: VII
+        - generic [ref=e139]:
+          - generic [ref=e141]:
+            - heading "Part 1 — progression 0" [level=2] [ref=e142]:
+              - text: Part 1 — progression
+              - generic [ref=e143]: "0"
+            - paragraph [ref=e144]: Chord numbers are relative to the scale root. Diagram intervals are relative to each chord root.
+          - generic [ref=e145]:
+            - heading "No chords in this part" [level=3] [ref=e146]
+            - paragraph [ref=e147]: Select an interval above, edit the chord tones and fingering, then save it to Part 1.
+  - status

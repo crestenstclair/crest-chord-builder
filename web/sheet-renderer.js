@@ -4,8 +4,9 @@ import { renderTab } from "./tablature.js";
 import { engraveTab } from "./tab-engraver.js";
 import { tabPlaybackScript } from "./tab-playback.js";
 import { chordBox, fretboard } from "./diagrams.js";
-import { getFingering } from "./project.js";
-import { chordName, describeFingering, partScale, pitchName, scaleNotes } from "./music.js";
+import { getPlayableFingering } from "./project.js";
+import { capoFret, playingTuning, playingSetupLabel, relativeFret, fretValues } from "./fingering-settings.js";
+import { NOTES, chordName, describeFingering, partScale, pitchName, scaleNotes } from "./music.js";
 import { esc } from "./ui.js";
 
 let styles;
@@ -30,21 +31,33 @@ function fileURL(file) {
     : `data:${file.mime};charset=utf-8,${encodeURIComponent(file.content)}`;
 }
 
+function componentLabels(context, element) {
+  // The visible workspace toggle takes precedence over saved sheet markup.
+  if (["intervals", "notes"].includes(context.labels)) return context.labels;
+  return element?.getAttribute("labels") === "notes" ? "notes" : "intervals";
+}
+
 function scaleComponent(context, element) {
   const { part, guitar } = context;
-  const start = Number(element?.getAttribute("start") ?? 0);
-  if (!Number.isInteger(start) || start < 0 || start > 12) throw new Error("Scale start must be a fret from 0 to 12.");
+  const requestedStart = Number(context.start ?? element?.getAttribute("start") ?? 0);
+  if (!Number.isInteger(requestedStart) || requestedStart < 0 || requestedStart > 12) throw new Error("Scale start must be a fret from 0 to 12.");
+  const start = relativeFret(Math.max(capoFret(guitar), requestedStart), capoFret(guitar));
   const notes = scaleNotes(part.root, partScale(part));
-  const labels = element?.getAttribute("labels") === "notes" ? "notes" : "intervals";
-  return `<section class="scale-map"><h2>${esc(partScale(part).name)}</h2>${fretboard(guitar.strings, notes.map((n) => n.pc), part.root, { start, labels, intervalLabels: Object.fromEntries(notes.map((n) => [n.pc, n.interval])) })}</section>`;
+  const labels = componentLabels(context, element);
+  const spelling = Object.assign([...NOTES], Object.fromEntries(notes.map((note) => [note.pc, note.name])));
+  return `<section class="scale-map"><h2>${esc(partScale(part).name)}</h2>${fretboard(playingTuning(guitar), notes.map((n) => n.pc), part.root, { start, capo: capoFret(guitar), labels, spelling, intervalLabels: Object.fromEntries(notes.map((n) => [n.pc, n.interval])) })}</section>`;
 }
 
 export function sheetChordCard(chord, context, position = "Voicing") {
-  const frets = getFingering(chord, context.guitar.strings);
-  const bass = frets ? describeFingering(context.guitar.strings, frets, chord.root).bass : chord.bass;
+  const tuning = playingTuning(context.guitar);
+  const frets = getPlayableFingering(chord, context.guitar);
+  const bass = frets ? describeFingering(tuning, frets, chord.root).bass : chord.bass;
   const name = chordName(chord, bass);
   const disabled = context.canCycle ? "" : "disabled";
-  return `<article class="sheet-component-chord" data-chord="${esc(chord.id)}"><h3>${esc(chord.label || name)}</h3>${chord.label && chord.label !== name ? `<small>${esc(name)}</small>` : ""}${frets ? chordBox(context.guitar.strings, frets, chord.root, name, false, "intervals", chord) : '<p>Open this chord in Parts to choose a fingering.</p>'}<div class="fret-values">${frets?.map((fret) => fret < 0 ? "×" : fret).join(" ") ?? ""}</div><div class="sheet-voicing-controls no-print"><button type="button" data-sheet-voicing="-1" aria-label="Previous voicing for ${esc(name)}" ${disabled}>‹</button><span class="sheet-voicing-status" role="status">${esc(position)}</span><button type="button" data-sheet-voicing="1" aria-label="Next voicing for ${esc(name)}" ${disabled}>›</button></div></article>`;
+  const fingeringStatus = context.errors?.[chord.id] ?? (context.referenceOnly
+    ? "No saved fingering for this capo and hand position. Save a compatible shape in Crest Chord Builder, then paste the updated JSON."
+    : "Finding a fingering for this capo and hand position…");
+  return `<article class="sheet-component-chord" data-chord="${esc(chord.id)}"><h3>${esc(chord.label || name)}</h3>${chord.label && chord.label !== name ? `<small>${esc(name)}</small>` : ""}${frets ? chordBox(tuning, frets, chord.root, name, false, componentLabels(context), chord, capoFret(context.guitar)) : `<p class="diagram-placeholder">${esc(fingeringStatus)}</p>`}<div class="fret-values">${fretValues(frets, capoFret(context.guitar)) ?? ""}</div><div class="sheet-voicing-controls no-print"><button type="button" data-sheet-voicing="-1" aria-label="Previous voicing for ${esc(name)}" ${disabled}>‹</button><span class="sheet-voicing-status" role="status">${esc(position)}</span><button type="button" data-sheet-voicing="1" aria-label="Next voicing for ${esc(name)}" ${disabled}>›</button></div></article>`;
 }
 
 function chordComponent(context) {
@@ -87,7 +100,7 @@ function expandMarkup(markup, sheet, context, depth = 0) {
   for (const element of template.content.querySelectorAll("guitar-tab,scale-map,chord-sheet,file-content")) {
     let html;
     if (element.tagName === "GUITAR-TAB")
-      html = renderTab(attachment(sheet, element.getAttribute("src")).content, Object.fromEntries([...element.attributes].map((a) => [a.name, a.value])), context.guitar.strings);
+      html = renderTab(attachment(sheet, element.getAttribute("src")).content, Object.fromEntries([...element.attributes].map((a) => [a.name, a.value])), playingTuning(context.guitar));
     else if (element.tagName === "SCALE-MAP") html = scaleComponent(context, element);
     else if (element.tagName === "CHORD-SHEET") html = chordComponent(context);
     else html = includedFile(element, sheet, context, depth);
@@ -164,11 +177,12 @@ function frameRuntime(data) {
 export async function sheetDocument(input, context) {
   const sheet = parseSheet(input);
   const markup = sheet.format === "markdown" ? marked.parse(sheet.source) : sheet.source;
-  const body = (sheet.layout === "append" ? defaultContent(context) : "") + expandMarkup(markup, sheet, context);
+  const setup = `<p class="playing-setup">${esc(playingSetupLabel(context.guitar))}. Scale maps and chord diagrams follow this setup; attached tablature keeps its original tuning and frets.</p>`;
+  const body = setup + (sheet.layout === "append" ? defaultContent(context) : "") + expandMarkup(markup, sheet, context);
   const data = JSON.stringify({ files: sheet.files, guitar: context.guitar, part: { ...context.part, sheet: undefined } }).replaceAll("<", "\\u003c");
-  const css = await sheetStyles();
+  const css = await sheetStyles() + (context.referenceOnly ? "\n.tab-transport,.sheet-voicing-controls{display:none!important}" : "");
   const policy = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'";
-  return `<!doctype html><html lang="en" data-theme="${context.theme === "light" ? "light" : "dark"}"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${policy}"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(context.part.name)}</title><style>${css}</style><script>(${frameRuntime.toString()})(${data});\n${tabPlaybackScript()}</script></head><body class="sheet-document" style="--display-zoom:${context.zoom ?? 1}">${body}</body></html>`;
+  return `<!doctype html><html lang="en" data-theme="${context.theme === "light" ? "light" : "dark"}"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${policy}"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(context.part.name)}</title><style>${css}</style><script>(${frameRuntime.toString()})(${data});\n${context.referenceOnly ? "" : tabPlaybackScript()}</script></head><body class="sheet-document" style="--display-zoom:${context.zoom ?? 1}">${body}</body></html>`;
 }
 
 export function sheetFrame(title = "Custom practice sheet") {

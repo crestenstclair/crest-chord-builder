@@ -1,5 +1,6 @@
 import { NOTES, mod12, pitchName, chordInterval } from "./music.js";
 import { esc } from "./ui.js";
+import { absoluteFret, absoluteFrets } from "./fingering-settings.js";
 
 export function chordBox(
   tuning,
@@ -9,6 +10,7 @@ export function chordBox(
   large = false,
   labels = "intervals",
   chord = { root, intervals: [] },
+  capo = 0,
 ) {
   if (!frets)
     return '<div class="diagram-placeholder"><span class="loading-dot"></span> Finding a fingering…</div>';
@@ -55,7 +57,7 @@ export function chordBox(
       return `${mark}<text x="${x}" y="${height - 20}" class="string-note">${esc(note)}</text>`;
     })
     .join("");
-  return `<svg class="chord-box ${large ? "large" : ""}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(name)}, frets ${frets.map((f) => (f < 0 ? "muted" : f)).join(", ")}. Bass-side string on left."><g class="diagram-lines">${strings}${fretsGrid}</g>${base > 1 ? `<text x="10" y="59" class="fret-base">${base}</text>` : ""}${dots}</svg>`;
+  return `${capo ? `<small class="capo-caption">Capo at fret ${capo} · absolute frets</small>` : ""}<svg class="chord-box ${large ? "large" : ""}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(name)}, frets ${absoluteFrets(frets, capo).map((f) => (f < 0 ? "muted" : f)).join(", ")}. ${capo ? `Capo at fret ${capo}; absolute frets from the nut. ` : ""}Bass-side string on left."><g class="diagram-lines">${strings}${fretsGrid}</g>${base > 1 || capo ? `<text x="10" y="59" class="fret-base">${absoluteFret(base, capo)}</text>` : ""}${dots}</svg>`;
 }
 
 function fretCell({
@@ -74,6 +76,7 @@ function fretCell({
   chord,
   count,
   intervalLabels,
+  capo,
 }) {
   const midi = open + fret;
   const pc = mod12(midi);
@@ -93,10 +96,11 @@ function fretCell({
     selected ? "chosen" : "",
     anchored ? "anchor" : "",
   ].join(" ");
-  const title = `String ${count - string}, fret ${fret}: ${pitchName(midi)}, ${intervalLabels?.[pc] ?? chordInterval(chord, pc)}${keyTones ? (keyTones.includes(pc) ? ", in scale" : ", outside scale") : ""}${selected ? ", selected" : ""}${anchored ? ", required note" : ""}${chordTonesOnly && !relevant ? ", not a chord tone" : ""}`;
+  const physicalFret = absoluteFret(fret, capo);
+  const title = `String ${count - string}, fret ${physicalFret}: ${pitchName(midi)}, ${intervalLabels?.[pc] ?? chordInterval(chord, pc)}${fret === 0 && capo ? ", open at capo" : ""}${keyTones ? (keyTones.includes(pc) ? ", in scale" : ", outside scale") : ""}${selected ? ", selected" : ""}${anchored ? ", required note" : ""}${chordTonesOnly && !relevant ? ", not a chord tone" : ""}`;
   const content = `<span>${relevant || editing || selected ? esc(label) : ""}</span>`;
   return editing
-    ? `<button type="button" class="${cls}" data-fret="${fret}" data-string="${string}" data-focus="fret-${string}-${fret}" aria-label="${esc(title)}" aria-pressed="${selected}" title="${esc(title)}" ${chordTonesOnly && !relevant ? "disabled" : ""}>${content}</button>`
+    ? `<button type="button" class="${cls}" data-fret="${physicalFret}" data-string="${string}" data-focus="fret-${string}-${physicalFret}" aria-label="${esc(title)}" aria-pressed="${selected}" title="${esc(title)}" ${chordTonesOnly && !relevant ? "disabled" : ""}>${content}</button>`
     : `<div class="${cls}" title="${esc(title)}">${content}</div>`;
 }
 
@@ -122,10 +126,12 @@ export function fretboard(
     keyTones = null,
     intervalLabels = null,
     chord = { root, intervals: [] },
+    capo = 0,
   } = {},
 ) {
   const config = {
     start,
+    capo,
     keyTones,
     intervalLabels,
     chord,
@@ -146,7 +152,7 @@ export function fretboard(
   const numbers = Array.from(
     { length: 13 },
     (_, i) =>
-      `<span class="fret-number ${[3, 5, 7, 9, 12, 15, 17, 19, 21, 24].includes(start + i) ? "marker" : ""}">${start + i === 0 ? "open" : start + i}</span>`,
+      `<span class="fret-number ${[3, 5, 7, 9, 12, 15, 17, 19, 21, 24].includes(capo + start + i) ? "marker" : ""}">${absoluteFret(start + i, capo)}${start + i === 0 && capo ? " · capo" : ""}</span>`,
   ).join("");
   return `<div class="neck-scroll"><div class="fretboard" aria-label="Guitar fretboard; treble-side string at top">${rows}<div class="fret-row fret-numbers"><span></span>${numbers}</div></div></div>`;
 }

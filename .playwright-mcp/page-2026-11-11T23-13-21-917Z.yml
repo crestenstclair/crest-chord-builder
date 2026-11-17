@@ -1,0 +1,452 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e532]:
+      - link "Crest Chord Builder" [ref=e533] [cursor=pointer]:
+        - /url: ./
+        - strong [ref=e534]: Crest
+      - textbox "Project title" [ref=e536]: weird doom thing - chord sheet
+      - generic [ref=e537]:
+        - button "Toggle light or dark theme" [ref=e538] [cursor=pointer]: Light theme
+        - button "Undo last change" [ref=e539] [cursor=pointer]
+        - button "Open JSON" [ref=e542] [cursor=pointer]
+        - button "Save JSON" [ref=e545] [cursor=pointer]
+    - generic [ref=e548]:
+      - complementary [ref=e549]:
+        - navigation "Workflow" [ref=e550]:
+          - button "Guitars" [ref=e551] [cursor=pointer]
+          - button "Parts" [ref=e556] [cursor=pointer]
+          - button "Play & Print" [active] [ref=e562] [cursor=pointer]
+        - generic [ref=e566]:
+          - generic [ref=e567]:
+            - text: PARTS
+            - button "Add Part" [ref=e568] [cursor=pointer]
+          - navigation "Parts" [ref=e571]:
+            - generic [ref=e572]:
+              - button "01 Slurred strings D Natural minor 5" [expanded] [ref=e573] [cursor=pointer]:
+                - generic [ref=e574]: "01"
+                - generic [ref=e575]:
+                  - text: Slurred strings
+                  - generic [ref=e576]: D Natural minor
+                - generic [ref=e577]: "5"
+              - list [ref=e578]:
+                - listitem [ref=e579]:
+                  - button "Open Dm7 in Slurred strings" [ref=e580] [cursor=pointer]:
+                    - generic [ref=e581]: "1"
+                    - text: Dm7
+                    - generic [ref=e582]: Dm7
+                - listitem [ref=e583]:
+                  - button "Open Am7 in Slurred strings" [ref=e584] [cursor=pointer]:
+                    - generic [ref=e585]: "2"
+                    - text: Am7
+                    - generic [ref=e586]: Am7
+                - listitem [ref=e587]:
+                  - button "Open C [1·5·♭7] in Slurred strings" [ref=e588] [cursor=pointer]:
+                    - generic [ref=e589]: "3"
+                    - text: C7(no3)
+                    - generic [ref=e590]: C [1·5·♭7]
+                - listitem [ref=e591]:
+                  - button "Open G7sus4 in Slurred strings" [ref=e592] [cursor=pointer]:
+                    - generic [ref=e593]: "4"
+                    - text: G7sus4
+                    - generic [ref=e594]: G7sus4
+                - listitem [ref=e595]:
+                  - button "Open Dm(add11)/F in Slurred strings" [ref=e596] [cursor=pointer]:
+                    - generic [ref=e597]: "5"
+                    - text: Dm(add11)/F
+                    - generic [ref=e598]: Dm(add11)/F
+            - button "02 High String Slurs D Natural minor 6" [ref=e600] [cursor=pointer]:
+              - generic [ref=e601]: "02"
+              - generic [ref=e602]:
+                - text: High String Slurs
+                - generic [ref=e603]: D Natural minor
+              - generic [ref=e604]: "6"
+            - button "03 Chord-reference roadmap D Natural minor 9" [ref=e606] [cursor=pointer]:
+              - generic [ref=e607]: "03"
+              - generic [ref=e608]:
+                - text: Chord-reference roadmap
+                - generic [ref=e609]: D Natural minor
+              - generic [ref=e610]: "9"
+            - button "04 Pad accents D Natural minor 4" [ref=e612] [cursor=pointer]:
+              - generic [ref=e613]: "04"
+              - generic [ref=e614]:
+                - text: Pad accents
+                - generic [ref=e615]: D Natural minor
+              - generic [ref=e616]: "4"
+          - button "Add Part" [ref=e617] [cursor=pointer]
+        - generic [ref=e620]:
+          - text: Data stays in this browser.
+          - link "Documentation & source ↗" [ref=e621] [cursor=pointer]:
+            - /url: https://github.com/crestenstclair/crest-chord-builder
+      - main [ref=e622]:
+        - generic [ref=e623]:
+          - generic [ref=e624]:
+            - generic [ref=e625]:
+              - text: Part
+              - combobox "Part" [ref=e626]:
+                - option "Slurred strings" [selected]
+                - option "High String Slurs"
+                - option "Chord-reference roadmap"
+                - option "Pad accents"
+            - generic [ref=e627]:
+              - generic [ref=e628]:
+                - button "Intervals" [pressed] [ref=e629] [cursor=pointer]
+                - button "Notes" [ref=e630] [cursor=pointer]
+              - generic [ref=e631]:
+                - text: Frets
+                - combobox "Frets" [ref=e632]:
+                  - option "0–12" [selected]
+                  - option "5–17"
+                  - option "12–24"
+              - generic [ref=e633]:
+                - text: Size
+                - slider "Display size" [ref=e634]: "100"
+              - button "Light theme" [ref=e635] [cursor=pointer]
+              - button "Fullscreen" [ref=e636] [cursor=pointer]
+              - button "Edit sheet" [ref=e639] [cursor=pointer]
+              - button "Print sheet" [ref=e642] [cursor=pointer]
+          - iframe [ref=e646]:
+            - generic [ref=f1e1]:
+              - heading "weird doom thing — Slurred strings" [level=1] [ref=f1e2]
+              - paragraph [ref=f1e3]:
+                - strong [ref=f1e4]: 91 BPM · 4/4 · concert pitch · verified against Producer Pal on 6 November 2026
+              - paragraph [ref=f1e5]:
+                - text: "Source:"
+                - strong [ref=f1e6]: slurring high strings
+                - text: ", clips"
+                - strong [ref=f1e7]: "2418"
+                - text: and
+                - strong [ref=f1e8]: "2515"
+                - text: ", track"
+                - strong [ref=f1e9]: 08 HIGH STRINGS / FUGUE
+                - text: (ID
+                - strong [ref=f1e10]: "2385"
+                - text: ", current path"
+                - strong [ref=f1e11]: t13
+                - text: ). Arrangement bars
+                - strong [ref=f1e12]: 33–48
+                - text: and
+                - strong [ref=f1e13]: 65–80
+                - text: .
+              - heading "D minor fretboard" [level=2] [ref=f1e14]
+              - paragraph [ref=f1e15]:
+                - strong [ref=f1e16]: D · E · F · G · A · B♭ · C
+                - text: — natural minor. Standard tuning
+                - strong [ref=f1e17]: E A D G B E
+                - text: ; treble string at the top. D roots are highlighted.
+              - paragraph
+              - generic [ref=f1e18]:
+                - heading "Natural minor" [level=2] [ref=f1e19]
+                - generic "Guitar fretboard; treble-side string at top" [ref=f1e21]:
+                  - generic [ref=f1e22]:
+                    - generic "String 1" [ref=f1e23]: E4
+                    - 'generic "String 1, fret 0: E4, 2" [ref=f1e24]': E
+                    - 'generic "String 1, fret 1: F4, ♭3" [ref=f1e26]': F
+                    - 'generic "String 1, fret 2: F♯4, 3" [ref=f1e28]'
+                    - 'generic "String 1, fret 3: G4, 4" [ref=f1e30]': G
+                    - 'generic "String 1, fret 4: A♭4, ♭5" [ref=f1e32]'
+                    - 'generic "String 1, fret 5: A4, 5" [ref=f1e34]': A
+                    - 'generic "String 1, fret 6: B♭4, ♭6" [ref=f1e36]': B♭
+                    - 'generic "String 1, fret 7: B4, 6" [ref=f1e38]'
+                    - 'generic "String 1, fret 8: C5, ♭7" [ref=f1e40]': C
+                    - 'generic "String 1, fret 9: D♭5, 7" [ref=f1e42]'
+                    - 'generic "String 1, fret 10: D5, 1" [ref=f1e44]': D
+                    - 'generic "String 1, fret 11: E♭5, ♭2" [ref=f1e46]'
+                    - 'generic "String 1, fret 12: E5, 2" [ref=f1e48]': E
+                  - generic [ref=f1e50]:
+                    - generic "String 2" [ref=f1e51]: B3
+                    - 'generic "String 2, fret 0: B3, 6" [ref=f1e52]'
+                    - 'generic "String 2, fret 1: C4, ♭7" [ref=f1e54]': C
+                    - 'generic "String 2, fret 2: D♭4, 7" [ref=f1e56]'
+                    - 'generic "String 2, fret 3: D4, 1" [ref=f1e58]': D
+                    - 'generic "String 2, fret 4: E♭4, ♭2" [ref=f1e60]'
+                    - 'generic "String 2, fret 5: E4, 2" [ref=f1e62]': E
+                    - 'generic "String 2, fret 6: F4, ♭3" [ref=f1e64]': F
+                    - 'generic "String 2, fret 7: F♯4, 3" [ref=f1e66]'
+                    - 'generic "String 2, fret 8: G4, 4" [ref=f1e68]': G
+                    - 'generic "String 2, fret 9: A♭4, ♭5" [ref=f1e70]'
+                    - 'generic "String 2, fret 10: A4, 5" [ref=f1e72]': A
+                    - 'generic "String 2, fret 11: B♭4, ♭6" [ref=f1e74]': B♭
+                    - 'generic "String 2, fret 12: B4, 6" [ref=f1e76]'
+                  - generic [ref=f1e78]:
+                    - generic "String 3" [ref=f1e79]: G3
+                    - 'generic "String 3, fret 0: G3, 4" [ref=f1e80]': G
+                    - 'generic "String 3, fret 1: A♭3, ♭5" [ref=f1e82]'
+                    - 'generic "String 3, fret 2: A3, 5" [ref=f1e84]': A
+                    - 'generic "String 3, fret 3: B♭3, ♭6" [ref=f1e86]': B♭
+                    - 'generic "String 3, fret 4: B3, 6" [ref=f1e88]'
+                    - 'generic "String 3, fret 5: C4, ♭7" [ref=f1e90]': C
+                    - 'generic "String 3, fret 6: D♭4, 7" [ref=f1e92]'
+                    - 'generic "String 3, fret 7: D4, 1" [ref=f1e94]': D
+                    - 'generic "String 3, fret 8: E♭4, ♭2" [ref=f1e96]'
+                    - 'generic "String 3, fret 9: E4, 2" [ref=f1e98]': E
+                    - 'generic "String 3, fret 10: F4, ♭3" [ref=f1e100]': F
+                    - 'generic "String 3, fret 11: F♯4, 3" [ref=f1e102]'
+                    - 'generic "String 3, fret 12: G4, 4" [ref=f1e104]': G
+                  - generic [ref=f1e106]:
+                    - generic "String 4" [ref=f1e107]: D3
+                    - 'generic "String 4, fret 0: D3, 1" [ref=f1e108]': D
+                    - 'generic "String 4, fret 1: E♭3, ♭2" [ref=f1e110]'
+                    - 'generic "String 4, fret 2: E3, 2" [ref=f1e112]': E
+                    - 'generic "String 4, fret 3: F3, ♭3" [ref=f1e114]': F
+                    - 'generic "String 4, fret 4: F♯3, 3" [ref=f1e116]'
+                    - 'generic "String 4, fret 5: G3, 4" [ref=f1e118]': G
+                    - 'generic "String 4, fret 6: A♭3, ♭5" [ref=f1e120]'
+                    - 'generic "String 4, fret 7: A3, 5" [ref=f1e122]': A
+                    - 'generic "String 4, fret 8: B♭3, ♭6" [ref=f1e124]': B♭
+                    - 'generic "String 4, fret 9: B3, 6" [ref=f1e126]'
+                    - 'generic "String 4, fret 10: C4, ♭7" [ref=f1e128]': C
+                    - 'generic "String 4, fret 11: D♭4, 7" [ref=f1e130]'
+                    - 'generic "String 4, fret 12: D4, 1" [ref=f1e132]': D
+                  - generic [ref=f1e134]:
+                    - generic "String 5" [ref=f1e135]: A2
+                    - 'generic "String 5, fret 0: A2, 5" [ref=f1e136]': A
+                    - 'generic "String 5, fret 1: B♭2, ♭6" [ref=f1e138]': B♭
+                    - 'generic "String 5, fret 2: B2, 6" [ref=f1e140]'
+                    - 'generic "String 5, fret 3: C3, ♭7" [ref=f1e142]': C
+                    - 'generic "String 5, fret 4: D♭3, 7" [ref=f1e144]'
+                    - 'generic "String 5, fret 5: D3, 1" [ref=f1e146]': D
+                    - 'generic "String 5, fret 6: E♭3, ♭2" [ref=f1e148]'
+                    - 'generic "String 5, fret 7: E3, 2" [ref=f1e150]': E
+                    - 'generic "String 5, fret 8: F3, ♭3" [ref=f1e152]': F
+                    - 'generic "String 5, fret 9: F♯3, 3" [ref=f1e154]'
+                    - 'generic "String 5, fret 10: G3, 4" [ref=f1e156]': G
+                    - 'generic "String 5, fret 11: A♭3, ♭5" [ref=f1e158]'
+                    - 'generic "String 5, fret 12: A3, 5" [ref=f1e160]': A
+                  - generic [ref=f1e162]:
+                    - generic "String 6" [ref=f1e163]: E2
+                    - 'generic "String 6, fret 0: E2, 2" [ref=f1e164]': E
+                    - 'generic "String 6, fret 1: F2, ♭3" [ref=f1e166]': F
+                    - 'generic "String 6, fret 2: F♯2, 3" [ref=f1e168]'
+                    - 'generic "String 6, fret 3: G2, 4" [ref=f1e170]': G
+                    - 'generic "String 6, fret 4: A♭2, ♭5" [ref=f1e172]'
+                    - 'generic "String 6, fret 5: A2, 5" [ref=f1e174]': A
+                    - 'generic "String 6, fret 6: B♭2, ♭6" [ref=f1e176]': B♭
+                    - 'generic "String 6, fret 7: B2, 6" [ref=f1e178]'
+                    - 'generic "String 6, fret 8: C3, ♭7" [ref=f1e180]': C
+                    - 'generic "String 6, fret 9: D♭3, 7" [ref=f1e182]'
+                    - 'generic "String 6, fret 10: D3, 1" [ref=f1e184]': D
+                    - 'generic "String 6, fret 11: E♭3, ♭2" [ref=f1e186]'
+                    - 'generic "String 6, fret 12: E3, 2" [ref=f1e188]': E
+                  - generic [ref=f1e190]:
+                    - generic [ref=f1e192]: open
+                    - generic [ref=f1e193]: "1"
+                    - generic [ref=f1e194]: "2"
+                    - generic [ref=f1e195]: "3"
+                    - generic [ref=f1e196]: "4"
+                    - generic [ref=f1e197]: "5"
+                    - generic [ref=f1e198]: "6"
+                    - generic [ref=f1e199]: "7"
+                    - generic [ref=f1e200]: "8"
+                    - generic [ref=f1e201]: "9"
+                    - generic [ref=f1e202]: "10"
+                    - generic [ref=f1e203]: "11"
+                    - generic [ref=f1e204]: "12"
+              - paragraph
+              - paragraph [ref=f1e205]:
+                - text: "Intervals:"
+                - strong [ref=f1e206]: 1 · 2 · ♭3 · 4 · 5 · ♭6 · ♭7
+                - text: . Frets 0–12; the pattern repeats 12 frets higher.
+              - heading "Chord shapes" [level=2] [ref=f1e207]
+              - paragraph [ref=f1e208]:
+                - text: Standard tuning
+                - strong [ref=f1e209]: E2 A2 D3 G3 B3 E4
+                - text: . Guitar voicings preserve every chord tone and the indicated bass pitch class; octaves are revoiced for guitar. No transposition.
+              - paragraph
+              - generic [ref=f1e210]:
+                - heading "Chord sheet" [level=2] [ref=f1e211]
+                - generic [ref=f1e212]:
+                  - article [ref=f1e213]:
+                    - heading "Dm7" [level=3] [ref=f1e214]
+                    - img "Dm7, frets muted, muted, 0, 2, 1, 1. Bass-side string on left." [ref=f1e215]:
+                      - generic [ref=f1e217]: ×
+                      - generic [ref=f1e218]: ×
+                      - generic [ref=f1e219]: ○
+                      - generic [ref=f1e220]: "1"
+                      - generic [ref=f1e222]: "5"
+                      - generic [ref=f1e224]: ♭7
+                      - generic [ref=f1e226]: ♭3
+                    - generic [ref=f1e227]: × × 0 2 1 1
+                    - generic [ref=f1e228]:
+                      - button "Previous voicing for Dm7" [ref=f1e229] [cursor=pointer]: ‹
+                      - status [ref=f1e230]: Voicing
+                      - button "Next voicing for Dm7" [ref=f1e231] [cursor=pointer]: ›
+                  - article [ref=f1e232]:
+                    - heading "Am7" [level=3] [ref=f1e233]
+                    - img "Am7, frets muted, 0, 2, 0, 1, 0. Bass-side string on left." [ref=f1e234]:
+                      - generic [ref=f1e236]: ×
+                      - generic [ref=f1e237]: ○
+                      - generic [ref=f1e238]: "1"
+                      - generic [ref=f1e240]: "5"
+                      - generic [ref=f1e241]: ○
+                      - generic [ref=f1e242]: ♭7
+                      - generic [ref=f1e244]: ♭3
+                      - generic [ref=f1e245]: ○
+                      - generic [ref=f1e246]: "5"
+                    - generic [ref=f1e247]: × 0 2 0 1 0
+                    - generic [ref=f1e248]:
+                      - button "Previous voicing for Am7" [ref=f1e249] [cursor=pointer]: ‹
+                      - status [ref=f1e250]: Voicing
+                      - button "Next voicing for Am7" [ref=f1e251] [cursor=pointer]: ›
+                  - article [ref=f1e252]:
+                    - heading "C7(no3)" [level=3] [ref=f1e253]
+                    - text: C [1·5·♭7]
+                    - img "C [1·5·♭7], frets 8, muted, 8, 0, muted, muted. Bass-side string on left." [ref=f1e254]:
+                      - generic [ref=f1e256]: "8"
+                      - generic [ref=f1e258]: "1"
+                      - generic [ref=f1e259]: ×
+                      - generic [ref=f1e261]: ♭7
+                      - generic [ref=f1e262]: ○
+                      - generic [ref=f1e263]: "5"
+                      - generic [ref=f1e264]: ×
+                      - generic [ref=f1e265]: ×
+                    - generic [ref=f1e266]: 8 × 8 0 × ×
+                    - generic [ref=f1e267]:
+                      - button "Previous voicing for C [1·5·♭7]" [ref=f1e268] [cursor=pointer]: ‹
+                      - status [ref=f1e269]: Voicing
+                      - button "Next voicing for C [1·5·♭7]" [ref=f1e270] [cursor=pointer]: ›
+                  - article [ref=f1e271]:
+                    - heading "G7sus4" [level=3] [ref=f1e272]
+                    - img "G7sus4, frets 3, muted, 0, 0, 1, 1. Bass-side string on left." [ref=f1e273]:
+                      - generic [ref=f1e276]: "1"
+                      - generic [ref=f1e277]: ×
+                      - generic [ref=f1e278]: ○
+                      - generic [ref=f1e279]: "5"
+                      - generic [ref=f1e280]: ○
+                      - generic [ref=f1e281]: "1"
+                      - generic [ref=f1e283]: "4"
+                      - generic [ref=f1e285]: ♭7
+                    - generic [ref=f1e286]: 3 × 0 0 1 1
+                    - generic [ref=f1e287]:
+                      - button "Previous voicing for G7sus4" [ref=f1e288] [cursor=pointer]: ‹
+                      - status [ref=f1e289]: Voicing
+                      - button "Next voicing for G7sus4" [ref=f1e290] [cursor=pointer]: ›
+                  - article [ref=f1e291]:
+                    - heading "Dm(add11)/F" [level=3] [ref=f1e292]
+                    - img "Dm(add11)/F, frets 1, 0, 0, 0, muted, muted. Bass-side string on left." [ref=f1e293]:
+                      - generic [ref=f1e296]: ♭3
+                      - generic [ref=f1e297]: ○
+                      - generic [ref=f1e298]: "5"
+                      - generic [ref=f1e299]: ○
+                      - generic [ref=f1e300]: "1"
+                      - generic [ref=f1e301]: ○
+                      - generic [ref=f1e302]: "4"
+                      - generic [ref=f1e303]: ×
+                      - generic [ref=f1e304]: ×
+                    - generic [ref=f1e305]: 1 0 0 0 × ×
+                    - generic [ref=f1e306]:
+                      - button "Previous voicing for Dm(add11)/F" [ref=f1e307] [cursor=pointer]: ‹
+                      - status [ref=f1e308]: Voicing
+                      - button "Next voicing for Dm(add11)/F" [ref=f1e309] [cursor=pointer]: ›
+              - paragraph
+              - heading "Progression" [level=2] [ref=f1e310]
+              - paragraph [ref=f1e311]: One chord per bar. Play this eight-bar phrase twice in each 16-bar section.
+              - paragraph [ref=f1e312]:
+                - strong [ref=f1e313]: Dm7 | Am7 | Dm7 | C7(no3) | Dm7 | Am7 | G7sus4 | Dm(add11)/F
+              - table [ref=f1e314]:
+                - rowgroup [ref=f1e315]:
+                  - row [ref=f1e316]:
+                    - columnheader "Bars (first / repeat)" [ref=f1e317]
+                    - columnheader "Chord" [ref=f1e318]
+                - rowgroup [ref=f1e319]:
+                  - row [ref=f1e320]:
+                    - cell "33 / 65" [ref=f1e321]
+                    - cell [ref=f1e322]:
+                      - strong [ref=f1e323]: Dm7
+                  - row [ref=f1e324]:
+                    - cell "34 / 66" [ref=f1e325]
+                    - cell [ref=f1e326]:
+                      - strong [ref=f1e327]: Am7
+                  - row [ref=f1e328]:
+                    - cell "35 / 67" [ref=f1e329]
+                    - cell [ref=f1e330]:
+                      - strong [ref=f1e331]: Dm7
+                  - row [ref=f1e332]:
+                    - cell "36 / 68" [ref=f1e333]
+                    - cell [ref=f1e334]:
+                      - strong [ref=f1e335]: C7(no3)
+                  - row [ref=f1e336]:
+                    - cell "37 / 69" [ref=f1e337]
+                    - cell [ref=f1e338]:
+                      - strong [ref=f1e339]: Dm7
+                  - row [ref=f1e340]:
+                    - cell "38 / 70" [ref=f1e341]
+                    - cell [ref=f1e342]:
+                      - strong [ref=f1e343]: Am7
+                  - row [ref=f1e344]:
+                    - cell "39 / 71" [ref=f1e345]
+                    - cell [ref=f1e346]:
+                      - strong [ref=f1e347]: G7sus4
+                  - row [ref=f1e348]:
+                    - cell "40 / 72" [ref=f1e349]
+                    - cell [ref=f1e350]:
+                      - strong [ref=f1e351]: Dm(add11)/F
+                  - row [ref=f1e352]:
+                    - cell "41 / 73" [ref=f1e353]
+                    - cell [ref=f1e354]:
+                      - strong [ref=f1e355]: Dm7
+                  - row [ref=f1e356]:
+                    - cell "42 / 74" [ref=f1e357]
+                    - cell [ref=f1e358]:
+                      - strong [ref=f1e359]: Am7
+                  - row [ref=f1e360]:
+                    - cell "43 / 75" [ref=f1e361]
+                    - cell [ref=f1e362]:
+                      - strong [ref=f1e363]: Dm7
+                  - row [ref=f1e364]:
+                    - cell "44 / 76" [ref=f1e365]
+                    - cell [ref=f1e366]:
+                      - strong [ref=f1e367]: C7(no3)
+                  - row [ref=f1e368]:
+                    - cell "45 / 77" [ref=f1e369]
+                    - cell [ref=f1e370]:
+                      - strong [ref=f1e371]: Dm7
+                  - row [ref=f1e372]:
+                    - cell "46 / 78" [ref=f1e373]
+                    - cell [ref=f1e374]:
+                      - strong [ref=f1e375]: Am7
+                  - row [ref=f1e376]:
+                    - cell "47 / 79" [ref=f1e377]
+                    - cell [ref=f1e378]:
+                      - strong [ref=f1e379]: G7sus4
+                  - row [ref=f1e380]:
+                    - cell "48 / 80" [ref=f1e381]
+                    - cell [ref=f1e382]:
+                      - strong [ref=f1e383]: Dm(add11)/F
+              - heading "Notes in each chord" [level=2] [ref=f1e384]
+              - table [ref=f1e385]:
+                - rowgroup [ref=f1e386]:
+                  - row [ref=f1e387]:
+                    - columnheader "Chord" [ref=f1e388]
+                    - columnheader "Pitch classes" [ref=f1e389]
+                - rowgroup [ref=f1e390]:
+                  - row [ref=f1e391]:
+                    - cell "Dm7" [ref=f1e392]
+                    - cell "D · F · A · C" [ref=f1e393]
+                  - row [ref=f1e394]:
+                    - cell "Am7" [ref=f1e395]
+                    - cell "A · C · E · G" [ref=f1e396]
+                  - row [ref=f1e397]:
+                    - cell "C7(no3)" [ref=f1e398]
+                    - cell "C · G · B♭" [ref=f1e399]
+                  - row [ref=f1e400]:
+                    - cell "G7sus4" [ref=f1e401]
+                    - cell "G · C · D · F" [ref=f1e402]
+                  - row [ref=f1e403]:
+                    - cell "Dm(add11)/F" [ref=f1e404]
+                    - cell "F · A · D · G" [ref=f1e405]
+              - paragraph [ref=f1e406]:
+                - strong [ref=f1e407]: "G7sus4:"
+                - text: F is a velocity-1 note; C carries over from the preceding Am7. The stronger sounding notes form
+                - strong [ref=f1e408]: Gsus4
+                - text: .
+                - strong [ref=f1e409]: C7(no3)
+                - text: has no E.
+              - paragraph [ref=f1e410]:
+                - text: This is a bar-level harmonic reduction of humanized MIDI; brief approach notes, gaps and overlaps are not literal strumming instructions. Dm7 anticipates bars 37, 45, 69 and 77 by about 0.15 beats. Both clips start at source
+                - strong [ref=f1e411]: 5|1
+                - text: ", mapping source bars"
+                - strong [ref=f1e412]: 5–20
+                - text: to the arrangement ranges above. The differently named
+                - strong [ref=f1e413]: High String Slurs
+                - text: clips have their own part in this project.
+  - status: Project opened. Undo restores the previous session.
