@@ -1,5 +1,7 @@
 # Crest Chord Builder
 
+**New: [Crest Composer](composer/README.md)** — a separate Sketch-first VST3 instrument with a Colors matrix, local Scaler performance/progression browser, native MIDI drag-out and exchange with this guitar workspace. [Feature study and evidence](docs/scaler-workflow.md).
+
 A browser-only guitar workspace: configure your instrument, build harmony for each part, edit individual chord fingerings, and play from a large scale map and printable chord sheet.
 
 The website has no backend, accounts, analytics, or external font/CDN requests. GitHub Pages serves the static files. A bundled Marked parser renders Markdown without CDN requests. A Go WebAssembly worker runs the ergonomic chord engine locally; your project stays in browser storage until you download it as JSON.
